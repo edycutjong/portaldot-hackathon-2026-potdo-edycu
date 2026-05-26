@@ -81,6 +81,18 @@ npm run dev
 
 > **For Judges:** No API keys needed! Demo mode works out of the box with deterministic intent parsing. Just `npm install && npm run dev`.
 
+### Supabase Setup (Optional for Persistence)
+
+Potdo uses Supabase to persist transaction history. To set it up:
+
+1. Create a project in [Supabase](https://supabase.com).
+2. Go to the SQL Editor and execute the schema located in [db/schema.sql](db/schema.sql) to create the `potdo_transactions` table and configure Row Level Security (RLS).
+3. Copy your project URL and Anon Key and add them to your `.env.local` file:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+   ```
+
 ## 🧪 Testing & CI
 
 ```bash
