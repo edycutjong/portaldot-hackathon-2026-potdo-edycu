@@ -1,36 +1,140 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <h1>Potdo ⚡</h1>
+  <p><em>AI copilot that turns plain English into secure, visual Portaldot transactions — see the state change before you sign.</em></p>
+  <img src="docs/readme-hero.png" alt="Potdo" width="100%">
 
-## Getting Started
+  <br/>
 
-First, run the development server:
+  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.vercel.app)
+  [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](https://youtu.be/your-video)
+  [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+  <br/>
+
+  ![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat&logo=next.js)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+  ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
+  ![Tailwind](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=flat&logo=tailwindcss&logoColor=white)
+  ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
+  ![Polkadot](https://img.shields.io/badge/Polkadot_API-E6007A?style=flat&logo=polkadot&logoColor=white)
+  [![CI](https://github.com/edycutjong/potdo/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/potdo/actions/workflows/ci.yml)
+
+</div>
+
+---
+
+## 💡 The Problem & Solution
+
+**Blind signing kills trust.** Substrate wallets show raw hex extrinsics that 99% of users can't read. Newcomers have no idea what they're approving, and even experienced users make costly mistakes.
+
+**Potdo** eliminates blind signing on Portaldot by letting users describe transactions in plain English. The AI intent parser converts natural language into structured transaction previews — interactive React cards that show sender, receiver, amount, gas, and balance diff — all before you sign.
+
+**Key Features:**
+- ⚡ **Natural Language Transactions** — Type "Send 10 POT to Alice" and get an interactive transfer preview card
+- 📦 **Batch Airdrops** — "Airdrop 5 POT to Alice, Bob, and Charlie" processes multiple recipients in one command
+- 💰 **Live Balance Checks** — "What's my balance?" renders a real-time balance widget with free/reserved/frozen breakdown
+- 🔴 **Smart Error Translation** — Substrate errors decoded into plain English with actionable suggestions
+- 🎉 **Celebration UX** — Canvas confetti burst on successful transactions
+- 🛡️ **Insufficient Balance Protection** — Red-bordered cards with clear warnings before you can execute
+
+## 🏗️ Architecture & Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Frontend** | Next.js 16 (App Router), React 19 |
+| **Styling** | Tailwind CSS v4 |
+| **AI Intent Parser** | Deterministic NLP (pattern matching + word-to-number) |
+| **Chain SDK** | `@polkadot/api` + `@polkadot/extension-dapp` |
+| **Database** | Supabase (PostgreSQL) — transaction logging |
+| **Animation** | Framer Motion + Canvas API (confetti) |
+| **Testing** | Jest + React Testing Library (97%+ coverage) |
+
+```
+User Input → Intent Parser → Structured Intent → Generative UI Card → Execute on Chain
+    ↓              ↓                 ↓                    ↓                    ↓
+"Send 10     parse regex +      TransferIntent      TransferCard        @polkadot/api
+ POT to      word numbers       { to, amount,       with balance        extrinsic.sign()
+ Alice"                          toAddress }         diff + gas
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🏆 Hackathon Tracks Targeted
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **AI-Powered Onchain Workflows** — Potdo is the AI → on-chain pipeline. Natural language in, signed extrinsic out.
+- **Native Onchain Apps** — Full Portaldot-native experience using `@polkadot/api` with 14-decimal POT precision.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+### Prerequisites
+- Node.js ≥ 20
+- npm
 
-To learn more about Next.js, take a look at the following resources:
+### Installation
+```bash
+git clone https://github.com/edycutjong/potdo.git
+cd potdo
+npm install
+cp .env.example .env.local  # Add your API keys
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+> **For Judges:** No API keys needed! Demo mode works out of the box with deterministic intent parsing. Just `npm install && npm run dev`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🧪 Testing & CI
 
-## Deploy on Vercel
+```bash
+npm run lint          # ESLint
+npm run typecheck     # TypeScript check
+npm run test          # Run 117 tests
+npm run test:coverage # Coverage report (97%+)
+npm run ci            # Full CI pipeline
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Coverage Report:**
+| Module | Stmts | Branch | Funcs | Lines |
+|---|---|---|---|---|
+| **Overall** | 97.39% | 94.48% | 96.42% | 98.25% |
+| `lib/` | 97.36% | 92.70% | 100% | 98.49% |
+| `components/` | 97.50% | 97.95% | 91.66% | 97.43% |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 Project Structure
+```
+potdo/
+├── docs/                # README assets (hero banner)
+├── public/              # App icon, OG image
+├── src/
+│   ├── app/
+│   │   ├── api/chat/    # Chat API route (intent parsing)
+│   │   ├── layout.tsx   # Root layout with fonts + metadata
+│   │   └── page.tsx     # Main dashboard page
+│   ├── components/
+│   │   ├── ChatInterface.tsx   # Main chat with message rendering
+│   │   ├── TransferCard.tsx    # Single transfer preview
+│   │   ├── BatchCard.tsx       # Multi-recipient airdrop preview
+│   │   ├── BalanceWidget.tsx   # Balance display widget
+│   │   ├── TxConfirmation.tsx  # Success card with confetti
+│   │   ├── TxError.tsx         # Error card with translation
+│   │   ├── Header.tsx          # App header with wallet status
+│   │   ├── CommandHistory.tsx  # Sidebar command history
+│   │   └── MessageBubble.tsx   # Chat message bubble
+│   ├── lib/
+│   │   ├── constants.ts       # Chain constants (14 decimals!)
+│   │   ├── types.ts           # TypeScript types
+│   │   ├── format.ts          # POT conversion, address validation
+│   │   ├── intent-parser.ts   # Core NLP intent parser
+│   │   ├── ai-tools.ts        # Server-only re-export
+│   │   └── supabase.ts        # Supabase client with demo fallback
+│   └── __tests__/             # 13 test suites, 117 tests
+├── .env.example         # Environment template
+├── .github/             # CI, CodeQL, Dependabot
+├── AGENTS.md            # Agent instructions
+├── LICENSE              # MIT
+└── README.md            # You are here
+```
+
+## 📄 License
+
+[MIT](LICENSE) © 2026 Edy Cu
+
+## 🙏 Acknowledgments
+
+Built for the [Portaldot Online S1 Hackathon](https://dorahacks.io/hackathon/portaldot-online-s1/detail) on DoraHacks. Thank you to the Portaldot team for the chain infrastructure and documentation.
