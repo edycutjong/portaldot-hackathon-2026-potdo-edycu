@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       message: responseMessage,
       intent,
     });
-  } catch (_err) {
+  } catch {
     return NextResponse.json(
       { message: "An error occurred processing your request.", intent: null },
       { status: 500 }

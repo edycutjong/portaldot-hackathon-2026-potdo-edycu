@@ -47,7 +47,7 @@ export async function logTransaction(data: {
       return null;
     }
     return result;
-  } catch (_err) {
+  } catch {
     return null;
   }
 }
@@ -75,7 +75,7 @@ export async function fetchHistory(sender?: string, limit = 20) {
       return [];
     }
     return data || [];
-  } catch (_err) {
+  } catch {
     return [];
   }
 }

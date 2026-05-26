@@ -9,14 +9,106 @@ import { BalanceWidget } from "./BalanceWidget";
 import { TxConfirmation } from "./TxConfirmation";
 import { TxError } from "./TxError";
 import { SUGGESTED_COMMANDS } from "@/lib/constants";
-import type { ChatMessage, ParsedIntent, TxResult } from "@/lib/types";
+import type { ChatMessage, ParsedIntent, TxResult, TxStatus } from "@/lib/types";
+import { useWallet } from "@/context/WalletContext";
+import { logTransaction } from "@/lib/supabase";
+import { planckToPot } from "@/lib/format";
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  onCommandExecuted?: () => void;
+}
+
+export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
+  const { address, balance, executeTransfer, executeBatch } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleExecute = async (msg: ChatMessage) => {
+    if (!msg.intent || msg.intent.action !== "transfer" || !address) return;
+
+    const intent = msg.intent;
+    const userMessage = messages.findLast((m) => m.role === "user");
+    const commandText = userMessage ? userMessage.content : `Send ${intent.amount} POT to ${intent.to}`;
+
+    await executeTransfer(intent.toAddress, intent.amount, async (status, txHash, blockNumber, error) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                txResult: {
+                  status: status as TxStatus,
+                  txHash,
+                  blockNumber,
+                  error,
+                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                },
+              }
+            : m
+        )
+      );
+
+      if (status === "finalized" || status === "failed") {
+        await logTransaction({
+          sender: address,
+          command: commandText,
+          intent: intent as unknown as Record<string, unknown>,
+          txHash,
+          blockNumber,
+          status,
+          errorMessage: error,
+          gasFee: "0.001",
+        });
+
+        onCommandExecuted?.();
+      }
+    });
+  };
+
+  const handleExecuteBatch = async (msg: ChatMessage) => {
+    if (!msg.intent || msg.intent.action !== "batch_transfer" || !address) return;
+
+    const intent = msg.intent;
+    const userMessage = messages.findLast((m) => m.role === "user");
+    const commandText = userMessage ? userMessage.content : `Batch Airdrop to ${intent.transfers.length} recipients`;
+
+    await executeBatch(intent.transfers, async (status, txHash, blockNumber, error) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                txResult: {
+                  status: status as TxStatus,
+                  txHash,
+                  blockNumber,
+                  error,
+                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                },
+              }
+            : m
+        )
+      );
+
+      if (status === "finalized" || status === "failed") {
+        await logTransaction({
+          sender: address,
+          command: commandText,
+          intent: intent as unknown as Record<string, unknown>,
+          txHash,
+          blockNumber,
+          status,
+          errorMessage: error,
+          gasFee: "0.003",
+        });
+
+        onCommandExecuted?.();
+      }
+    });
+  };
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -59,7 +151,7 @@ export function ChatInterface() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, aiMsg]);
-    } catch (_err) {
+    } catch {
       const errMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
@@ -89,11 +181,22 @@ export function ChatInterface() {
 
     switch (msg.intent.action) {
       case "transfer":
-        return <TransferCard intent={msg.intent} />;
+        return (
+          <TransferCard
+            intent={msg.intent}
+            senderBalance={balance}
+            onExecute={() => handleExecute(msg)}
+          />
+        );
       case "batch_transfer":
-        return <BatchCard intent={msg.intent} />;
+        return (
+          <BatchCard
+            intent={msg.intent}
+            onExecute={() => handleExecuteBatch(msg)}
+          />
+        );
       case "check_balance":
-        return <BalanceWidget />;
+        return <BalanceWidget free={planckToPot(balance)} />;
       default:
         return null;
     }

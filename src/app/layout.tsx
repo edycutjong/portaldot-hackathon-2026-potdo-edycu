@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { WalletProvider } from "@/context/WalletContext";
 import "./globals.css";
 
 const inter = Inter({
@@ -13,17 +14,18 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://potdo.edycu.dev"),
   title: "Potdo — AI Copilot for Portaldot",
   description:
     "AI copilot that turns plain English into secure, visual Portaldot transactions — see the state change before you sign.",
   icons: {
-    icon: "/icon.png",
+    icon: "/icon.svg",
   },
   openGraph: {
     title: "Potdo — AI Copilot for Portaldot",
     description:
       "AI copilot that turns plain English into secure, visual Portaldot transactions.",
-    url: "https://potdo.vercel.app",
+    url: "https://potdo.edycu.dev",
     siteName: "Potdo",
     images: [
       {
@@ -54,9 +56,10 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${jetbrainsMono.variable} h-full antialiased dark`}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col bg-[#0a0a0f] text-slate-100 font-[family-name:var(--font-inter)]">
-        {children}
+        <WalletProvider>{children}</WalletProvider>
       </body>
     </html>
   );
