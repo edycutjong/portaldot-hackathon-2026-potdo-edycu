@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Brand gradient with CSS variable + hex fallback -->
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--primary, #06B6D4)"/>
+      <stop offset="100%" stop-color="var(--accent, #A855F7)"/>
+    </linearGradient>
+    <!-- Inner glow filter -->
+    <filter id="innerGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <!-- Outer glow -->
+    <filter id="outerGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="16" result="blur"/>
+      <feFlood flood-color="var(--primary, #06B6D4)" flood-opacity="0.35"/>
+      <feComposite in2="blur" operator="in"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Outer ring — represents the portal -->
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#brandGrad)" stroke-width="6" opacity="0.2"/>
+  <circle cx="256" cy="256" r="195" fill="none" stroke="url(#brandGrad)" stroke-width="2" opacity="0.12"/>
+
+  <!-- Central portal shape — hexagonal aperture -->
+  <g filter="url(#outerGlow)">
+    <!-- Main hexagon shape representing the "portal" gateway -->
+    <path d="
+      M 256 76
+      L 412 166
+      L 412 346
+      L 256 436
+      L 100 346
+      L 100 166
+      Z
+    " fill="none" stroke="url(#brandGrad)" stroke-width="4" stroke-linejoin="round"/>
+
+    <!-- Inner portal — smaller rotated hexagon -->
+    <path d="
+      M 256 126
+      L 369 191
+      L 369 321
+      L 256 386
+      L 143 321
+      L 143 191
+      Z
+    " fill="url(#brandGrad)" fill-opacity="0.08" stroke="url(#brandGrad)" stroke-width="2.5" stroke-linejoin="round"/>
+
+    <!-- Navigation arrow / cursor — the "pilot" pointing upward-right -->
+    <g transform="translate(256, 256)">
+      <!-- Arrow / cursor shape -->
+      <path d="
+        M -8 48
+        L 0 -56
+        L 52 20
+        L 12 12
+        Z
+      " fill="url(#brandGrad)" filter="url(#innerGlow)"/>
+    </g>
+
+    <!-- Orbital dots — data flowing through the portal -->
+    <circle cx="256" cy="100" r="6" fill="var(--primary, #06B6D4)" opacity="0.8"/>
+    <circle cx="400" cy="200" r="5" fill="var(--accent, #A855F7)" opacity="0.6"/>
+    <circle cx="400" cy="340" r="4" fill="var(--primary, #06B6D4)" opacity="0.5"/>
+    <circle cx="112" cy="200" r="4" fill="var(--accent, #A855F7)" opacity="0.5"/>
+    <circle cx="112" cy="340" r="5" fill="var(--primary, #06B6D4)" opacity="0.6"/>
+    <circle cx="256" cy="420" r="6" fill="var(--accent, #A855F7)" opacity="0.7"/>
+
+    <!-- Connecting lines from dots to center — data paths -->
+    <line x1="256" y1="100" x2="256" y2="180" stroke="var(--primary, #06B6D4)" stroke-width="1" opacity="0.25"/>
+    <line x1="400" y1="200" x2="330" y2="230" stroke="var(--accent, #A855F7)" stroke-width="1" opacity="0.2"/>
+    <line x1="112" y1="340" x2="190" y2="300" stroke="var(--primary, #06B6D4)" stroke-width="1" opacity="0.2"/>
+  </g>
+</svg>
