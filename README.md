@@ -64,6 +64,33 @@ User Input → Intent Parser → Structured Intent → Generative UI Card → Ex
 - **AI-Powered Onchain Workflows** — Potdo is the AI → on-chain pipeline. Natural language in, signed extrinsic out.
 - **Native Onchain Apps** — Full Portaldot-native experience using `@polkadot/api` with 14-decimal POT precision.
 
+## ⛓️ Portaldot Native Integration (Sponsor Criteria)
+
+### Thesis
+Potdo is architecturally inseparable from Portaldot. Every component is hardwired to Portaldot's Substrate runtime, RPC layer, and native token economics. Removing Portaldot would require a complete rewrite of the entire application.
+
+### Portaldot API Methods Used (8 total)
+
+| # | Feature | Usage |
+|---|---------|-------|
+| 1 | `api.query.system.account(address)` | Pre-flight balance simulation |
+| 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
+| 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
+| 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
+| 5 | `@polkadot/extension-dapp` (web3Enable + web3Accounts) | Wallet integration |
+| 6 | WebSocket RPC subscription | Live balance updates |
+| 7 | POT native gas token | Every tx pays gas in POT |
+| 8 | Substrate SS58 address format | AI validates against SS58 prefix |
+
+### Without Portaldot
+- **Balance simulation** → Custom API adapter per chain
+- **Token transfer** → Different ABI per chain + gas estimation
+- **Batch airdrop** → Multicall contract deployment OR sequential txs
+- **Wallet signing** → MetaMask OR custom signer per chain
+- **Transaction status** → Custom event polling
+
+Take Portaldot out and you'd need 3 separate systems + a bridge layer. Potdo is built for Portaldot from the ground up.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
