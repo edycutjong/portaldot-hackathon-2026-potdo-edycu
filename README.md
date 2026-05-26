@@ -1,11 +1,12 @@
 <div align="center">
+  <img src="public/icon.svg" alt="Potdo Icon" width="80" height="80">
   <h1>Potdo ⚡</h1>
   <p><em>AI copilot that turns plain English into secure, visual Portaldot transactions — see the state change before you sign.</em></p>
   <img src="docs/readme-hero.png" alt="Potdo" width="100%">
 
   <br/>
 
-  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.vercel.app)
+  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
   [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](https://youtu.be/your-video)
   [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
 
@@ -16,6 +17,7 @@
   ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
   ![Tailwind](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=flat&logo=tailwindcss&logoColor=white)
   ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
+  ![ChatGPT](https://img.shields.io/badge/ChatGPT-74AA9C?style=flat&logo=openai&logoColor=white)
   ![Polkadot](https://img.shields.io/badge/Polkadot_API-E6007A?style=flat&logo=polkadot&logoColor=white)
   [![CI](https://github.com/edycutjong/potdo/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/potdo/actions/workflows/ci.yml)
 
@@ -84,17 +86,17 @@ npm run dev
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 117 tests
-npm run test:coverage # Coverage report (97%+)
+npm run test          # Run 136 tests
+npm run test:coverage # Coverage report (100%)
 npm run ci            # Full CI pipeline
 ```
 
 **Coverage Report:**
 | Module | Stmts | Branch | Funcs | Lines |
 |---|---|---|---|---|
-| **Overall** | 97.39% | 94.48% | 96.42% | 98.25% |
-| `lib/` | 97.36% | 92.70% | 100% | 98.49% |
-| `components/` | 97.50% | 97.95% | 91.66% | 97.43% |
+| **Overall** | 100% | 100% | 100% | 100% |
+| `lib/` | 100% | 100% | 100% | 100% |
+| `components/` | 100% | 100% | 100% | 100% |
 
 ## 📁 Project Structure
 ```
@@ -103,9 +105,10 @@ potdo/
 ├── public/              # App icon, OG image
 ├── src/
 │   ├── app/
-│   │   ├── api/chat/    # Chat API route (intent parsing)
-│   │   ├── layout.tsx   # Root layout with fonts + metadata
-│   │   └── page.tsx     # Main dashboard page
+│   │   ├── api/chat/     # Chat API route (intent parsing)
+│   │   ├── layout.tsx    # Root layout with fonts + metadata
+│   │   ├── page.tsx      # Main dashboard page
+│   │   └── not-found.tsx # 404 page with cybernetic theme
 │   ├── components/
 │   │   ├── ChatInterface.tsx   # Main chat with message rendering
 │   │   ├── TransferCard.tsx    # Single transfer preview
@@ -123,11 +126,12 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 13 test suites, 117 tests
+│   └── __tests__/             # 14 test suites, 136 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
 ├── LICENSE              # MIT
+├── SECURITY.md          # Security policy
 └── README.md            # You are here
 ```
 
