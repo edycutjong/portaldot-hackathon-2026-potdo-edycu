@@ -93,6 +93,24 @@ Potdo uses Supabase to persist transaction history. To set it up:
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
    ```
 
+#### Database Schema
+
+```mermaid
+erDiagram
+    POTDO_TRANSACTIONS {
+        bigint id PK "Auto-incrementing ID"
+        text sender "Sender account address"
+        text command "User natural language query"
+        jsonb intent "Parsed structured intent metadata"
+        text tx_hash "On-chain extrinsic transaction hash"
+        bigint block_number "Blockchain block height containing the tx"
+        text status "Transaction state (pending | finalized | failed)"
+        text error_message "Plain-text error log if transaction failed"
+        text gas_fee "Fee cost in POT"
+        timestamp_tz created_at "Timestamp of creation in UTC"
+    }
+```
+
 ## 🧪 Testing & CI
 
 ```bash
