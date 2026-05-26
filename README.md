@@ -91,6 +91,71 @@ Potdo is architecturally inseparable from Portaldot. Every component is hardwire
 
 Take Portaldot out and you'd need 3 separate systems + a bridge layer. Potdo is built for Portaldot from the ground up.
 
+## 📐 Technical Architecture
+
+### System Flow
+```mermaid
+graph TB
+    subgraph Client["Browser"]
+        UI["Next.js 16 Frontend"]
+        Wallet["Polkadot.js Extension"]
+    end
+
+    subgraph Server["Vercel Edge / Serverless"]
+        RSC["React Server Components"]
+        AI["Vercel AI SDK"]
+        Parser["Intent Parser"]
+    end
+
+    subgraph External["External Services"]
+        OpenAI["OpenAI API (GPT-4o-mini)"]
+        RPC["Portaldot RPC (wss://mainnet.portaldot.io)"]
+        Supa["Supabase (Tx History)"]
+    end
+
+    UI -->|"User types command"| RSC
+    RSC --> AI
+    AI -->|"Structured Output"| OpenAI
+    OpenAI -->|"Intent JSON"| Parser
+    Parser -->|"Fetch balance"| RPC
+    Parser -->|"Stream UI Card"| RSC
+    RSC -->|"Generative UI"| UI
+    UI -->|"User clicks Execute"| Wallet
+    Wallet -->|"Sign extrinsic"| RPC
+    RPC -->|"Tx hash"| Supa
+    Supa -->|"Tx status"| UI
+
+    style Client fill:#0f172a,color:#e2e8f0,stroke:#06b6d4
+    style Server fill:#1e293b,color:#e2e8f0,stroke:#a855f7
+    style External fill:#0f172a,color:#e2e8f0,stroke:#22c55e
+```
+
+### Sequence Flow
+```mermaid
+sequenceDiagram
+    actor User
+    participant UI as Next.js Frontend
+    participant RSC as Server Components
+    participant AI as OpenAI API
+    participant RPC as Portaldot RPC
+    participant Wallet as Polkadot.js Ext
+
+    User->>UI: "Send 10 POT to Alice"
+    UI->>RSC: Stream request
+    RSC->>AI: Parse intent (Structured Outputs)
+    AI-->>RSC: { action: "transfer", amount: 10, to: "5Grw..." }
+    RSC->>RPC: Query sender balance
+    RPC-->>RSC: { free: 100.5 POT }
+    RSC-->>UI: Stream <TransferCard> component
+    Note over UI: User sees:<br/>From: You (100.5 POT)<br/>To: Alice<br/>Amount: 10 POT<br/>After: 90.5 POT<br/>[Execute]
+    User->>UI: Clicks "Execute"
+    UI->>Wallet: Sign extrinsic
+    Wallet-->>UI: Signed payload
+    UI->>RPC: Submit extrinsic
+    RPC-->>UI: Tx hash + block
+    Note over UI: 🎉 Confetti animation<br/>+ Explorer link
+```
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -137,6 +202,27 @@ erDiagram
         timestamp_tz created_at "Timestamp of creation in UTC"
     }
 ```
+
+## 📊 Demo & Seed Data
+
+For a seamless demonstration, the application is pre-configured with canonical Substrate development accounts. 
+
+### Named Accounts (Address Book)
+| Name | Purpose | Pre-funded POT | Address |
+|---|---|---|---|
+| **Demo Wallet** | The sender (connected via Polkadot.js) | 500 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
+| **Alice** | Primary recipient for single transfers | 10 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` |
+| **Bob** | Batch transfer recipient #2 | 5 POT | `5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty` |
+| **Charlie** | Batch transfer recipient #3 | 0 POT | `5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y` |
+| **Dave** | Error validation demonstration target | 0 POT | `5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew` |
+
+### Core Demo Scenarios
+1. **Single Transfer Flow**: *"Send 10 POT to Alice"*
+   * Checks sender balance (500 POT) -> streams `<TransferCard>` showing post-transaction balance simulation (490 POT) -> click **Execute** to sign and finalize.
+2. **Batch Airdrop Flow**: *"Airdrop 5 POT to Alice, Bob, and Charlie"*
+   * Parses multiple recipients -> streams `<BatchCard>` showing a table of transfers -> click **Execute Batch** to sign and submit a single `utility.batch` extrinsic.
+3. **Error Protection**: *"Send 5000 POT to Dave"*
+   * Checks sender balance (475 POT) -> streams `<TransferCard>` with a **red warning** of insufficient funds -> blocks wallet popup to prevent gas waste.
 
 ## 🧪 Testing & CI
 
