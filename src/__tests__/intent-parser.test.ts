@@ -77,6 +77,10 @@ describe("parseIntent", () => {
     });
   });
 
+  it("returns null for send everything with unknown recipient", () => {
+    expect(parseIntent("Send everything to Zack")).toBeNull();
+  });
+
   // === Batch transfers ===
   it("parses 'Airdrop 5 POT to Alice, Bob, and Charlie'", () => {
     const result = parseIntent("Airdrop 5 POT to Alice, Bob, and Charlie");
@@ -109,6 +113,14 @@ describe("parseIntent", () => {
 
   it("returns null for invalid amount", () => {
     expect(parseIntent("Send xyz POT to Alice")).toBeNull();
+  });
+
+  it("returns null for batch transfer with unresolved recipient", () => {
+    expect(parseIntent("Airdrop 5 POT to Alice and Zack")).toBeNull();
+  });
+
+  it("returns null for batch transfer with invalid amount string", () => {
+    expect(parseIntent("Airdrop xyz to Alice and Bob")).toBeNull();
   });
 
   it("returns null for empty string", () => {
@@ -229,6 +241,32 @@ describe("validateIntent", () => {
   it("validates check_balance", () => {
     const result = validateIntent({ action: "check_balance" });
     expect(result.valid).toBe(true);
+  });
+
+  it("rejects transfer with negative amount other than -1", () => {
+    const result = validateIntent({
+      action: "transfer",
+      to: "Alice",
+      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      amount: -5,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("greater than 0");
+  });
+
+  it("rejects batch with negative amount", () => {
+    const result = validateIntent({
+      action: "batch_transfer",
+      transfers: [
+        {
+          to: "Alice",
+          toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          amount: -2,
+        },
+      ],
+    });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("Invalid amount");
   });
 
   it("rejects unknown action", () => {

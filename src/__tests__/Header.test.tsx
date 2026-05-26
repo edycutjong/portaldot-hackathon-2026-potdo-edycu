@@ -1,11 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { Header } from "@/components/Header";
 
 describe("Header", () => {
   it("renders Potdo logo text", () => {
     render(<Header />);
     expect(screen.getByText("Potdo")).toBeInTheDocument();
-    expect(screen.getByText("P")).toBeInTheDocument();
+    expect(screen.getByAltText("Potdo Icon")).toBeInTheDocument();
   });
 
   it("shows Connect Wallet button when not connected", () => {
@@ -33,5 +33,77 @@ describe("Header", () => {
       />
     );
     expect(screen.queryByText("Connect Wallet")).not.toBeInTheDocument();
+  });
+
+  it("shows Demo Mode badge when connected and isDemoMode is true", () => {
+    render(
+      <Header
+        connected={true}
+        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        isDemoMode={true}
+      />
+    );
+    expect(screen.getByText("Demo Mode ⚡")).toBeInTheDocument();
+  });
+
+  it("hides Demo Mode badge when connected and isDemoMode is false", () => {
+    render(
+      <Header
+        connected={true}
+        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        isDemoMode={false}
+      />
+    );
+    expect(screen.queryByText("Demo Mode ⚡")).not.toBeInTheDocument();
+  });
+
+  it("shows Connecting... state when connecting is true", () => {
+    render(<Header connected={false} connecting={true} />);
+    const button = screen.getByText("Connecting...");
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
+  });
+
+  it("renders a select dropdown and handles account selection when multiple accounts are present", () => {
+    const onSelectAccount = jest.fn();
+    const accounts = [
+      { address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", meta: { name: "Alice", source: "extension" } },
+      { address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", meta: { source: "extension" } }, // missing name to test fallback
+    ];
+    render(
+      <Header
+        connected={true}
+        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        accounts={accounts}
+        onSelectAccount={onSelectAccount}
+      />
+    );
+
+    const select = screen.getByRole("combobox");
+    expect(select).toBeInTheDocument();
+    
+    // Simulate selection change to Bob
+    select.click();
+    const option = screen.getByText("Account (5FHn...94ty)");
+    expect(option).toBeInTheDocument();
+    
+    // Trigger onChange manually
+    fireEvent.change(select, { target: { value: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" } });
+    
+    expect(onSelectAccount).toHaveBeenCalledWith("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
+  });
+
+  it("calls onDisconnect when disconnect is clicked", () => {
+    const onDisconnect = jest.fn();
+    render(
+      <Header
+        connected={true}
+        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        onDisconnect={onDisconnect}
+      />
+    );
+    const button = screen.getByText("Disconnect");
+    button.click();
+    expect(onDisconnect).toHaveBeenCalledTimes(1);
   });
 });

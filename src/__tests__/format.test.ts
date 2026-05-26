@@ -53,6 +53,16 @@ describe("potToPlanck", () => {
   it("converts 500 POT correctly", () => {
     expect(potToPlanck(500)).toBe(50000000000000000n);
   });
+
+  it("handles toFixed returning a string without dot (fallback branch)", () => {
+    const originalToFixed = Number.prototype.toFixed;
+    try {
+      Number.prototype.toFixed = jest.fn().mockReturnValue("100");
+      expect(potToPlanck(100)).toBe(10000000000000000n);
+    } finally {
+      Number.prototype.toFixed = originalToFixed;
+    }
+  });
 });
 
 describe("formatPot", () => {

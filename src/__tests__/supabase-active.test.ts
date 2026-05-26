@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 /**
  * Test supabase.ts with a mocked Supabase client to cover the active paths.
  */
@@ -36,6 +37,11 @@ const { logTransaction, fetchHistory } = require("@/lib/supabase");
 describe("supabase (active mode — with config)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("logTransaction inserts data", async () => {
