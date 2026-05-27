@@ -1,7 +1,7 @@
 import os
 import random
 import time
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -753,7 +753,7 @@ def execute_set_identity(req: SetIdentityRequest):
     try:
         name_bytes = req.display_name.encode('utf-8')
         raw_key = f'Raw{len(name_bytes)}'
-        identity_info = {
+        identity_info: Dict[str, Any] = {
             'additional': [],
             'display': {raw_key: '0x' + name_bytes.hex()},
             'legal': {'None': None},
@@ -1114,7 +1114,7 @@ def prepare_set_identity(req: PrepareSetIdentityRequest):
         client.init_runtime()
         name_bytes = req.display_name.encode('utf-8')
         raw_key = f'Raw{len(name_bytes)}'
-        identity_info = {
+        identity_info: Dict[str, Any] = {
             'additional': [],
             'display': {raw_key: '0x' + name_bytes.hex()},
             'legal': {'None': None},
@@ -1142,7 +1142,7 @@ def submit_set_identity(req: SubmitSetIdentityRequest):
         client.init_runtime()
         name_bytes = req.display_name.encode('utf-8')
         raw_key = f'Raw{len(name_bytes)}'
-        identity_info = {
+        identity_info: Dict[str, Any] = {
             'additional': [],
             'display': {raw_key: '0x' + name_bytes.hex()},
             'legal': {'None': None},
