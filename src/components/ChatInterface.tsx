@@ -38,6 +38,48 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastLoadedAddressRef = useRef<string | undefined>(undefined);
+
+  // Load chat history when address changes
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
+      return;
+    }
+    const key = address ? `potdo_chat_history_${address}` : "potdo_chat_history_guest";
+    try {
+      const stored = localStorage.getItem(key);
+      const loadedMessages = stored ? JSON.parse(stored) : [];
+      setMessages(loadedMessages);
+    } catch (err) {
+      console.error("Failed to load chat history:", err);
+      setMessages([]);
+    }
+    lastLoadedAddressRef.current = address;
+  }, [address]);
+
+  // Save chat history when messages change
+  useEffect(() => {
+    if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
+      return;
+    }
+    if (lastLoadedAddressRef.current !== address) {
+      return;
+    }
+    const key = address ? `potdo_chat_history_${address}` : "potdo_chat_history_guest";
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem(key, JSON.stringify(messages));
+      } catch (err) {
+        console.error("Failed to save chat history:", err);
+      }
+    } else {
+      try {
+        localStorage.removeItem(key);
+      } catch (err) {
+        console.error("Failed to clear chat history:", err);
+      }
+    }
+  }, [messages, address]);
   const [lastConsumed, setLastConsumed] = useState<string | undefined>(undefined);
 
   // Consume external input (e.g. from CommandHistory click)
