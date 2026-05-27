@@ -41,12 +41,18 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const [lastConsumed, setLastConsumed] = useState<string | undefined>(undefined);
 
   // Consume external input (e.g. from CommandHistory click)
-  // "Adjusting state during render" pattern — React 19 approved
+  // "Adjusting state during render" pattern for local state — React 19 approved
   if (externalInput && externalInput !== lastConsumed) {
     setLastConsumed(externalInput);
     setInput(externalInput);
-    onExternalInputConsumed?.();
   }
+
+  // Notify parent in useEffect to avoid render-phase updates of another component
+  useEffect(() => {
+    if (externalInput && externalInput === lastConsumed) {
+      onExternalInputConsumed?.();
+    }
+  }, [externalInput, lastConsumed, onExternalInputConsumed]);
 
   // Focus the input when external input arrives (DOM side-effect)
   useEffect(() => {
