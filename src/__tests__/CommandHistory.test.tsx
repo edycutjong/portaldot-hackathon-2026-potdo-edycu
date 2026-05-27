@@ -76,5 +76,18 @@ describe("CommandHistory", () => {
     render(<CommandHistory entries={entries} />);
     expect(screen.getByText("⚪")).toBeInTheDocument();
   });
-});
 
+  it("renders mobile drawer variant without heading", () => {
+    render(<CommandHistory entries={[]} isMobileDrawer />);
+    expect(screen.queryByText("Command History")).not.toBeInTheDocument();
+    expect(screen.getByText(/No commands yet/)).toBeInTheDocument();
+  });
+
+  it("renders entries in mobile drawer variant", () => {
+    const entries: HistoryEntry[] = [
+      { id: "1", command: "Mobile cmd", status: "finalized", timestamp: new Date() },
+    ];
+    render(<CommandHistory entries={entries} isMobileDrawer />);
+    expect(screen.getByText("Mobile cmd")).toBeInTheDocument();
+  });
+});
