@@ -1,10 +1,11 @@
 import os
+import random
+import time
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from substrateinterface import SubstrateInterface, Keypair
-from substrateinterface.exceptions import SubstrateRequestException
 
 app = FastAPI(title="Portaldot Backend Bridge", version="1.0.0")
 
@@ -156,7 +157,7 @@ def get_staking_info(address: str):
             "nominations": nominations,
             "rewardDestination": reward_destination
         }
-    except Exception as e:
+    except Exception:
         # Graceful fallback mock values if staking module is query restricted
         return {
             "bonded": "500.0",
@@ -307,7 +308,6 @@ def execute_transfer(req: TransferRequest):
     
     # If no keypair/mnemonic configured, run in high-fidelity mock/simulation mode
     if not keypair:
-        import time, random
         time.sleep(1.0)
         mock_hash = "0xdemo_tx_" + "".join(random.choices("0123456789abcdef", k=16))
         return {
@@ -346,7 +346,6 @@ def execute_transfer(req: TransferRequest):
 def execute_stake(req: StakeRequest):
     keypair = get_signing_keypair(req.seed)
     if not keypair:
-        import time, random
         time.sleep(1.0)
         mock_hash = "0xdemo_stake_" + "".join(random.choices("0123456789abcdef", k=16))
         return {
@@ -406,7 +405,6 @@ def execute_stake(req: StakeRequest):
 def execute_unstake(req: UnstakeRequest):
     keypair = get_signing_keypair(req.seed)
     if not keypair:
-        import time, random
         time.sleep(1.0)
         mock_hash = "0xdemo_unstake_" + "".join(random.choices("0123456789abcdef", k=16))
         return {
@@ -444,7 +442,6 @@ def execute_unstake(req: UnstakeRequest):
 def execute_set_identity(req: SetIdentityRequest):
     keypair = get_signing_keypair(req.seed)
     if not keypair:
-        import time, random
         time.sleep(1.0)
         mock_hash = "0xdemo_identity_" + "".join(random.choices("0123456789abcdef", k=16))
         return {
@@ -489,7 +486,6 @@ def execute_set_identity(req: SetIdentityRequest):
 def execute_batch(req: BatchTransferRequest):
     keypair = get_signing_keypair(req.seed)
     if not keypair:
-        import time, random
         time.sleep(1.0)
         mock_hash = "0xdemo_batch_" + "".join(random.choices("0123456789abcdef", k=16))
         return {
