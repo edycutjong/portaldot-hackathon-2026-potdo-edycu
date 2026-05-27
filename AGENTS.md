@@ -10,7 +10,7 @@ AI copilot that turns plain English into secure, visual Portaldot transactions. 
 - `src/app/` — Next.js 16 App Router pages (dashboard, API routes)
 - `src/components/` — React 19 components (ChatInterface, TransferCard, BatchCard, BalanceWidget, TxConfirmation, TxError, Header, CommandHistory, MessageBubble)
 - `src/lib/` — Shared types, constants, formatting utilities, intent parser, Supabase client
-- `src/__tests__/` — Jest test suites (13 suites, 117 tests, 97%+ coverage)
+- `src/__tests__/` — Jest test suites (23 suites, 244 tests, 100% coverage)
 
 ## Tech Stack
 | Layer | Technology |
@@ -19,7 +19,7 @@ AI copilot that turns plain English into secure, visual Portaldot transactions. 
 | **Styling** | Tailwind CSS v4 |
 | **AI Engine** | Vercel AI SDK (streamUI Generative UI) |
 | **LLM** | OpenAI GPT-4o-mini (Structured Outputs) |
-| **Chain SDK** | polkadot/api + polkadot/extension-dapp |
+| **Chain SDK** | Portaldot JS SDK |
 | **Database** | Supabase (PostgreSQL) |
 | **Animation** | Framer Motion |
 | **Testing** | Jest + React Testing Library |

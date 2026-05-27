@@ -20,7 +20,7 @@
   ![Tailwind](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=flat&logo=tailwindcss&logoColor=white)
   ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
   ![ChatGPT](https://img.shields.io/badge/ChatGPT-74AA9C?style=flat&logo=openai&logoColor=white)
-  ![Polkadot](https://img.shields.io/badge/Polkadot_API-E6007A?style=flat&logo=polkadot&logoColor=white)
+  ![Portaldot](https://img.shields.io/badge/Portaldot_SDK-E6007A?style=flat)
   [![CI](https://github.com/edycutjong/potdo/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/potdo/actions/workflows/ci.yml)
 
 </div>
@@ -63,7 +63,7 @@
 | **Frontend** | Next.js 16 (App Router), React 19 |
 | **Styling** | Tailwind CSS v4 |
 | **AI Intent Parser** | Deterministic NLP (pattern matching + word-to-number) |
-| **Chain SDK** | `@polkadot/api` + `@polkadot/extension-dapp` |
+| **Chain SDK** | Portaldot SDK |
 | **Database** | Supabase (PostgreSQL) — transaction logging |
 | **Animation** | Framer Motion + Canvas API (confetti) |
 | **Testing** | Jest + React Testing Library (100% coverage) |
@@ -71,7 +71,7 @@
 ```
 User Input → Intent Parser → Structured Intent → Generative UI Card → Execute on Chain
     ↓              ↓                 ↓                    ↓                    ↓
-"Send 10     parse regex +      TransferIntent      TransferCard        @polkadot/api
+"Send 10     parse regex +      TransferIntent      TransferCard        Portaldot SDK
  POT to      word numbers       { to, amount,       with balance        extrinsic.sign()
  Alice"                          toAddress }         diff + gas
 ```
@@ -79,7 +79,7 @@ User Input → Intent Parser → Structured Intent → Generative UI Card → Ex
 ## 🏆 Hackathon Tracks Targeted
 
 - **AI-Powered Onchain Workflows** — Potdo is the AI → on-chain pipeline. Natural language in, signed extrinsic out.
-- **Native Onchain Apps** — Full Portaldot-native experience using `@polkadot/api` with 14-decimal POT precision.
+- **Native Onchain Apps** — Full Portaldot-native experience using the Portaldot SDK with 14-decimal POT precision.
 
 ## ⛓️ Portaldot Native Integration (Sponsor Criteria)
 
@@ -94,7 +94,7 @@ Potdo is architecturally inseparable from Portaldot. Every component is hardwire
 | 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
 | 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
 | 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
-| 5 | `@polkadot/extension-dapp` (web3Enable + web3Accounts) | Wallet integration |
+| 5 | Portaldot Wallet SDK | Wallet integration |
 | 6 | WebSocket RPC subscription | Live balance updates |
 | 7 | POT native gas token | Every tx pays gas in POT |
 | 8 | Substrate SS58 address format | AI validates against SS58 prefix |
@@ -115,7 +115,7 @@ Take Portaldot out and you'd need 3 separate systems + a bridge layer. Potdo is 
 graph TB
     subgraph Client["Browser"]
         UI["Next.js 16 Frontend"]
-        Wallet["Polkadot.js Extension"]
+        Wallet["Portaldot compatible Wallet"]
     end
 
     subgraph Server["Vercel Edge / Serverless"]
@@ -155,7 +155,7 @@ sequenceDiagram
     participant RSC as Server Components
     participant AI as OpenAI API
     participant RPC as Portaldot RPC
-    participant Wallet as Polkadot.js Ext
+    participant Wallet as Portaldot Wallet
 
     User->>UI: "Send 10 POT to Alice"
     UI->>RSC: Stream request
@@ -227,7 +227,7 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ### Named Accounts (Address Book)
 | Name | Purpose | Pre-funded POT | Address |
 |---|---|---|---|
-| **Demo Wallet** | The sender (connected via Polkadot.js) | 500 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
+| **Demo Wallet** | The sender (connected via Portaldot Wallet) | 500 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
 | **Alice** | Primary recipient for single transfers | 10 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` |
 | **Bob** | Batch transfer recipient #2 | 5 POT | `5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty` |
 | **Charlie** | Batch transfer recipient #3 | 0 POT | `5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y` |
@@ -246,7 +246,7 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 148 tests
+npm run test          # Run 244 tests
 npm run test:coverage # Coverage report (100%)
 npm run ci            # Full CI pipeline
 ```
@@ -286,7 +286,7 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 14 test suites, 148 tests
+│   └── __tests__/             # 23 test suites, 244 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
@@ -307,7 +307,7 @@ Potdo is architecturally inseparable from Portaldot. Every component is hardwire
 | 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
 | 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
 | 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
-| 5 | `@polkadot/extension-dapp` (web3Enable + web3Accounts) | Wallet integration |
+| 5 | Portaldot Wallet SDK | Wallet integration |
 | 6 | WebSocket RPC subscription | Live balance updates |
 | 7 | POT native gas token (14 decimals) | Every tx pays gas in POT |
 | 8 | Substrate SS58 address format | AI validates against SS58 prefix |
