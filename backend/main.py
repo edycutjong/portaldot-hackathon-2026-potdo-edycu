@@ -186,11 +186,13 @@ class SubmitRemoveProxyRequest(BaseModel):
     signature: str
 
 class AddProxyRequest(BaseModel):
+    sender_address: str
     delegate_address: str
     proxy_type: str = "Any"
     seed: Optional[str] = None
 
 class RemoveProxyRequest(BaseModel):
+    sender_address: str
     delegate_address: str
     proxy_type: str = "Any"
     seed: Optional[str] = None
@@ -426,6 +428,21 @@ def estimate_fee(req: EstimateFeeRequest):
             "weight": "186,423,000",
             "class": "Normal"
         }
+
+def get_dev_keypair_for_address(address: str) -> Optional[Keypair]:
+    dev_accounts = {
+        "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": "//Alice",
+        "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": "//Bob",
+        "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": "//Charlie",
+        "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": "//Dave"
+    }
+    seed = dev_accounts.get(address)
+    if seed:
+        try:
+            return Keypair.create_from_uri(seed)
+        except Exception:
+            return None
+    return None
 
 def get_signing_keypair(user_seed: Optional[str]) -> Optional[Keypair]:
     seed_to_use = user_seed or MNEMONIC
@@ -1170,8 +1187,8 @@ def get_agent_address() -> str:
     keypair = get_signing_keypair(None)
     if keypair:
         return keypair.ss58_address
-    # Fallback to Alice address for demo mode
-    return "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    # Fallback to Bob address for demo mode
+    return "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
 
 
 @app.get("/proxy-status/{address}")
@@ -1291,7 +1308,14 @@ def submit_remove_proxy(req: SubmitRemoveProxyRequest):
 
 @app.post("/add-proxy")
 def execute_add_proxy(req: AddProxyRequest):
-    keypair = get_signing_keypair(req.seed)
+    keypair = None
+    if req.seed:
+        keypair = get_signing_keypair(req.seed)
+    if not keypair:
+        keypair = get_dev_keypair_for_address(req.sender_address)
+    if not keypair:
+        keypair = get_signing_keypair(None)
+        
     if not keypair:
         time.sleep(1.0)
         return {
@@ -1332,7 +1356,14 @@ def execute_add_proxy(req: AddProxyRequest):
 
 @app.post("/remove-proxy")
 def execute_remove_proxy(req: RemoveProxyRequest):
-    keypair = get_signing_keypair(req.seed)
+    keypair = None
+    if req.seed:
+        keypair = get_signing_keypair(req.seed)
+    if not keypair:
+        keypair = get_dev_keypair_for_address(req.sender_address)
+    if not keypair:
+        keypair = get_signing_keypair(None)
+        
     if not keypair:
         time.sleep(1.0)
         return {

@@ -108,7 +108,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const isAlice = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
     setIsProxyActive(isAlice);
     setProxyType("Any");
-    setAgentAddress("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+    setAgentAddress("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
     setCheckingProxy(false);
   };
 
@@ -247,7 +247,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/add-proxy`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ delegate_address: delegate, proxy_type: pType })
+          body: JSON.stringify({ sender_address: address, delegate_address: delegate, proxy_type: pType })
         });
         if (res.ok) {
           const data = await res.json();
@@ -298,7 +298,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/remove-proxy`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ delegate_address: delegate, proxy_type: pType })
+          body: JSON.stringify({ sender_address: address, delegate_address: delegate, proxy_type: pType })
         });
         if (res.ok) {
           const data = await res.json();

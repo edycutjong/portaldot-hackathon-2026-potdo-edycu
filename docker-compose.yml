@@ -43,7 +43,7 @@ services:
     environment:
       - PORT=8000
       - PORTALDOT_RPC=ws://testnet:9944
-      - MNEMONIC=//Alice
+      - MNEMONIC=//Bob
     depends_on:
       testnet:
         condition: service_healthy

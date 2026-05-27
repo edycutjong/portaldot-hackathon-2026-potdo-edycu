@@ -852,7 +852,7 @@ def test_get_proxy_status_not_active(mock_substrate):
 def test_get_proxy_status_active_any(mock_substrate):
     mock_instance = MagicMock()
     mock_query = MagicMock()
-    mock_query.value = ([{'delegate': '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 'proxy_type': 'Any', 'delay': 0}], 66803331300)
+    mock_query.value = ([{'delegate': '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', 'proxy_type': 'Any', 'delay': 0}], 66803331300)
     mock_instance.query.return_value = mock_query
     mock_substrate.return_value = mock_instance
     
@@ -867,7 +867,7 @@ def test_get_proxy_status_active_any(mock_substrate):
 def test_get_proxy_status_active_staking(mock_substrate):
     mock_instance = MagicMock()
     mock_query = MagicMock()
-    mock_query.value = ([{'delegate': '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 'proxy_type': 'Staking', 'delay': 0}], 66803331300)
+    mock_query.value = ([{'delegate': '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty', 'proxy_type': 'Staking', 'delay': 0}], 66803331300)
     mock_instance.query.return_value = mock_query
     mock_substrate.return_value = mock_instance
     
@@ -1335,6 +1335,7 @@ def test_execute_batch_proxied_real(mock_keypair_class, mock_substrate):
 def test_execute_add_proxy_simulated(mock_substrate):
     with patch('main.MNEMONIC', ''):
         response = client.post("/add-proxy", json={
+            "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY_not_dev",
             "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
         })
         assert response.status_code == 200
@@ -1356,6 +1357,7 @@ def test_execute_add_proxy_real(mock_keypair_class, mock_substrate):
     mock_keypair_class.create_from_uri.return_value = mock_keypair
     
     response = client.post("/add-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         "seed": "//Alice"
     })
@@ -1370,6 +1372,7 @@ def test_execute_add_proxy_failure(mock_substrate):
     mock_substrate.return_value = mock_instance
     
     response = client.post("/add-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         "seed": "//Alice"
     })
@@ -1380,6 +1383,7 @@ def test_execute_add_proxy_failure(mock_substrate):
 def test_execute_remove_proxy_simulated(mock_substrate):
     with patch('main.MNEMONIC', ''):
         response = client.post("/remove-proxy", json={
+            "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY_not_dev",
             "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
         })
         assert response.status_code == 200
@@ -1401,6 +1405,7 @@ def test_execute_remove_proxy_real(mock_keypair_class, mock_substrate):
     mock_keypair_class.create_from_uri.return_value = mock_keypair
     
     response = client.post("/remove-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         "seed": "//Alice"
     })
@@ -1415,6 +1420,7 @@ def test_execute_remove_proxy_failure(mock_substrate):
     mock_substrate.return_value = mock_instance
     
     response = client.post("/remove-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
         "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         "seed": "//Alice"
     })
