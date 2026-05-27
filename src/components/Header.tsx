@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { InjectedAccount } from "@/context/WalletContext";
 
 interface HeaderProps {
@@ -29,13 +30,15 @@ export function Header({
     <header className="h-14 border-b border-white/5 flex items-center justify-between px-4">
       {/* Logo */}
       <div className="flex items-center gap-2">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/icon.svg"
-          alt="Potdo Icon"
-          className="w-7 h-7"
-        />
-        <h1 className="text-base font-bold text-slate-100">Potdo</h1>
+        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/icon.svg"
+            alt="Potdo Icon"
+            className="w-7 h-7"
+          />
+          <h1 className="text-base font-bold text-slate-100">Potdo</h1>
+        </Link>
         {connected && isDemoMode && (
           <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-400 select-none ml-1.5">
             Demo Mode ⚡
