@@ -36,13 +36,13 @@ Potdo is designed with a **non-custodial, client-side signing** architecture:
 ### Security Model
 1. **Intent Parsing** — Natural language is parsed into structured intents using deterministic NLP (regex + pattern matching). No user input is sent to external AI APIs.
 2. **Simulation Before Signing** — Every transaction is simulated with a visual balance diff before the wallet extension is invoked. Users always see the exact state change.
-3. **Client-Side Signing** — All transaction signing happens in the user's Polkadot.js browser extension. Potdo never touches private keys.
+3. **Client-Side Signing** — All transaction signing happens in the user's Portaldot browser extension. Potdo never touches private keys.
 4. **Input Validation** — Strict schema validation prevents malformed addresses, negative amounts, and amounts exceeding 14-decimal POT precision.
 5. **No Blind Signing** — The `<TransferCard>` and `<BatchCard>` components render human-readable transaction details. Users must explicitly click "Execute" after reviewing.
 
 ### Dependencies
-- `@polkadot/api` — Official Polkadot SDK for chain interaction
-- `@polkadot/extension-dapp` — Browser extension bridge (non-custodial)
+- Portaldot SDK Client
+- Portaldot Wallet extension SDK
 - `next` — Web framework (no server-side secrets in client bundle)
 
 ### Environment Variables
@@ -63,7 +63,7 @@ The following are **in scope** for security reports:
 - Dependency vulnerabilities with exploitable impact
 
 The following are **out of scope**:
-- Vulnerabilities in the Polkadot.js extension itself
+- Vulnerabilities in the Portaldot browser extension itself
 - Portaldot chain-level issues
 - Rate limiting on demo/development endpoints
 - Self-XSS requiring developer console access

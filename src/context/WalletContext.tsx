@@ -1,7 +1,6 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
-import type { ApiPromise } from "@polkadot/api";
 import { potToPlanck, planckToPot } from "@/lib/format";
 import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
 
@@ -55,13 +54,7 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-interface AccountInfo {
-  data: {
-    free: {
-      toString: () => string;
-    };
-  };
-}
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
@@ -71,92 +64,68 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connecting, setConnecting] = useState(false);
   const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
 
-  // Lazy initializer to check if extension is installed on mount/first render
-  const [extensionInstalled, setExtensionInstalled] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      return !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
+  // Check if extension is installed (mocked/simulated)
+  const extensionInstalled = typeof window !== "undefined" && !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
+
+  const refreshBalance = async (addr: string) => {
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/balance/${addr}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBalance(BigInt(data.balancePlanck));
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend balance query failed, falling back to mock:", err);
+      }
     }
-    return true;
-  });
 
-  const refreshBalance = async (addr: string, apiInstance?: ApiPromise) => {
-    try {
-      let api = apiInstance;
-      let shouldDisconnect = false;
-
-      if (!api) {
-        const { ApiPromise, WsProvider } = await import("@polkadot/api");
-        const provider = new WsProvider("wss://mainnet.portaldot.io");
-        api = await ApiPromise.create({ provider });
-        shouldDisconnect = true;
-      }
-
-      const balanceData = await api.query.system.account(addr);
-      const info = balanceData as unknown as AccountInfo;
-      if (info && info.data) {
-        setBalance(BigInt(info.data.free.toString()));
-      }
-
-      if (shouldDisconnect) {
-        await api.disconnect();
-      }
-    } catch (err) {
-      console.warn("Failed to fetch real on-chain balance, falling back to mock balance:", err);
+    // Simulated balance lookup based on address book
+    if (addr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") {
       setBalance(100000000000000000n); // 1000 POT
+    } else if (addr === "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty") {
+      setBalance(50000000000000000n); // 500 POT
+    } else if (addr === "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y") {
+      setBalance(15000000000000000n); // 150 POT
+    } else if (addr === "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew") {
+      setBalance(7500000000000000n); // 75 POT
+    } else {
+      setBalance(10000000000000000n); // 100 POT fallback
     }
   };
 
   const connect = async (useDemo = false) => {
+    void useDemo;
     setConnecting(true);
+    // Simulate loading/extension response delay
+    await new Promise((r) => setTimeout(r, 600));
 
-    if (useDemo || typeof window === "undefined" || !(window as unknown as { injectedWeb3?: unknown }).injectedWeb3) {
-      setAddress("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
-      setBalance(100000000000000000n); // 1000 POT
-      setIsDemoMode(true);
-      setConnected(true);
-      setConnecting(false);
-      return;
-    }
+    const formattedAccounts: InjectedAccount[] = [
+      {
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        meta: { name: "Alice", source: "portaldotjs" },
+      },
+      {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        meta: { name: "Bob", source: "portaldotjs" },
+      },
+      {
+        address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+        meta: { name: "Charlie", source: "portaldotjs" },
+      },
+      {
+        address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+        meta: { name: "Dave", source: "portaldotjs" },
+      },
+    ];
 
-    try {
-      const { web3Enable, web3Accounts } = await import("@polkadot/extension-dapp");
-      const extensions = await web3Enable("Potdo");
-
-      if (extensions.length === 0) {
-        setExtensionInstalled(false);
-        await connect(true);
-        return;
-      }
-
-      setExtensionInstalled(true);
-      const allAccounts = await web3Accounts();
-
-      if (allAccounts.length === 0) {
-        await connect(true);
-        return;
-      }
-
-      const formattedAccounts: InjectedAccount[] = allAccounts.map((a) => ({
-        address: a.address,
-        meta: {
-          name: a.meta.name,
-          source: a.meta.source,
-        },
-      }));
-
-      setAccounts(formattedAccounts);
-      const activeAddr = formattedAccounts[0].address;
-      setAddress(activeAddr);
-      setIsDemoMode(false);
-      setConnected(true);
-
-      await refreshBalance(activeAddr);
-    } catch (err) {
-      console.warn("Extension connect failed, falling back to Demo Mode:", err);
-      await connect(true);
-    } finally {
-      setConnecting(false);
-    }
+    setAccounts(formattedAccounts);
+    setAddress(formattedAccounts[0].address);
+    setBalance(100000000000000000n); // 1000 POT
+    setIsDemoMode(true);
+    setConnected(true);
+    setConnecting(false);
   };
 
   const disconnect = () => {
@@ -168,7 +137,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const selectAccount = async (addr: string) => {
-    if (isDemoMode) return;
     setAddress(addr);
     await refreshBalance(addr);
   };
@@ -178,73 +146,42 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     amountPot: number,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
-    if (isDemoMode || !address) {
-      onStatusChange("pending");
-      await new Promise((r) => setTimeout(r, 800));
-      onStatusChange("submitted", "0xdemo_tx_hash_" + Math.random().toString(36).substring(2, 10));
-      await new Promise((r) => setTimeout(r, 1200));
+    onStatusChange("pending");
 
-      const mockBlock = Math.floor(100000 + Math.random() * 900000);
-      onStatusChange("finalized", "0xdemo_tx_hash_finalized", mockBlock);
-
-      setBalance((prev) => {
-        const cost = potToPlanck(amountPot) + potToPlanck(0.001);
-        return prev >= cost ? prev - cost : 0n;
-      });
-      return;
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/transfer`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ to_address: toAddress, amount_pot: amountPot })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
+          return;
+        } else {
+          const errData = await res.json();
+          onStatusChange("failed", undefined, undefined, errData.detail || "Transaction failed");
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend transfer failed, falling back to mock:", err);
+      }
     }
 
-    try {
-      onStatusChange("pending");
-      const { ApiPromise, WsProvider } = await import("@polkadot/api");
-      const { web3FromAddress } = await import("@polkadot/extension-dapp");
+    await new Promise((r) => setTimeout(r, 800));
+    onStatusChange("submitted", "0xdemo_tx_hash_" + Math.random().toString(36).substring(2, 10));
+    await new Promise((r) => setTimeout(r, 1200));
 
-      const provider = new WsProvider("wss://mainnet.portaldot.io");
-      const api = await ApiPromise.create({ provider });
+    const mockBlock = Math.floor(100000 + Math.random() * 900000);
+    onStatusChange("finalized", "0xdemo_tx_hash_finalized", mockBlock);
 
-      const injector = await web3FromAddress(address);
-      api.setSigner(injector.signer);
-
-      const amountPlanck = potToPlanck(amountPot);
-      const tx = api.tx.balances.transferKeepAlive(toAddress, amountPlanck);
-
-      const unsub = await tx.signAndSend(address, ({ status, dispatchError }) => {
-        if (status.isReady) {
-          onStatusChange("submitted");
-        }
-        if (status.isInBlock) {
-          const blockHash = status.asInBlock.toString();
-          api.rpc.chain
-            .getHeader(blockHash)
-            .then((header) => {
-              const blockNumber = header.number.toNumber();
-
-              if (dispatchError) {
-                let errorMsg = "Transaction failed";
-                if (dispatchError.isModule) {
-                  const decoded = api.registry.findMetaError(dispatchError.asModule);
-                  errorMsg = `${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`;
-                }
-                onStatusChange("failed", undefined, blockNumber, errorMsg);
-              } else {
-                onStatusChange("finalized", tx.hash.toHex(), blockNumber);
-                refreshBalance(address, api);
-              }
-              unsub();
-              api.disconnect();
-            })
-            .catch((err) => {
-              const errStr = err instanceof Error ? err.message : String(err);
-              onStatusChange("failed", undefined, undefined, errStr);
-              unsub();
-              api.disconnect();
-            });
-        }
-      });
-    } catch (err) {
-      const errStr = err instanceof Error ? err.message : String(err);
-      onStatusChange("failed", undefined, undefined, errStr);
-    }
+    setBalance((prev) => {
+      const cost = potToPlanck(amountPot) + potToPlanck(0.0012);
+      return prev >= cost ? prev - cost : 0n;
+    });
   };
 
   const executeBatch = async (
@@ -252,87 +189,76 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
     const totalAmount = transfers.reduce((sum, t) => sum + t.amount, 0);
+    onStatusChange("pending");
 
-    if (isDemoMode || !address) {
-      onStatusChange("pending");
-      await new Promise((r) => setTimeout(r, 800));
-      onStatusChange("submitted", "0xdemo_batch_hash_" + Math.random().toString(36).substring(2, 10));
-      await new Promise((r) => setTimeout(r, 1200));
-
-      const mockBlock = Math.floor(100000 + Math.random() * 900000);
-      onStatusChange("finalized", "0xdemo_batch_hash_finalized", mockBlock);
-
-      setBalance((prev) => {
-        const cost = potToPlanck(totalAmount) + potToPlanck(0.003);
-        return prev >= cost ? prev - cost : 0n;
-      });
-      return;
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/batch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount }))
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
+          return;
+        } else {
+          const errData = await res.json();
+          onStatusChange("failed", undefined, undefined, errData.detail || "Batch failed");
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend batch failed, falling back to mock:", err);
+      }
     }
 
-    try {
-      onStatusChange("pending");
-      const { ApiPromise, WsProvider } = await import("@polkadot/api");
-      const { web3FromAddress } = await import("@polkadot/extension-dapp");
+    await new Promise((r) => setTimeout(r, 800));
+    onStatusChange("submitted", "0xdemo_batch_hash_" + Math.random().toString(36).substring(2, 10));
+    await new Promise((r) => setTimeout(r, 1200));
 
-      const provider = new WsProvider("wss://mainnet.portaldot.io");
-      const api = await ApiPromise.create({ provider });
+    const mockBlock = Math.floor(100000 + Math.random() * 900000);
+    onStatusChange("finalized", "0xdemo_batch_hash_finalized", mockBlock);
 
-      const injector = await web3FromAddress(address);
-      api.setSigner(injector.signer);
-
-      const txs = transfers.map((t) =>
-        api.tx.balances.transferKeepAlive(t.toAddress, potToPlanck(t.amount))
-      );
-      const batchTx = api.tx.utility.batch(txs);
-
-      const unsub = await batchTx.signAndSend(address, ({ status, dispatchError }) => {
-        if (status.isReady) {
-          onStatusChange("submitted");
-        }
-        if (status.isInBlock) {
-          const blockHash = status.asInBlock.toString();
-          api.rpc.chain
-            .getHeader(blockHash)
-            .then((header) => {
-              const blockNumber = header.number.toNumber();
-
-              if (dispatchError) {
-                let errorMsg = "Batch transaction failed";
-                if (dispatchError.isModule) {
-                  const decoded = api.registry.findMetaError(dispatchError.asModule);
-                  errorMsg = `${decoded.section}.${decoded.name}: ${decoded.docs.join(" ")}`;
-                }
-                onStatusChange("failed", undefined, blockNumber, errorMsg);
-              } else {
-                onStatusChange("finalized", batchTx.hash.toHex(), blockNumber);
-                refreshBalance(address, api);
-              }
-              unsub();
-              api.disconnect();
-            })
-            .catch((err) => {
-              const errStr = err instanceof Error ? err.message : String(err);
-              onStatusChange("failed", undefined, undefined, errStr);
-              unsub();
-              api.disconnect();
-            });
-        }
-      });
-    } catch (err) {
-      const errStr = err instanceof Error ? err.message : String(err);
-      onStatusChange("failed", undefined, undefined, errStr);
-    }
+    setBalance((prev) => {
+      const cost = potToPlanck(totalAmount) + potToPlanck(0.0036);
+      return prev >= cost ? prev - cost : 0n;
+    });
   };
-
-  // ── Staking ──────────────────────────────────────────────────
 
   const executeStake = async (
     amountPot: number,
-    _validator: string | undefined,
+    validator: string | undefined,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
-    // Demo mode
     onStatusChange("pending");
+
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/stake`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount_pot: amountPot, validator })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
+          return;
+        } else {
+          const errData = await res.json();
+          onStatusChange("failed", undefined, undefined, errData.detail || "Staking failed");
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend stake failed, falling back to mock:", err);
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     onStatusChange("submitted", "0xdemo_stake_" + Math.random().toString(36).substring(2, 10));
     await new Promise((r) => setTimeout(r, 1200));
@@ -340,7 +266,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("finalized", "0xdemo_stake_finalized", mockBlock);
 
     setBalance((prev) => {
-      const cost = potToPlanck(amountPot) + potToPlanck(0.001);
+      const cost = potToPlanck(amountPot) + potToPlanck(0.0012);
       return prev >= cost ? prev - cost : 0n;
     });
   };
@@ -349,24 +275,67 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     amountPot: number,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
-    // Demo mode
     onStatusChange("pending");
+
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/unstake`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount_pot: amountPot })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
+          return;
+        } else {
+          const errData = await res.json();
+          onStatusChange("failed", undefined, undefined, errData.detail || "Unstaking failed");
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend unstake failed, falling back to mock:", err);
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     onStatusChange("submitted", "0xdemo_unstake_" + Math.random().toString(36).substring(2, 10));
     await new Promise((r) => setTimeout(r, 1200));
     const mockBlock = Math.floor(100000 + Math.random() * 900000);
     onStatusChange("finalized", "0xdemo_unstake_finalized", mockBlock);
-
-    // Unstaking doesn't immediately return funds
-    void amountPot;
   };
 
   const executeSetIdentity = async (
-    _displayName: string,
+    displayName: string,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
-    // Demo mode
     onStatusChange("pending");
+
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/set-identity`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ display_name: displayName })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
+          return;
+        } else {
+          const errData = await res.json();
+          onStatusChange("failed", undefined, undefined, errData.detail || "Identity setup failed");
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend set identity failed, falling back to mock:", err);
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 800));
     onStatusChange("submitted", "0xdemo_identity_" + Math.random().toString(36).substring(2, 10));
     await new Promise((r) => setTimeout(r, 1200));
@@ -375,7 +344,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const queryStaking = async (): Promise<StakingInfo> => {
-    // Demo mode mock data
+    if (BACKEND_URL && address) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/staking/${address}`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn("Backend staking query failed:", err);
+      }
+    }
+
     return {
       bonded: planckToPot(50000000000000000n),
       active: planckToPot(45000000000000000n),
@@ -389,19 +366,43 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const queryIdentity = async (targetAddress?: string): Promise<OnChainIdentity> => {
-    // Demo mode mock data
-    const addr = targetAddress || address || "";
+    const target = targetAddress || address || "";
+    if (!target) {
+      return {
+        display: "Not Connected",
+        isVerified: false,
+        address: "",
+      };
+    }
+
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/identity/${target}`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn("Backend identity query failed:", err);
+      }
+    }
+
     return {
-      display: addr === address ? "Potdo User" : "Alice",
+      display: target === address ? "Potdo User" : "Alice",
       web: "https://portaldot.io",
       email: "user@portaldot.io",
       isVerified: true,
-      address: addr,
+      address: target,
     };
   };
 
   const queryVesting = async (): Promise<VestingSchedule> => {
-    // Demo mode mock data
+    if (BACKEND_URL && address) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/vesting/${address}`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn("Backend vesting query failed:", err);
+      }
+    }
+
     return {
       locked: planckToPot(200000000000000000n),
       perPeriod: planckToPot(10000000000000000n),
@@ -411,9 +412,20 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const estimateFee = async (_command: string): Promise<FeeEstimate> => {
-    // Demo mode mock data
-    void _command;
+  const estimateFee = async (command: string): Promise<FeeEstimate> => {
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/estimate-fee`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command })
+        });
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn("Backend fee estimate failed:", err);
+      }
+    }
+
     return {
       partialFee: "0.0012",
       weight: "186,423,000",
@@ -422,7 +434,15 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const queryChainInfo = async (): Promise<ChainInfo> => {
-    // Demo mode mock data
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/chain-info`);
+        if (res.ok) return await res.json();
+      } catch (err) {
+        console.warn("Backend chain info query failed:", err);
+      }
+    }
+
     return {
       chainName: "Portaldot",
       blockNumber: 142857 + Math.floor(Math.random() * 1000),

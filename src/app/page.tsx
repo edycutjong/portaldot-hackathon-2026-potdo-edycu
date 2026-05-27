@@ -291,7 +291,7 @@ const HOW_IT_WORKS = [
   {
     step: "03",
     title: "Sign and confirm",
-    description: "Click Execute, sign with your Polkadot.js wallet, and watch the extrinsic finalize on-chain with confetti celebration.",
+    description: "Click Execute, sign with your Portaldot compatible wallet, and watch the extrinsic finalize on-chain with confetti celebration.",
     color: "text-green-400",
     borderColor: "border-green-500/30",
   },

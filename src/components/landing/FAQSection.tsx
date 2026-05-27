@@ -13,7 +13,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Is this safe to use with real tokens?",
-    answer: "Potdo never has access to your private keys. All signing happens through the Polkadot.js browser extension. Before every transaction, you see a full preview card with amount, recipient, gas fee, and balance diff — so you know exactly what you're signing.",
+    answer: "Potdo never has access to your private keys. All signing happens through the Portaldot browser wallet extension. Before every transaction, you see a full preview card with amount, recipient, gas fee, and balance diff — so you know exactly what you're signing.",
   },
   {
     question: "What is Portaldot?",

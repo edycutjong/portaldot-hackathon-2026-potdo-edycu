@@ -106,4 +106,27 @@ describe("Header", () => {
     button.click();
     expect(onDisconnect).toHaveBeenCalledTimes(1);
   });
+
+  it("renders API Docs link when NEXT_PUBLIC_BACKEND_URL env var is defined", () => {
+    const originalEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
+    process.env.NEXT_PUBLIC_BACKEND_URL = "http://mock-backend:8000";
+    
+    render(<Header />);
+    const link = screen.getByText("API Docs");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "http://mock-backend:8000/docs");
+    
+    process.env.NEXT_PUBLIC_BACKEND_URL = originalEnv;
+  });
+
+  it("hides API Docs link when NEXT_PUBLIC_BACKEND_URL env var is empty", () => {
+    const originalEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
+    delete process.env.NEXT_PUBLIC_BACKEND_URL;
+    
+    render(<Header />);
+    expect(screen.queryByText("API Docs")).not.toBeInTheDocument();
+    
+    process.env.NEXT_PUBLIC_BACKEND_URL = originalEnv;
+  });
 });
+
