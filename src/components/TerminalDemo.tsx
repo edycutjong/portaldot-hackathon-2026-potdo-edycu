@@ -10,7 +10,8 @@ import { useState, useEffect } from "react";
  * 4. Shows "✓ Transaction Confirmed!"
  * 5. Loops with a pause between cycles
  *
- * Uses a fixed min-height to prevent layout shift between phases.
+ * All phases are always rendered in the DOM for fixed height.
+ * Visibility is controlled via opacity transitions.
  */
 
 const COMMAND = "Send 10 POT to Alice";
@@ -20,7 +21,7 @@ const RESET_PAUSE = 3500; // ms before restarting
 
 type Phase = "typing" | "parsing" | "preview" | "confirmed";
 
-function CheckCircleIcon({ className = "" }: { className?: string }) {
+function CheckCircleIcon({ className }: { className: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <circle cx="12" cy="12" r="10" />
@@ -29,7 +30,7 @@ function CheckCircleIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function BoltIcon({ className = "" }: { className?: string }) {
+function BoltIcon({ className }: { className: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
@@ -71,8 +72,12 @@ export function TerminalDemo() {
     }
   }, [phase]);
 
+  const showParsing = phase === "parsing" || phase === "preview" || phase === "confirmed";
+  const showPreview = phase === "preview" || phase === "confirmed";
+  const showConfirmed = phase === "confirmed";
+
   return (
-    <div className="glass-card-glow p-5 max-w-lg mx-auto text-left animate-float" style={{ minHeight: "220px" }}>
+    <div className="glass-card-glow p-5 max-w-lg mx-auto text-left animate-float">
       {/* Terminal header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="flex gap-1.5">
@@ -97,49 +102,43 @@ export function TerminalDemo() {
           )}
         </div>
 
-        {/* Parsing phase */}
-        {(phase === "parsing" || phase === "preview" || phase === "confirmed") && (
-          <div className="flex items-center gap-2 text-purple-400 text-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
-            Parsing intent...
-          </div>
-        )}
+        {/* Parsing — always in DOM, opacity-controlled */}
+        <div className={`flex items-center gap-2 text-purple-400 text-xs transition-opacity duration-300 ${showParsing ? "opacity-100" : "opacity-0"}`}>
+          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+          Parsing intent...
+        </div>
 
-        {/* Preview card */}
-        {(phase === "preview" || phase === "confirmed") && (
-          <div className="bg-white/5 border border-cyan-500/20 rounded-lg p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-500 uppercase tracking-wider">Transfer Preview</span>
-              <span className="inline-flex items-center gap-1 text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
-                <BoltIcon className="w-3 h-3" />
-                Portaldot
-              </span>
+        {/* Preview card — always in DOM, opacity-controlled */}
+        <div className={`bg-white/5 border border-cyan-500/20 rounded-lg p-3 space-y-2 transition-opacity duration-300 ${showPreview ? "opacity-100" : "opacity-0"}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-500 uppercase tracking-wider">Transfer Preview</span>
+            <span className="inline-flex items-center gap-1 text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
+              <BoltIcon className="w-3 h-3" />
+              Portaldot
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span className="text-slate-500">To</span>
+              <p className="text-slate-200 font-semibold">Alice</p>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div>
-                <span className="text-slate-500">To</span>
-                <p className="text-slate-200 font-semibold">Alice</p>
-              </div>
-              <div>
-                <span className="text-slate-500">Amount</span>
-                <p className="text-cyan-400 font-bold">10.0000 POT</p>
-              </div>
-            </div>
-            <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2 mt-1">
-              <span className="text-slate-500">Balance After</span>
-              <span className="text-green-400">490.0000 POT</span>
+            <div>
+              <span className="text-slate-500">Amount</span>
+              <p className="text-cyan-400 font-bold">10.0000 POT</p>
             </div>
           </div>
-        )}
+          <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2 mt-1">
+            <span className="text-slate-500">Balance After</span>
+            <span className="text-green-400">490.0000 POT</span>
+          </div>
+        </div>
 
-        {/* Confirmed */}
-        {phase === "confirmed" && (
-          <div className="flex items-center gap-2 text-green-400 text-sm">
-            <CheckCircleIcon className="w-5 h-5 shrink-0" />
-            <span className="font-semibold">Transaction Confirmed!</span>
-            <span className="text-slate-500 text-xs">Block #142,857</span>
-          </div>
-        )}
+        {/* Confirmed — always in DOM, opacity-controlled */}
+        <div className={`flex items-center gap-2 text-green-400 text-sm transition-opacity duration-300 ${showConfirmed ? "opacity-100" : "opacity-0"}`}>
+          <CheckCircleIcon className="w-5 h-5 shrink-0" />
+          <span className="font-semibold">Transaction Confirmed!</span>
+          <span className="text-slate-500 text-xs">Block #142,857</span>
+        </div>
       </div>
     </div>
   );

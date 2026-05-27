@@ -11,9 +11,101 @@ import type { ParsedIntent } from "./types";
  * Parse a natural language command into a structured intent.
  */
 export function parseIntent(command: string): ParsedIntent | null {
-  const normalized = command.trim().toLowerCase();
+  const original = command.trim();
+  const normalized = original.toLowerCase();
 
-  // Check balance
+  // ── Chain Info ──────────────────────────────────────────────
+  if (
+    /chain\s*info|network\s*status|block\s*height|chain\s*status/.test(normalized)
+  ) {
+    return { action: "check_chain_info" };
+  }
+
+  // ── Fee Estimation ─────────────────────────────────────────
+  const feeMatch = original.match(
+    /(?:how\s+much\s+(?:gas|fee|cost)|estimate\s+(?:gas|fee|cost)|(?:gas|fee|cost)\s+(?:for|to))\s*(?:for\s+|to\s+)?(.+)?/i
+  );
+  if (feeMatch) {
+    return {
+      action: "estimate_fee",
+      command: feeMatch[1]?.trim() || command.trim(),
+    };
+  }
+
+  // ── Vesting ────────────────────────────────────────────────
+  if (
+    /vesting|vested\s*tokens?|vesting\s*schedule/.test(normalized)
+  ) {
+    return { action: "check_vesting" };
+  }
+
+  // ── Identity: Set ──────────────────────────────────────────
+  const setIdentityMatch = original.match(
+    /set\s+(?:my\s+)?(?:name|identity|display\s*name)\s+(?:to\s+|as\s+)?(.+)/i
+  );
+  if (setIdentityMatch) {
+    const displayName = setIdentityMatch[1].replace(/[.!?"']+$/, "").trim();
+    if (displayName) {
+      return { action: "set_identity", displayName };
+    }
+  }
+
+  // ── Identity: Query ────────────────────────────────────────
+  const checkIdentityMatch = original.match(
+    /who\s+is\s+(.+)|identity\s+(?:of\s+)?(.+)|lookup\s+(.+)/i
+  );
+  if (checkIdentityMatch) {
+    const target = (checkIdentityMatch[1] || checkIdentityMatch[2] || checkIdentityMatch[3])
+      .replace(/[.!?"']+$/, "")
+      .trim();
+    const resolved = resolveRecipient(target, ADDRESS_BOOK);
+    return {
+      action: "check_identity",
+      address: resolved?.address,
+      name: resolved?.name || target,
+    };
+  }
+  if (/(?:my|check)\s*identity|show\s*identity/.test(normalized)) {
+    return { action: "check_identity" };
+  }
+
+  // ── Staking: Unstake ───────────────────────────────────────
+  const unstakeMatch = normalized.match(
+    /(?:unstake|unbond|withdraw\s+stake)\s+(\S+)\s*(?:pot|tokens?)?/i
+  );
+  if (unstakeMatch) {
+    const amount = parseAmount(unstakeMatch[1]);
+    if (amount) {
+      return { action: "unstake", amount };
+    }
+  }
+
+  // ── Staking: Stake ─────────────────────────────────────────
+  const stakeMatch = original.match(
+    /(?:stake|bond|nominate|delegate)\s+(\S+)\s*(?:pot|tokens?)?(?:\s+(?:to|with|for)\s+(.+))?/i
+  );
+  if (stakeMatch) {
+    const amount = parseAmount(stakeMatch[1]);
+    if (amount) {
+      const validator = stakeMatch[2]?.replace(/[.!?"']+$/, "").trim();
+      return {
+        action: "stake",
+        amount,
+        ...(validator ? { validator } : {}),
+      };
+    }
+  }
+
+  // ── Staking: Query ─────────────────────────────────────────
+  if (
+    /(?:show|check|view|my)\s*(?:staking|stake|bonded|nominations?|staked)/i.test(normalized) ||
+    normalized === "staking info" ||
+    normalized === "staking"
+  ) {
+    return { action: "check_staking" };
+  }
+
+  // ── Check Balance ──────────────────────────────────────────
   if (
     normalized.includes("balance") ||
     normalized.includes("how much") ||
@@ -22,7 +114,7 @@ export function parseIntent(command: string): ParsedIntent | null {
     return { action: "check_balance" };
   }
 
-  // Batch transfer: "airdrop X to A, B, and C"
+  // ── Batch Transfer ─────────────────────────────────────────
   const batchMatch = normalized.match(
     /(?:airdrop|send|transfer)\s+(\S+)\s+(?:pot|tokens?)?\s*(?:to|for)\s+(.+)/i
   );
@@ -58,7 +150,7 @@ export function parseIntent(command: string): ParsedIntent | null {
     }
   }
 
-  // "Send everything to X" pattern — check BEFORE single transfer
+  // ── "Send everything to X" ─────────────────────────────────
   const maxMatch = normalized.match(
     /(?:send|transfer)\s+(?:everything|all|max)\s+(?:to|for)\s+(.+)/i
   );
@@ -75,7 +167,7 @@ export function parseIntent(command: string): ParsedIntent | null {
     };
   }
 
-  // Single transfer: "send X POT to Y"
+  // ── Single Transfer ────────────────────────────────────────
   const transferMatch = normalized.match(
     /(?:send|transfer|pay)\s+(\S+)\s+(?:pot|tokens?)?\s*(?:to|for)\s+(.+)/i
   );
@@ -136,6 +228,41 @@ export function validateIntent(intent: ParsedIntent): {
   }
 
   if (intent.action === "check_balance") {
+    return { valid: true };
+  }
+
+  if (intent.action === "stake") {
+    if (intent.amount <= 0) {
+      return { valid: false, error: "Stake amount must be greater than 0" };
+    }
+    return { valid: true };
+  }
+
+  if (intent.action === "unstake") {
+    if (intent.amount <= 0) {
+      return { valid: false, error: "Unstake amount must be greater than 0" };
+    }
+    return { valid: true };
+  }
+
+  if (intent.action === "set_identity") {
+    if (!intent.displayName || intent.displayName.length === 0) {
+      return { valid: false, error: "Display name cannot be empty" };
+    }
+    if (intent.displayName.length > 32) {
+      return { valid: false, error: "Display name must be 32 characters or less" };
+    }
+    return { valid: true };
+  }
+
+  // Read-only intents are always valid
+  if (
+    intent.action === "check_staking" ||
+    intent.action === "check_identity" ||
+    intent.action === "check_vesting" ||
+    intent.action === "estimate_fee" ||
+    intent.action === "check_chain_info"
+  ) {
     return { valid: true };
   }
 

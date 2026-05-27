@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState } from "react";
 import type { ApiPromise } from "@polkadot/api";
-import { potToPlanck } from "@/lib/format";
+import { potToPlanck, planckToPot } from "@/lib/format";
+import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
 
 export interface InjectedAccount {
   address: string;
@@ -32,6 +33,24 @@ interface WalletContextType {
     transfers: Array<{ toAddress: string; amount: number }>,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => Promise<void>;
+  executeStake: (
+    amountPot: number,
+    validator: string | undefined,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => Promise<void>;
+  executeUnstake: (
+    amountPot: number,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => Promise<void>;
+  executeSetIdentity: (
+    displayName: string,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => Promise<void>;
+  queryStaking: () => Promise<StakingInfo>;
+  queryIdentity: (targetAddress?: string) => Promise<OnChainIdentity>;
+  queryVesting: () => Promise<VestingSchedule>;
+  estimateFee: (command: string) => Promise<FeeEstimate>;
+  queryChainInfo: () => Promise<ChainInfo>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -305,6 +324,115 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // ── Staking ──────────────────────────────────────────────────
+
+  const executeStake = async (
+    amountPot: number,
+    _validator: string | undefined,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => {
+    // Demo mode
+    onStatusChange("pending");
+    await new Promise((r) => setTimeout(r, 800));
+    onStatusChange("submitted", "0xdemo_stake_" + Math.random().toString(36).substring(2, 10));
+    await new Promise((r) => setTimeout(r, 1200));
+    const mockBlock = Math.floor(100000 + Math.random() * 900000);
+    onStatusChange("finalized", "0xdemo_stake_finalized", mockBlock);
+
+    setBalance((prev) => {
+      const cost = potToPlanck(amountPot) + potToPlanck(0.001);
+      return prev >= cost ? prev - cost : 0n;
+    });
+  };
+
+  const executeUnstake = async (
+    amountPot: number,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => {
+    // Demo mode
+    onStatusChange("pending");
+    await new Promise((r) => setTimeout(r, 800));
+    onStatusChange("submitted", "0xdemo_unstake_" + Math.random().toString(36).substring(2, 10));
+    await new Promise((r) => setTimeout(r, 1200));
+    const mockBlock = Math.floor(100000 + Math.random() * 900000);
+    onStatusChange("finalized", "0xdemo_unstake_finalized", mockBlock);
+
+    // Unstaking doesn't immediately return funds
+    void amountPot;
+  };
+
+  const executeSetIdentity = async (
+    _displayName: string,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => {
+    // Demo mode
+    onStatusChange("pending");
+    await new Promise((r) => setTimeout(r, 800));
+    onStatusChange("submitted", "0xdemo_identity_" + Math.random().toString(36).substring(2, 10));
+    await new Promise((r) => setTimeout(r, 1200));
+    const mockBlock = Math.floor(100000 + Math.random() * 900000);
+    onStatusChange("finalized", "0xdemo_identity_finalized", mockBlock);
+  };
+
+  const queryStaking = async (): Promise<StakingInfo> => {
+    // Demo mode mock data
+    return {
+      bonded: planckToPot(50000000000000000n),
+      active: planckToPot(45000000000000000n),
+      unlocking: planckToPot(5000000000000000n),
+      nominations: [
+        "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
+        "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
+      ],
+      rewardDestination: "Staked",
+    };
+  };
+
+  const queryIdentity = async (targetAddress?: string): Promise<OnChainIdentity> => {
+    // Demo mode mock data
+    const addr = targetAddress || address || "";
+    return {
+      display: addr === address ? "Potdo User" : "Alice",
+      web: "https://portaldot.io",
+      email: "user@portaldot.io",
+      isVerified: true,
+      address: addr,
+    };
+  };
+
+  const queryVesting = async (): Promise<VestingSchedule> => {
+    // Demo mode mock data
+    return {
+      locked: planckToPot(200000000000000000n),
+      perPeriod: planckToPot(10000000000000000n),
+      startingBlock: 100000,
+      periodCount: 20,
+      alreadyVested: planckToPot(60000000000000000n),
+    };
+  };
+
+  const estimateFee = async (_command: string): Promise<FeeEstimate> => {
+    // Demo mode mock data
+    void _command;
+    return {
+      partialFee: "0.0012",
+      weight: "186,423,000",
+      class: "Normal",
+    };
+  };
+
+  const queryChainInfo = async (): Promise<ChainInfo> => {
+    // Demo mode mock data
+    return {
+      chainName: "Portaldot",
+      blockNumber: 142857 + Math.floor(Math.random() * 1000),
+      runtimeVersion: 100,
+      peerCount: 24 + Math.floor(Math.random() * 10),
+      isSyncing: false,
+      nodeVersion: "1.0.0",
+    };
+  };
+
   return (
     <WalletContext.Provider
       value={{
@@ -320,6 +448,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         selectAccount,
         executeTransfer,
         executeBatch,
+        executeStake,
+        executeUnstake,
+        executeSetIdentity,
+        queryStaking,
+        queryIdentity,
+        queryVesting,
+        estimateFee,
+        queryChainInfo,
       }}
     >
       {children}

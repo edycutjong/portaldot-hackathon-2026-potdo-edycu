@@ -16,9 +16,6 @@ const config: Config = {
     "src/components/**/*.tsx",
     "!src/**/*.d.ts",
     "!src/lib/ai-tools.ts",
-    "!src/components/ChatInterface.tsx",
-    "!src/components/TxConfirmation.tsx",
-    "!src/components/TerminalDemo.tsx",
   ],
   coverageThreshold: {
     global: {

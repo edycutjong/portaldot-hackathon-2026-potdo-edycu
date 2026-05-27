@@ -20,9 +20,15 @@ export const ADDRESS_BOOK: Record<string, string> = {
   Dave: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
 };
 
-// Suggested commands for the chat input
+// Suggested commands for the chat input — covers all 11 capabilities
 export const SUGGESTED_COMMANDS = [
   "Send 10 POT to Alice",
   "Check my balance",
   "Airdrop 5 POT to Alice, Bob, and Charlie",
+  "Stake 100 POT",
+  "Show my staking info",
+  "Set my name to Edy",
+  "Show vesting schedule",
+  "How much gas for Send 10 POT to Alice?",
+  "Chain info",
 ];

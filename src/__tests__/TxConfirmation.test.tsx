@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import { TxConfirmation } from "@/components/TxConfirmation";
 
 // Mock framer-motion
@@ -11,7 +11,20 @@ jest.mock("framer-motion", () => ({
 }));
 
 describe("TxConfirmation", () => {
-  it("renders Transaction Confirmed header", () => {
+  beforeAll(() => {
+    global.requestAnimationFrame = (cb) => setTimeout(cb, 16) as unknown as number;
+    global.cancelAnimationFrame = (id) => clearTimeout(id as unknown as NodeJS.Timeout);
+  });
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("renders Transaction Confirmed header and runs animation", () => {
     render(
       <TxConfirmation
         txResult={{
@@ -22,6 +35,10 @@ describe("TxConfirmation", () => {
       />
     );
     expect(screen.getByText("Transaction Confirmed!")).toBeInTheDocument();
+
+    act(() => {
+      jest.advanceTimersByTime(2000);
+    });
   });
 
   it("shows block number", () => {

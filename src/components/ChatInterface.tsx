@@ -6,10 +6,16 @@ import { MessageBubble } from "./MessageBubble";
 import { TransferCard } from "./TransferCard";
 import { BatchCard } from "./BatchCard";
 import { BalanceWidget } from "./BalanceWidget";
+import { StakingCard } from "./StakingCard";
+import { StakingInfoWidget } from "./StakingInfoWidget";
+import { IdentityCard } from "./IdentityCard";
+import { VestingWidget } from "./VestingWidget";
+import { FeeEstimateWidget } from "./FeeEstimateWidget";
+import { ChainInfoWidget } from "./ChainInfoWidget";
 import { TxConfirmation } from "./TxConfirmation";
 import { TxError } from "./TxError";
 import { SUGGESTED_COMMANDS } from "@/lib/constants";
-import type { ChatMessage, ParsedIntent, TxResult, TxStatus } from "@/lib/types";
+import type { ChatMessage, ParsedIntent, TxResult, TxStatus, TransferIntent, BatchTransferIntent, StakeIntent, UnstakeIntent, SetIdentityIntent } from "@/lib/types";
 import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
 import { planckToPot } from "@/lib/format";
@@ -21,7 +27,11 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ externalInput, onExternalInputConsumed, onCommandExecuted }: ChatInterfaceProps) {
-  const { address, balance, executeTransfer, executeBatch, connect, connected } = useWallet();
+  const {
+    address, balance, executeTransfer, executeBatch, executeStake, executeUnstake,
+    executeSetIdentity, queryStaking, queryIdentity, queryVesting, estimateFee,
+    queryChainInfo, connect, connected,
+  } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,9 +59,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       await connect(false);
       return;
     }
-    if (!msg.intent || msg.intent.action !== "transfer") return;
-
-    const intent = msg.intent;
+    const intent = msg.intent as TransferIntent;
     const userMessage = messages.findLast((m) => m.role === "user");
     const commandText = userMessage ? userMessage.content : `Send ${intent.amount} POT to ${intent.to}`;
 
@@ -95,9 +103,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       await connect(false);
       return;
     }
-    if (!msg.intent || msg.intent.action !== "batch_transfer") return;
-
-    const intent = msg.intent;
+    const intent = msg.intent as BatchTransferIntent;
     const userMessage = messages.findLast((m) => m.role === "user");
     const commandText = userMessage ? userMessage.content : `Batch Airdrop to ${intent.transfers.length} recipients`;
 
@@ -136,6 +142,57 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
     });
   };
 
+  const handleExecuteStake = async (msg: ChatMessage) => {
+    if (!address || !connected) { await connect(false); return; }
+    const intent = msg.intent!;
+    const isStake = intent.action === "stake";
+    const amount = isStake ? (intent as StakeIntent).amount : (intent as UnstakeIntent).amount;
+    const executor = isStake
+      ? (cb: (s: string, h?: string, b?: number, e?: string) => void) =>
+          executeStake(amount, isStake && "validator" in intent ? intent.validator : undefined, cb)
+      : (cb: (s: string, h?: string, b?: number, e?: string) => void) =>
+          executeUnstake(amount, cb);
+
+    await executor((status, txHash, blockNumber, error) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                txResult: {
+                  status: status as TxStatus, txHash, blockNumber, error,
+                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                },
+              }
+            : m
+        )
+      );
+      if (status === "finalized" || status === "failed") onCommandExecuted?.();
+    });
+  };
+
+  const handleExecuteIdentity = async (msg: ChatMessage) => {
+    if (!address || !connected) { await connect(false); return; }
+    const intent = msg.intent as SetIdentityIntent;
+
+    await executeSetIdentity(intent.displayName, (status, txHash, blockNumber, error) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === msg.id
+            ? {
+                ...m,
+                txResult: {
+                  status: status as TxStatus, txHash, blockNumber, error,
+                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                },
+              }
+            : m
+        )
+      );
+      if (status === "finalized" || status === "failed") onCommandExecuted?.();
+    });
+  };
+
   // Auto-scroll on new messages
   useEffect(() => {
     if (scrollRef.current) {
@@ -167,15 +224,43 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       });
 
       const data = await res.json();
+      const intent = data.intent as ParsedIntent | undefined;
 
+      // For query intents, fetch the data immediately
       const aiMsg: ChatMessage = {
         id: crypto.randomUUID(),
         role: "assistant",
         content: data.message || "",
-        intent: data.intent as ParsedIntent | undefined,
+        intent,
         txResult: data.txResult as TxResult | undefined,
         timestamp: new Date(),
       };
+
+      // Enrich query intents with data
+      if (intent) {
+        try {
+          switch (intent.action) {
+            case "check_staking":
+              aiMsg.stakingInfo = await queryStaking();
+              break;
+            case "check_identity":
+              aiMsg.identity = await queryIdentity(intent.address);
+              break;
+            case "check_vesting":
+              aiMsg.vestingSchedule = await queryVesting();
+              break;
+            case "estimate_fee":
+              aiMsg.feeEstimate = await estimateFee(intent.command);
+              break;
+            case "check_chain_info":
+              aiMsg.chainInfo = await queryChainInfo();
+              break;
+          }
+        } catch {
+          // Query failed, message will still show without data widget
+        }
+      }
+
       setMessages((prev) => [...prev, aiMsg]);
     } catch {
       const errMsg: ChatMessage = {
@@ -228,6 +313,37 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         );
       case "check_balance":
         return <BalanceWidget free={planckToPot(balance)} />;
+      case "stake":
+      case "unstake":
+        return (
+          <StakingCard
+            intent={msg.intent}
+            senderBalance={balance}
+            isConnected={connected}
+            status={msg.txResult?.status}
+            onExecute={() => handleExecuteStake(msg)}
+          />
+        );
+      case "check_staking":
+        return msg.stakingInfo ? <StakingInfoWidget info={msg.stakingInfo} /> : null;
+      case "set_identity":
+        return (
+          <StakingCard
+            intent={{ action: "stake", amount: 0 } as never}
+            senderBalance={balance}
+            isConnected={connected}
+            status={msg.txResult?.status}
+            onExecute={() => handleExecuteIdentity(msg)}
+          />
+        );
+      case "check_identity":
+        return msg.identity ? <IdentityCard identity={msg.identity} /> : null;
+      case "check_vesting":
+        return msg.vestingSchedule ? <VestingWidget schedule={msg.vestingSchedule} /> : null;
+      case "estimate_fee":
+        return msg.feeEstimate ? <FeeEstimateWidget fee={msg.feeEstimate} /> : null;
+      case "check_chain_info":
+        return msg.chainInfo ? <ChainInfoWidget info={msg.chainInfo} /> : null;
       default:
         return null;
     }
@@ -252,7 +368,8 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
               </h2>
               <p className="text-slate-500 mb-8 max-w-md">
                 Your AI copilot for Portaldot. Type a command in plain English
-                to create, preview, and execute transactions.
+                to create, preview, and execute transactions — or query staking,
+                identity, vesting, fees, and chain status.
               </p>
             </motion.div>
           </div>
@@ -307,7 +424,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder='Try: "Send 10 POT to Alice..."'
+            placeholder='Try: "Send 10 POT to Alice" or "Stake 100 POT"...'
             disabled={isLoading}
             className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200 disabled:opacity-50"
             id="chat-input"

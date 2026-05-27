@@ -13,14 +13,11 @@ interface TxConfirmationProps {
  */
 function useConfetti(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
 
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = canvas.offsetWidth || 400;
+    canvas.height = canvas.offsetHeight || 300;
 
     const particles: Array<{
       x: number;
@@ -34,7 +31,7 @@ function useConfetti(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
 
     const colors = ["#06b6d4", "#22c55e", "#a855f7", "#f59e0b", "#ef4444", "#ec4899"];
 
-    // Create particles
+    // Create particles with slightly randomized life
     for (let i = 0; i < 80; i++) {
       particles.push({
         x: canvas.width / 2,
@@ -43,7 +40,7 @@ function useConfetti(canvasRef: React.RefObject<HTMLCanvasElement | null>) {
         vy: (Math.random() - 0.5) * 12 - 3,
         color: colors[Math.floor(Math.random() * colors.length)],
         size: Math.random() * 6 + 2,
-        life: 1,
+        life: Math.random() * 0.4 + 0.8,
       });
     }
 

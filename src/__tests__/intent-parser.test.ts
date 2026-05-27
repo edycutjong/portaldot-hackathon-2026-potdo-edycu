@@ -130,6 +130,193 @@ describe("parseIntent", () => {
   it("returns null for whitespace-only", () => {
     expect(parseIntent("   ")).toBeNull();
   });
+
+  it("returns null for stake with invalid amount", () => {
+    expect(parseIntent("stake abc POT")).toBeNull();
+  });
+
+  it("returns null for unstake with invalid amount", () => {
+    expect(parseIntent("unstake abc POT")).toBeNull();
+  });
+
+  // === Staking ===
+  it("parses 'Stake 100 POT'", () => {
+    const result = parseIntent("Stake 100 POT");
+    expect(result).toEqual({ action: "stake", amount: 100 });
+  });
+
+  it("parses 'stake 50 pot to ValidatorX'", () => {
+    const result = parseIntent("stake 50 pot to ValidatorX");
+    expect(result?.action).toBe("stake");
+    if (result?.action === "stake") {
+      expect(result.amount).toBe(50);
+      expect(result.validator).toBe("ValidatorX");
+    }
+  });
+
+  it("parses 'bond 200 POT'", () => {
+    const result = parseIntent("bond 200 POT");
+    expect(result?.action).toBe("stake");
+    if (result?.action === "stake") {
+      expect(result.amount).toBe(200);
+    }
+  });
+
+  it("parses 'Unstake 50 POT'", () => {
+    const result = parseIntent("Unstake 50 POT");
+    expect(result).toEqual({ action: "unstake", amount: 50 });
+  });
+
+  it("parses 'unbond 30 tokens'", () => {
+    const result = parseIntent("unbond 30 tokens");
+    expect(result).toEqual({ action: "unstake", amount: 30 });
+  });
+
+  it("parses 'Show my staking info'", () => {
+    const result = parseIntent("Show my staking info");
+    expect(result).toEqual({ action: "check_staking" });
+  });
+
+  it("parses 'staking' as check_staking", () => {
+    const result = parseIntent("staking");
+    expect(result).toEqual({ action: "check_staking" });
+  });
+
+  it("parses 'check my staked'", () => {
+    const result = parseIntent("check my staked");
+    expect(result).toEqual({ action: "check_staking" });
+  });
+
+  it("parses 'view nominations'", () => {
+    const result = parseIntent("view nominations");
+    expect(result).toEqual({ action: "check_staking" });
+  });
+
+  // === Identity ===
+  it("parses 'Set my name to Edy'", () => {
+    const result = parseIntent("Set my name to Edy");
+    expect(result).toEqual({ action: "set_identity", displayName: "Edy" });
+  });
+
+  it("parses 'set identity to Potdo User'", () => {
+    const result = parseIntent("set identity to Potdo User");
+    expect(result).toEqual({ action: "set_identity", displayName: "Potdo User" });
+  });
+
+  it("parses 'set display name as TestName'", () => {
+    const result = parseIntent("set display name as TestName");
+    expect(result).toEqual({ action: "set_identity", displayName: "TestName" });
+  });
+
+  it("returns null for set identity with empty or pure punctuation displayName", () => {
+    const result = parseIntent("Set my name to !?!");
+    expect(result).toBeNull();
+  });
+
+  it("parses 'Who is Alice?'", () => {
+    const result = parseIntent("Who is Alice?");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.name).toBe("Alice");
+      expect(result.address).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+    }
+  });
+
+  it("parses 'identity of Bob'", () => {
+    const result = parseIntent("identity of Bob");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.name).toBe("Bob");
+    }
+  });
+
+  it("parses 'my identity' as check_identity (self)", () => {
+    const result = parseIntent("my identity");
+    expect(result).toEqual({ action: "check_identity" });
+  });
+
+  it("parses 'lookup Dave'", () => {
+    const result = parseIntent("lookup Dave");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.name).toBe("Dave");
+    }
+  });
+
+  it("parses identity checks for unresolved recipient correctly", () => {
+    const result = parseIntent("Who is Zack?");
+    expect(result).toEqual({
+      action: "check_identity",
+      address: undefined,
+      name: "Zack",
+    });
+  });
+
+  // === Vesting ===
+  it("parses 'Show vesting schedule'", () => {
+    const result = parseIntent("Show vesting schedule");
+    expect(result).toEqual({ action: "check_vesting" });
+  });
+
+  it("parses 'vesting' as check_vesting", () => {
+    const result = parseIntent("vesting");
+    expect(result).toEqual({ action: "check_vesting" });
+  });
+
+  it("parses 'vested tokens'", () => {
+    const result = parseIntent("vested tokens");
+    expect(result).toEqual({ action: "check_vesting" });
+  });
+
+  // === Fee Estimation ===
+  it("parses 'How much gas for Send 10 POT to Alice?'", () => {
+    const result = parseIntent("How much gas for Send 10 POT to Alice?");
+    expect(result?.action).toBe("estimate_fee");
+    if (result?.action === "estimate_fee") {
+      expect(result.command).toContain("Send 10 POT to Alice");
+    }
+  });
+
+  it("parses 'estimate fee' (without subcommand) using command fallback", () => {
+    const result = parseIntent("estimate fee");
+    expect(result).toEqual({ action: "estimate_fee", command: "estimate fee" });
+  });
+
+  it("parses 'estimate fee for transfer 50 to Bob'", () => {
+    const result = parseIntent("estimate fee for transfer 50 to Bob");
+    expect(result?.action).toBe("estimate_fee");
+  });
+
+  it("parses 'gas for staking 100 POT'", () => {
+    const result = parseIntent("gas for staking 100 POT");
+    expect(result?.action).toBe("estimate_fee");
+  });
+
+  it("parses 'how much cost to send 10 POT'", () => {
+    const result = parseIntent("how much cost to send 10 POT");
+    expect(result?.action).toBe("estimate_fee");
+  });
+
+  // === Chain Info ===
+  it("parses 'Chain info'", () => {
+    const result = parseIntent("Chain info");
+    expect(result).toEqual({ action: "check_chain_info" });
+  });
+
+  it("parses 'network status'", () => {
+    const result = parseIntent("network status");
+    expect(result).toEqual({ action: "check_chain_info" });
+  });
+
+  it("parses 'block height'", () => {
+    const result = parseIntent("block height");
+    expect(result).toEqual({ action: "check_chain_info" });
+  });
+
+  it("parses 'chain status'", () => {
+    const result = parseIntent("chain status");
+    expect(result).toEqual({ action: "check_chain_info" });
+  });
 });
 
 describe("validateIntent", () => {
@@ -275,5 +462,70 @@ describe("validateIntent", () => {
     });
     expect(result.valid).toBe(false);
     expect(result.error).toContain("Unknown");
+  });
+
+  // === New intent validations ===
+  it("validates stake with positive amount", () => {
+    const result = validateIntent({ action: "stake", amount: 100 });
+    expect(result.valid).toBe(true);
+  });
+
+  it("rejects stake with zero amount", () => {
+    const result = validateIntent({ action: "stake", amount: 0 });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("greater than 0");
+  });
+
+  it("rejects stake with negative amount", () => {
+    const result = validateIntent({ action: "stake", amount: -5 });
+    expect(result.valid).toBe(false);
+  });
+
+  it("validates unstake with positive amount", () => {
+    const result = validateIntent({ action: "unstake", amount: 50 });
+    expect(result.valid).toBe(true);
+  });
+
+  it("rejects unstake with zero amount", () => {
+    const result = validateIntent({ action: "unstake", amount: 0 });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("greater than 0");
+  });
+
+  it("validates set_identity with valid name", () => {
+    const result = validateIntent({ action: "set_identity", displayName: "Edy" });
+    expect(result.valid).toBe(true);
+  });
+
+  it("rejects set_identity with empty name", () => {
+    const result = validateIntent({ action: "set_identity", displayName: "" });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("empty");
+  });
+
+  it("rejects set_identity with name > 32 chars", () => {
+    const result = validateIntent({ action: "set_identity", displayName: "A".repeat(33) });
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("32 characters");
+  });
+
+  it("validates check_staking", () => {
+    expect(validateIntent({ action: "check_staking" }).valid).toBe(true);
+  });
+
+  it("validates check_identity", () => {
+    expect(validateIntent({ action: "check_identity" }).valid).toBe(true);
+  });
+
+  it("validates check_vesting", () => {
+    expect(validateIntent({ action: "check_vesting" }).valid).toBe(true);
+  });
+
+  it("validates estimate_fee", () => {
+    expect(validateIntent({ action: "estimate_fee", command: "test" }).valid).toBe(true);
+  });
+
+  it("validates check_chain_info", () => {
+    expect(validateIntent({ action: "check_chain_info" }).valid).toBe(true);
   });
 });

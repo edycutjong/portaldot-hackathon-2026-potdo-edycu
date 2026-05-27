@@ -38,11 +38,17 @@ describe("constants", () => {
     expect(ADDRESS_BOOK.Dave).toBe("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew");
   });
 
-  it("SUGGESTED_COMMANDS has 3 entries", () => {
-    expect(SUGGESTED_COMMANDS).toHaveLength(3);
+  it("SUGGESTED_COMMANDS has 9 entries covering all capabilities", () => {
+    expect(SUGGESTED_COMMANDS).toHaveLength(9);
     expect(SUGGESTED_COMMANDS[0]).toContain("Send");
     expect(SUGGESTED_COMMANDS[1]).toContain("balance");
     expect(SUGGESTED_COMMANDS[2]).toContain("Airdrop");
+    expect(SUGGESTED_COMMANDS[3]).toContain("Stake");
+    expect(SUGGESTED_COMMANDS[4]).toContain("staking");
+    expect(SUGGESTED_COMMANDS[5]).toContain("name");
+    expect(SUGGESTED_COMMANDS[6]).toContain("vesting");
+    expect(SUGGESTED_COMMANDS[7]).toContain("gas");
+    expect(SUGGESTED_COMMANDS[8]).toContain("Chain");
   });
 
   it("PORTALDOT_RPC uses mainnet.portaldot.io", () => {
