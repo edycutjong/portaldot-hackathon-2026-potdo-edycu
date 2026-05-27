@@ -5,6 +5,7 @@ import type { TxResult } from "@/lib/types";
 
 interface TxErrorProps {
   txResult: TxResult;
+  onRetry?: () => void;
 }
 
 /** Translate Substrate error codes to plain English. */
@@ -56,7 +57,7 @@ function translateError(error?: string): {
   };
 }
 
-export function TxError({ txResult }: TxErrorProps) {
+export function TxError({ txResult, onRetry }: TxErrorProps) {
   const { message, suggestion } = translateError(txResult.error);
 
   return (
@@ -84,6 +85,15 @@ export function TxError({ txResult }: TxErrorProps) {
             {txResult.error}
           </p>
         </div>
+      )}
+
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="mt-3 w-full py-2 rounded-lg text-sm font-semibold text-red-400 border border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200 cursor-pointer"
+        >
+          🔄 Try Again
+        </button>
       )}
     </motion.div>
   );

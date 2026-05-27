@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { TxError } from "@/components/TxError";
 
 // Mock framer-motion
@@ -61,5 +61,24 @@ describe("TxError", () => {
     expect(
       screen.getByText(/unknown error/)
     ).toBeInTheDocument();
+  });
+
+  it("renders Try Again button when onRetry is provided", () => {
+    const mockRetry = jest.fn();
+    render(
+      <TxError
+        txResult={{ status: "failed", error: "something broke" }}
+        onRetry={mockRetry}
+      />
+    );
+    const btn = screen.getByText(/Try Again/);
+    expect(btn).toBeInTheDocument();
+    fireEvent.click(btn);
+    expect(mockRetry).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not render Try Again button when onRetry is omitted", () => {
+    render(<TxError txResult={{ status: "failed", error: "something broke" }} />);
+    expect(screen.queryByText(/Try Again/)).not.toBeInTheDocument();
   });
 });

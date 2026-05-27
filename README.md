@@ -231,7 +231,7 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 144 tests
+npm run test          # Run 146 tests
 npm run test:coverage # Coverage report (100%)
 npm run ci            # Full CI pipeline
 ```
@@ -271,7 +271,7 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 14 test suites, 144 tests
+│   └── __tests__/             # 14 test suites, 146 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
