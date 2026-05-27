@@ -836,7 +836,9 @@ def test_prepare_stake_failure(mock_substrate):
 @patch('main.SubstrateInterface')
 def test_get_proxy_status_not_active(mock_substrate):
     mock_instance = MagicMock()
-    mock_instance.rpc_request.return_value = {"result": None}
+    mock_query = MagicMock()
+    mock_query.value = ([], 0)
+    mock_instance.query.return_value = mock_query
     mock_substrate.return_value = mock_instance
     
     response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
@@ -849,9 +851,9 @@ def test_get_proxy_status_not_active(mock_substrate):
 @patch('main.SubstrateInterface')
 def test_get_proxy_status_active_any(mock_substrate):
     mock_instance = MagicMock()
-    alice_pub = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
-    raw_storage_hex = "0x" + "0400" + alice_pub + "00" + "00000000" + "00000000000000000000"
-    mock_instance.rpc_request.return_value = {"result": raw_storage_hex}
+    mock_query = MagicMock()
+    mock_query.value = ([{'delegate': '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 'proxy_type': 'Any', 'delay': 0}], 66803331300)
+    mock_instance.query.return_value = mock_query
     mock_substrate.return_value = mock_instance
     
     response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
@@ -864,9 +866,9 @@ def test_get_proxy_status_active_any(mock_substrate):
 @patch('main.SubstrateInterface')
 def test_get_proxy_status_active_staking(mock_substrate):
     mock_instance = MagicMock()
-    alice_pub = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
-    raw_storage_hex = "0x" + "0400" + alice_pub + "03" + "00000000"
-    mock_instance.rpc_request.return_value = {"result": raw_storage_hex}
+    mock_query = MagicMock()
+    mock_query.value = ([{'delegate': '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY', 'proxy_type': 'Staking', 'delay': 0}], 66803331300)
+    mock_instance.query.return_value = mock_query
     mock_substrate.return_value = mock_instance
     
     response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")

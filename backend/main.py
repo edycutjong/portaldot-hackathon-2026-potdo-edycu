@@ -1169,32 +1169,22 @@ def get_proxy_status(address: str):
     agent_address = get_agent_address()
     try:
         client = get_substrate_client()
-        delegate_pubkey = Keypair(ss58_address=agent_address).public_key.hex()
-        storage_key = client.create_storage_key(
+        proxies_query = client.query(
             module='Proxy',
             storage_function='Proxies',
             params=[address]
         )
-        response = client.rpc_request('state_getStorage', [storage_key])
-        raw_hex = response.get('result')
         
         is_active = False
         proxy_type = "Any"
         
-        if raw_hex:
-            raw_hex = raw_hex[2:]
-            if delegate_pubkey in raw_hex:
-                is_active = True
-                idx = raw_hex.index(delegate_pubkey)
-                if len(raw_hex) >= idx + 66:
-                    type_byte = raw_hex[idx + 64 : idx + 66]
-                    mapping = {
-                        "00": "Any",
-                        "01": "NonTransfer",
-                        "02": "Governance",
-                        "03": "Staking"
-                    }
-                    proxy_type = mapping.get(type_byte, "Any")
+        if proxies_query and proxies_query.value:
+            definitions, deposit = proxies_query.value
+            for definition in definitions:
+                if definition.get('delegate') == agent_address:
+                    is_active = True
+                    proxy_type = definition.get('proxy_type', 'Any')
+                    break
                     
         return {
             "address": address,
