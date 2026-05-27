@@ -50,7 +50,30 @@ describe("BatchCard", () => {
   });
 
   it("renders Execute Batch button", () => {
-    render(<BatchCard intent={intent} />);
+    render(<BatchCard intent={intent} isConnected={true} />);
     expect(screen.getByText("📦 Execute Batch")).toBeInTheDocument();
+  });
+
+  it("renders Connect Wallet button when disconnected", () => {
+    render(<BatchCard intent={intent} isConnected={false} />);
+    expect(screen.getByText("🔌 Connect Wallet to Execute")).toBeInTheDocument();
+  });
+
+  it("shows balance info when provided", () => {
+    render(<BatchCard intent={intent} senderBalance={2000000000000000n} isConnected={true} />);
+    expect(screen.getByText("20.0000 POT")).toBeInTheDocument();
+  });
+
+  it("shows insufficient balance warning when balance is insufficient", () => {
+    render(<BatchCard intent={intent} senderBalance={100n} isConnected={true} />);
+    expect(screen.getByText(/Insufficient Balance/)).toBeInTheDocument();
+    expect(screen.getByText("Cannot Execute")).toBeInTheDocument();
+  });
+
+  it("shows Processing... and is disabled when status is pending", () => {
+    render(<BatchCard intent={intent} isConnected={true} status="pending" />);
+    const button = screen.getByText("⏳ Processing...");
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
   });
 });

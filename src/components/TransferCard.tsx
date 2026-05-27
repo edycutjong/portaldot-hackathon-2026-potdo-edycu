@@ -3,23 +3,28 @@
 import { motion } from "framer-motion";
 import { truncateAddress, formatPot, potToPlanck } from "@/lib/format";
 import { TOKEN_SYMBOL } from "@/lib/constants";
-import type { TransferIntent } from "@/lib/types";
+import type { TransferIntent, TxStatus } from "@/lib/types";
 
 interface TransferCardProps {
   intent: TransferIntent;
   senderBalance?: bigint;
+  isConnected?: boolean;
+  status?: TxStatus;
   onExecute?: () => void;
 }
 
 export function TransferCard({
   intent,
   senderBalance,
+  isConnected = false,
+  status,
   onExecute,
 }: TransferCardProps) {
   const amountPlanck = potToPlanck(intent.amount);
   const hasBalance = senderBalance !== undefined;
   const insufficient = hasBalance && senderBalance < amountPlanck;
   const afterBalance = hasBalance ? senderBalance - amountPlanck : undefined;
+  const isProcessing = status === "pending" || status === "submitted" || status === "in_block";
 
   return (
     <motion.div
@@ -27,7 +32,7 @@ export function TransferCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", damping: 20, stiffness: 300 }}
       className={`glass-card p-5 mt-3 max-w-md ${
-        insufficient ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
+        insufficient && isConnected ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
       }`}
     >
       {/* Header */}
@@ -92,7 +97,7 @@ export function TransferCard({
       </div>
 
       {/* Insufficient balance warning */}
-      {insufficient && (
+      {insufficient && isConnected && (
         <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           ⚠️ Insufficient Balance! You have {formatPot(senderBalance)} — this
           transfer requires {intent.amount.toFixed(2)} {TOKEN_SYMBOL}
@@ -102,15 +107,21 @@ export function TransferCard({
       {/* Execute button */}
       <button
         onClick={onExecute}
-        disabled={insufficient}
+        disabled={(insufficient && isConnected) || isProcessing}
         className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
-          insufficient
+          (insufficient && isConnected) || isProcessing
             ? "bg-slate-800 text-slate-600 cursor-not-allowed"
             : "bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
         }`}
         id="execute-transfer"
       >
-        {insufficient ? "Cannot Execute" : "✅ Execute Transfer"}
+        {!isConnected
+          ? "🔌 Connect Wallet to Execute"
+          : isProcessing
+          ? "⏳ Processing..."
+          : insufficient
+          ? "Cannot Execute"
+          : "✅ Execute Transfer"}
       </button>
     </motion.div>
   );

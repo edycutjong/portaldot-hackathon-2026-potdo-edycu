@@ -19,7 +19,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
-  const { address, balance, executeTransfer, executeBatch } = useWallet();
+  const { address, balance, executeTransfer, executeBatch, connect, connected } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +27,11 @@ export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleExecute = async (msg: ChatMessage) => {
-    if (!msg.intent || msg.intent.action !== "transfer" || !address) return;
+    if (!address || !connected) {
+      await connect(false);
+      return;
+    }
+    if (!msg.intent || msg.intent.action !== "transfer") return;
 
     const intent = msg.intent;
     const userMessage = messages.findLast((m) => m.role === "user");
@@ -69,7 +73,11 @@ export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
   };
 
   const handleExecuteBatch = async (msg: ChatMessage) => {
-    if (!msg.intent || msg.intent.action !== "batch_transfer" || !address) return;
+    if (!address || !connected) {
+      await connect(false);
+      return;
+    }
+    if (!msg.intent || msg.intent.action !== "batch_transfer") return;
 
     const intent = msg.intent;
     const userMessage = messages.findLast((m) => m.role === "user");
@@ -185,6 +193,8 @@ export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
           <TransferCard
             intent={msg.intent}
             senderBalance={balance}
+            isConnected={connected}
+            status={msg.txResult?.status}
             onExecute={() => handleExecute(msg)}
           />
         );
@@ -192,6 +202,9 @@ export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
         return (
           <BatchCard
             intent={msg.intent}
+            senderBalance={balance}
+            isConnected={connected}
+            status={msg.txResult?.status}
             onExecute={() => handleExecuteBatch(msg)}
           />
         );
