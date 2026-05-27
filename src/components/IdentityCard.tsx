@@ -36,7 +36,7 @@ export function IdentityCard({ identity }: IdentityCardProps) {
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Address</span>
-          <span className="text-slate-300 font-[family-name:var(--font-jetbrains)] text-xs">
+          <span className="text-slate-300 font-(family-name:--font-jetbrains) text-xs">
             {shortAddr}
           </span>
         </div>

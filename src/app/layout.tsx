@@ -63,7 +63,7 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} h-full antialiased dark`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-slate-100 font-[family-name:var(--font-inter)]">
+      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-slate-100 font-(family-name:--font-inter)">
         <WalletProvider>{children}</WalletProvider>
       </body>
     </html>

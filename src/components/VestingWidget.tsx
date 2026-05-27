@@ -30,7 +30,7 @@ export function VestingWidget({ schedule }: VestingWidgetProps) {
         </div>
         <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-teal-500 to-cyan-400 rounded-full transition-all duration-500"
+            className="h-full bg-linear-to-r from-teal-500 to-cyan-400 rounded-full transition-all duration-500"
             style={{ width: `${percentage}%` }}
           />
         </div>
@@ -39,25 +39,25 @@ export function VestingWidget({ schedule }: VestingWidgetProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Still Locked</span>
-          <span className="text-amber-400 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-amber-400 font-(family-name:--font-jetbrains)">
             {schedule.locked} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Already Vested</span>
-          <span className="text-green-400 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-green-400 font-(family-name:--font-jetbrains)">
             {schedule.alreadyVested} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Per Period</span>
-          <span className="text-slate-200 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-200 font-(family-name:--font-jetbrains)">
             {schedule.perPeriod} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Starting Block</span>
-          <span className="text-slate-300 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-300 font-(family-name:--font-jetbrains)">
             #{schedule.startingBlock.toLocaleString()}
           </span>
         </div>

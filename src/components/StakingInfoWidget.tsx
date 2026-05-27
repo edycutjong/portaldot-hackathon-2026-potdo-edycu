@@ -20,19 +20,19 @@ export function StakingInfoWidget({ info }: StakingInfoWidgetProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Bonded</span>
-          <span className="text-indigo-400 font-semibold font-[family-name:var(--font-jetbrains)]">
+          <span className="text-indigo-400 font-semibold font-(family-name:--font-jetbrains)">
             {info.bonded} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Active Stake</span>
-          <span className="text-green-400 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-green-400 font-(family-name:--font-jetbrains)">
             {info.active} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Unlocking</span>
-          <span className="text-amber-400 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-amber-400 font-(family-name:--font-jetbrains)">
             {info.unlocking} {TOKEN_SYMBOL}
           </span>
         </div>
@@ -49,7 +49,7 @@ export function StakingInfoWidget({ info }: StakingInfoWidgetProps) {
             {info.nominations.map((addr, i) => (
               <p
                 key={addr}
-                className="text-xs text-slate-400 font-[family-name:var(--font-jetbrains)] truncate"
+                className="text-xs text-slate-400 font-(family-name:--font-jetbrains) truncate"
               >
                 {i + 1}. {addr.slice(0, 8)}...{addr.slice(-6)}
               </p>

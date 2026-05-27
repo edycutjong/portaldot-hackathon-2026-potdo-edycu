@@ -347,9 +347,9 @@ export default function LandingPage() {
           }}
         />
         {/* Ambient orbs */}
-        <div className="absolute top-[15%] left-[10%] w-[500px] h-[500px] bg-cyan-500/[0.04] rounded-full blur-[100px]" />
-        <div className="absolute top-[60%] right-[5%] w-[400px] h-[400px] bg-purple-500/[0.04] rounded-full blur-[100px]" />
-        <div className="absolute bottom-[10%] left-[30%] w-[300px] h-[300px] bg-green-500/[0.03] rounded-full blur-[100px]" />
+        <div className="absolute top-[15%] left-[10%] w-[500px] h-[500px] bg-cyan-500/4 rounded-full blur-[100px]" />
+        <div className="absolute top-[60%] right-[5%] w-[400px] h-[400px] bg-purple-500/4 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[10%] left-[30%] w-[300px] h-[300px] bg-green-500/3 rounded-full blur-[100px]" />
       </div>
 
       {/* ══════════════════════════════════════════════════════════
@@ -360,7 +360,7 @@ export default function LandingPage() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group" id="landing-logo">
             <Image src="/icon.svg" alt="Potdo" width={32} height={32} className="group-hover:drop-shadow-[0_0_8px_rgba(6,182,212,0.4)] transition-all duration-300" />
-            <span className="text-lg font-bold tracking-tight font-[family-name:var(--font-display)]">
+            <span className="text-lg font-bold tracking-tight font-(family-name:--font-display)">
               Potdo
             </span>
           </Link>
@@ -407,14 +407,14 @@ export default function LandingPage() {
             <div>
               {/* Hackathon badge */}
               <div className="animate-fade-in-up stagger-1">
-                <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-cyan-500/25 bg-cyan-500/5 text-cyan-400 text-sm font-[family-name:var(--font-jetbrains)]">
+                <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full border border-cyan-500/25 bg-cyan-500/5 text-cyan-400 text-sm font-(family-name:--font-jetbrains)">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
                   DoraHacks × Portaldot Online S1 2026
                 </div>
               </div>
 
               {/* Title */}
-              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] font-[family-name:var(--font-display)] animate-fade-in-up stagger-2">
+              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight leading-[1.1] font-(family-name:--font-display) animate-fade-in-up stagger-2">
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-purple-400 to-cyan-400">
                   Talk to your
                 </span>
@@ -435,9 +435,9 @@ export default function LandingPage() {
             {/* Right column — Terminal Demo */}
             <div className="relative animate-fade-in-up stagger-3">
               {/* Ambient glow behind terminal */}
-              <div className="absolute -inset-8 bg-cyan-500/[0.06] rounded-3xl blur-2xl pointer-events-none" />
+              <div className="absolute -inset-8 bg-cyan-500/6 rounded-3xl blur-2xl pointer-events-none" />
               <TerminalDemo />
-              <p className="text-center text-xs text-slate-500 mt-4 font-[family-name:var(--font-jetbrains)]">
+              <p className="text-center text-xs text-slate-500 mt-4 font-(family-name:--font-jetbrains)">
                 Live demo — watch the AI parse commands
               </p>
             </div>
@@ -468,7 +468,7 @@ export default function LandingPage() {
               target="_blank"
               rel="noopener noreferrer"
               id="hero-source-cta"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-slate-700/80 text-slate-300 hover:text-white hover:border-cyan-500/40 hover:bg-white/[0.02] transition-all duration-200 hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl border border-slate-700/80 text-slate-300 hover:text-white hover:border-cyan-500/40 hover:bg-white/2 transition-all duration-200 hover:scale-105"
             >
               <IconGitHub className="w-5 h-5 shrink-0" />
               View Source
@@ -479,7 +479,7 @@ export default function LandingPage() {
           <div className="mt-12 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto animate-fade-in-up stagger-5">
             {STATS.map((stat, i) => (
               <div key={stat.label} className="glass-card px-4 py-3 text-center">
-                <p className={`text-2xl sm:text-3xl font-bold font-[family-name:var(--font-jetbrains)] ${stat.color} animate-count-pop stagger-${i + 5}`}>
+                <p className={`text-2xl sm:text-3xl font-bold font-(family-name:--font-jetbrains) ${stat.color} animate-count-pop stagger-${i + 5}`}>
                   {stat.value}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
@@ -498,10 +498,10 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           {/* Section header */}
           <div className="text-center mb-16">
-            <p className="text-sm font-[family-name:var(--font-jetbrains)] text-cyan-400 uppercase tracking-[0.2em] mb-3">
+            <p className="text-sm font-(family-name:--font-jetbrains) text-cyan-400 uppercase tracking-[0.2em] mb-3">
               Core Features
             </p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-(family-name:--font-display)">
               Everything you need to{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-purple-400">
                 transact safely
@@ -519,7 +519,7 @@ export default function LandingPage() {
                 <div className={`w-11 h-11 rounded-xl ${feature.iconBg} flex items-center justify-center mb-4`}>
                   <feature.icon className={`w-5.5 h-5.5 ${feature.color}`} />
                 </div>
-                <h3 className={`text-lg font-semibold font-[family-name:var(--font-display)] ${feature.color} mb-2`}>
+                <h3 className={`text-lg font-semibold font-(family-name:--font-display) ${feature.color} mb-2`}>
                   {feature.title}
                 </h3>
                 <p className="text-sm text-slate-400 leading-relaxed">
@@ -539,10 +539,10 @@ export default function LandingPage() {
       <section className="relative z-10 py-24 px-6" id="how-it-works">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-[family-name:var(--font-jetbrains)] text-purple-400 uppercase tracking-[0.2em] mb-3">
+            <p className="text-sm font-(family-name:--font-jetbrains) text-purple-400 uppercase tracking-[0.2em] mb-3">
               How It Works
             </p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-(family-name:--font-display)">
               Three steps to{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-purple-400 to-pink-400">
                 safe transactions
@@ -554,10 +554,10 @@ export default function LandingPage() {
             {HOW_IT_WORKS.map((item) => (
               <div key={item.step} className={`relative glass-card p-6 border ${item.borderColor}`}>
                 {/* Step number */}
-                <span className={`text-5xl font-bold font-[family-name:var(--font-display)] ${item.color} opacity-20 absolute top-4 right-5`}>
+                <span className={`text-5xl font-bold font-(family-name:--font-display) ${item.color} opacity-20 absolute top-4 right-5`}>
                   {item.step}
                 </span>
-                <h3 className={`text-lg font-semibold font-[family-name:var(--font-display)] ${item.color} mb-3 relative`}>
+                <h3 className={`text-lg font-semibold font-(family-name:--font-display) ${item.color} mb-3 relative`}>
                   {item.title}
                 </h3>
                 <p className="text-sm text-slate-400 leading-relaxed relative">
@@ -577,10 +577,10 @@ export default function LandingPage() {
       <section className="relative z-10 py-24 px-6" id="testimonials">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-[family-name:var(--font-jetbrains)] text-green-400 uppercase tracking-[0.2em] mb-3">
+            <p className="text-sm font-(family-name:--font-jetbrains) text-green-400 uppercase tracking-[0.2em] mb-3">
               Testimonials
             </p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-(family-name:--font-display)">
               Trusted by{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-green-400 to-emerald-400">
                 builders
@@ -620,10 +620,10 @@ export default function LandingPage() {
       <section className="relative z-10 py-24 px-6" id="faq">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-16">
-            <p className="text-sm font-[family-name:var(--font-jetbrains)] text-amber-400 uppercase tracking-[0.2em] mb-3">
+            <p className="text-sm font-(family-name:--font-jetbrains) text-amber-400 uppercase tracking-[0.2em] mb-3">
               FAQ
             </p>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)]">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-(family-name:--font-display)">
               Common{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-amber-400 to-orange-400">
                 questions
@@ -643,9 +643,9 @@ export default function LandingPage() {
       <section className="relative z-10 py-28 px-6">
         <div className="max-w-3xl mx-auto text-center relative noise-bg">
           {/* Ambient glow */}
-          <div className="absolute -inset-16 bg-cyan-500/[0.04] rounded-[40px] blur-3xl pointer-events-none" />
+          <div className="absolute -inset-16 bg-cyan-500/4 rounded-[40px] blur-3xl pointer-events-none" />
 
-          <h2 className="relative text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-[family-name:var(--font-display)] leading-tight">
+          <h2 className="relative text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight font-(family-name:--font-display) leading-tight">
             Ready to stop{" "}
             <span className="text-transparent bg-clip-text bg-linear-to-r from-red-400 to-amber-400">
               signing blind?
@@ -695,7 +695,7 @@ export default function LandingPage() {
             <div className="lg:col-span-2">
               <div className="flex items-center gap-2.5 mb-4">
                 <Image src="/icon.svg" alt="Potdo" width={28} height={28} />
-                <span className="text-lg font-bold tracking-tight font-[family-name:var(--font-display)]">Potdo</span>
+                <span className="text-lg font-bold tracking-tight font-(family-name:--font-display)">Potdo</span>
               </div>
               <p className="text-sm text-slate-500 leading-relaxed max-w-sm">
                 AI copilot that turns plain English into secure, visual Portaldot transactions. Built for the DoraHacks Portaldot Online S1 Hackathon 2026.

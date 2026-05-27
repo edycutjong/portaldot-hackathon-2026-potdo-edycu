@@ -36,14 +36,14 @@ export function StakingCard({ intent, senderBalance, isConnected, status, onExec
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Amount</span>
-          <span className="text-slate-200 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-200 font-(family-name:--font-jetbrains)">
             {amount} {TOKEN_SYMBOL}
           </span>
         </div>
         {isStake && "validator" in intent && intent.validator && (
           <div className="flex justify-between">
             <span className="text-slate-500">Validator</span>
-            <span className="text-slate-200 font-[family-name:var(--font-jetbrains)] text-xs truncate max-w-[200px]">
+            <span className="text-slate-200 font-(family-name:--font-jetbrains) text-xs truncate max-w-[200px]">
               {intent.validator}
             </span>
           </div>

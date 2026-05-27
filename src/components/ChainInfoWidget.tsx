@@ -27,13 +27,13 @@ export function ChainInfoWidget({ info }: ChainInfoWidgetProps) {
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Block Height</span>
-          <span className="text-slate-200 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-200 font-(family-name:--font-jetbrains)">
             #{info.blockNumber.toLocaleString()}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Runtime</span>
-          <span className="text-slate-300 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-300 font-(family-name:--font-jetbrains)">
             v{info.runtimeVersion}
           </span>
         </div>
@@ -43,7 +43,7 @@ export function ChainInfoWidget({ info }: ChainInfoWidgetProps) {
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Node Version</span>
-          <span className="text-slate-300 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-300 font-(family-name:--font-jetbrains)">
             {info.nodeVersion}
           </span>
         </div>

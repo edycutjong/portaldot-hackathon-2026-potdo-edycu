@@ -20,13 +20,13 @@ export function FeeEstimateWidget({ fee }: FeeEstimateWidgetProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Estimated Fee</span>
-          <span className="text-orange-400 font-semibold font-[family-name:var(--font-jetbrains)]">
+          <span className="text-orange-400 font-semibold font-(family-name:--font-jetbrains)">
             {fee.partialFee} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Weight</span>
-          <span className="text-slate-300 font-[family-name:var(--font-jetbrains)] text-xs">
+          <span className="text-slate-300 font-(family-name:--font-jetbrains) text-xs">
             {fee.weight}
           </span>
         </div>
