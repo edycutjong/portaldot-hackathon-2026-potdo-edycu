@@ -6,6 +6,7 @@ import { ConnectWalletModal } from "@/components/ConnectWalletModal";
 import { PORTALDOT_RPC, TESTNET_ADDRESS_BOOK, DEMO_ADDRESS_BOOK } from "@/lib/constants";
 import { potToPlanck, planckToPot } from "@/lib/format";
 import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
+import { potdoClient } from "@/lib/api-client";
 
 export interface InjectedAccount {
   address: string;
@@ -76,9 +77,15 @@ interface WalletContextType {
   queryChainInfo: () => Promise<ChainInfo>;
 }
 
-export const WalletContext = createContext<WalletContextType | undefined>(undefined);
+const generateMockTxHash = (prefix: string): string => {
+  return `0xdemo_${prefix}_${Math.random().toString(36).substring(2, 10)}`;
+};
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const generateMockBlock = (): number => {
+  return Math.floor(100000 + Math.random() * 900000);
+};
+
+export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connected, setConnected] = useState(false);
@@ -107,10 +114,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 15 POT
     "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000n,    // Dave: 75 POT
     // Demo accounts
-    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": 100000000000000000n, // Alpha: 1000 POT
-    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": 50000000000000000n,  // Beta: 500 POT
-    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC": 1500000000000000n,   // Gamma: 15 POT
-    "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD": 7500000000000000n,    // Delta: 75 POT
+    "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": 100000000000000000n, // Alpha: 1000 POT
+    "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": 50000000000000000n,  // Beta: 500 POT
+    "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P": 1500000000000000n,   // Gamma: 15 POT
+    "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX": 7500000000000000n,    // Delta: 75 POT
   });
 
   const [mockStaking, setMockStaking] = useState<Record<string, { bonded: bigint; active: bigint; unlocking: bigint }>>({
@@ -126,12 +133,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       unlocking: 0n,
     },
     // Demo accounts
-    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": {
+    "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": {
       bonded: 50000000000000000n,
       active: 45000000000000000n,
       unlocking: 5000000000000000n,
     },
-    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": {
+    "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": {
       bonded: 20000000000000000n,
       active: 20000000000000000n,
       unlocking: 0n,
@@ -141,47 +148,38 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   // Check if extension is installed (mocked/simulated)
   const extensionInstalled = typeof window !== "undefined" && !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
 
+  React.useEffect(() => {
+    potdoClient.setDemoMode(isDemoMode);
+  }, [isDemoMode]);
+
   const checkProxyStatus = async (addr?: string) => {
     const targetAddr = addr || address;
     if (!targetAddr) return;
     setCheckingProxy(true);
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/proxy-status/${targetAddr}`);
-        if (res.ok) {
-          const data = await res.json();
-          setIsProxyActive(data.isProxyActive);
-          setProxyType(data.proxyType);
-          setAgentAddress(data.delegate);
-          setCheckingProxy(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend proxy status query failed:", err);
-      }
+    
+    const data = await potdoClient.getProxyStatus(targetAddr);
+    if (data) {
+      setIsProxyActive(data.isProxyActive);
+      setProxyType(data.proxyType);
+      setAgentAddress(data.delegate);
+      setCheckingProxy(false);
+      return;
     }
     // Fallback/Demo mode
-    const isAliceOrAlpha = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" || targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA";
+    const isAliceOrAlpha = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" || targetAddr === "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm";
     setIsProxyActive(isAliceOrAlpha);
     setProxyType("Any");
-    setAgentAddress(targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA" ? "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB" : "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
+    setAgentAddress(targetAddr === "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm" ? "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o" : "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
     setCheckingProxy(false);
   };
 
   const refreshBalance = async (addr: string) => {
     setIsBalanceLoading(true);
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/balance/${addr}`);
-        if (res.ok) {
-          const data = await res.json();
-          setBalance(BigInt(data.balancePlanck));
-          setIsBalanceLoading(false);
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend balance query failed, falling back to mock:", err);
-      }
+    const data = await potdoClient.getBalance(addr);
+    if (data) {
+      setBalance(BigInt(data.balancePlanck));
+      setIsBalanceLoading(false);
+      return;
     }
 
     setBalance(mockBalances[addr] || 100000000000000000n);
@@ -278,19 +276,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const formattedAccounts: InjectedAccount[] = [
       {
-        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
+        address: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
         meta: { name: "Alpha", source: "portaldotjs" },
       },
       {
-        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB",
+        address: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o",
         meta: { name: "Beta", source: "portaldotjs" },
       },
       {
-        address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC",
+        address: "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P",
         meta: { name: "Gamma", source: "portaldotjs" },
       },
       {
-        address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD",
+        address: "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX",
         meta: { name: "Delta", source: "portaldotjs" },
       },
     ];
@@ -350,35 +348,26 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/add-proxy`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender_address: address, delegate_address: delegate, proxy_type: pType })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          statusCallback("submitted", data.txHash);
-          statusCallback("finalized", data.txHash, data.blockNumber);
-          await checkProxyStatus();
-          return;
-        } else {
-          const errData = await res.json();
-          statusCallback("failed", undefined, undefined, errData.detail || "Failed to add proxy");
-          return;
-        }
-      } catch (err: unknown) {
-        console.warn("Backend add-proxy failed:", err);
+    try {
+      const data = await potdoClient.addProxy(address || "", delegate, pType);
+      if (data) {
+        statusCallback("submitted", data.txHash);
+        statusCallback("finalized", data.txHash, data.blockNumber);
+        await checkProxyStatus();
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to add proxy";
+      statusCallback("failed", undefined, undefined, errMsg);
+      return;
     }
-    
     // Fallback/Simulated
     await new Promise((r) => setTimeout(r, 800));
-    statusCallback("submitted", "0xdemo_add_proxy_tx");
+    const txHash = generateMockTxHash("add_proxy");
+    statusCallback("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
     const mockBlock = 142857;
-    statusCallback("finalized", "0xdemo_add_proxy_finalized", mockBlock);
+    statusCallback("finalized", txHash, mockBlock);
     setIsProxyActive(true);
     setProxyType(pType);
   };
@@ -401,42 +390,33 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/remove-proxy`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender_address: address, delegate_address: delegate, proxy_type: pType })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          statusCallback("submitted", data.txHash);
-          statusCallback("finalized", data.txHash, data.blockNumber);
-          await checkProxyStatus();
-          return;
-        } else {
-          const errData = await res.json();
-          statusCallback("failed", undefined, undefined, errData.detail || "Failed to remove proxy");
-          return;
-        }
-      } catch (err: unknown) {
-        console.warn("Backend remove-proxy failed:", err);
+    try {
+      const data = await potdoClient.removeProxy(address || "", delegate, pType);
+      if (data) {
+        statusCallback("submitted", data.txHash);
+        statusCallback("finalized", data.txHash, data.blockNumber);
+        await checkProxyStatus();
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to remove proxy";
+      statusCallback("failed", undefined, undefined, errMsg);
+      return;
     }
-    
     // Fallback/Simulated
     await new Promise((r) => setTimeout(r, 800));
-    statusCallback("submitted", "0xdemo_remove_proxy_tx");
+    const txHash = generateMockTxHash("remove_proxy");
+    statusCallback("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
     const mockBlock = 142857;
-    statusCallback("finalized", "0xdemo_remove_proxy_finalized", mockBlock);
+    statusCallback("finalized", txHash, mockBlock);
     setIsProxyActive(false);
   };
 
   const signAndSubmit = async (
     prepareEndpoint: string,
     submitEndpoint: string,
-    prepareBody: object,
+    prepareBody: Record<string, unknown>,
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ): Promise<boolean> => {
     const activeAccount = accounts.find(a => a.address === address);
@@ -450,32 +430,21 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const signer = enabled.signer;
         
         // 1. Prepare payload JSON on the backend
-        const prepRes = await fetch(`${BACKEND_URL}/${prepareEndpoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender_address: address, ...prepareBody })
-        });
-        if (!prepRes.ok) {
-          const errData = await prepRes.json();
-          throw new Error(errData.detail || `Failed to prepare transaction`);
+        const payload = await potdoClient.prepareTx(prepareEndpoint, address || "", prepareBody);
+        if (!payload) {
+          throw new Error(`Failed to prepare transaction`);
         }
-        const payload = await prepRes.json();
         
         // 2. Request signature from the wallet extension
         const signResult = await signer.signPayload(payload);
         const signature = signResult.signature;
         
         // 3. Submit transaction with the signature
-        const submitRes = await fetch(`${BACKEND_URL}/${submitEndpoint}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sender_address: address, signature, ...prepareBody })
-        });
-        if (!submitRes.ok) {
-          const errData = await submitRes.json();
-          throw new Error(errData.detail || `Failed to submit signed transaction`);
+        const submitRes = await potdoClient.submitTx(submitEndpoint, address || "", signature, prepareBody);
+        if (!submitRes) {
+          throw new Error(`Failed to submit signed transaction`);
         }
-        const data = await submitRes.json();
+        const data = submitRes;
         onStatusChange("submitted", data.txHash);
         onStatusChange("finalized", data.txHash, data.blockNumber);
         await refreshBalance(address || "");
@@ -498,35 +467,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("pending");
 
     if (isProxyActive) {
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/transfer`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to_address: toAddress,
-              amount_pot: amountPot,
-              proxied: true,
-              real_address: address
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            onStatusChange("submitted", data.txHash);
-            onStatusChange("finalized", data.txHash, data.blockNumber);
-            await refreshBalance(address || "");
-            return;
-          } else {
-            const errData = await res.json();
-            onStatusChange("failed", undefined, undefined, errData.detail || "Transaction failed");
-            return;
-          }
-        } catch (err: unknown) {
-          console.warn("Proxied transfer failed:", err);
-          const errMsg = err instanceof Error ? err.message : "Transaction failed";
-          onStatusChange("failed", undefined, undefined, errMsg);
+      try {
+        const data = await potdoClient.executeTransfer(toAddress, amountPot, true, address || undefined);
+        if (data) {
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
           return;
         }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Transaction failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return;
       }
     } else {
       const handled = await signAndSubmit(
@@ -538,39 +490,27 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (handled) return;
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/transfer`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            to_address: toAddress,
-            amount_pot: amountPot,
-            real_address: address || undefined
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          onStatusChange("submitted", data.txHash);
-          onStatusChange("finalized", data.txHash, data.blockNumber);
-          await refreshBalance(address || "");
-          return;
-        } else {
-          const errData = await res.json();
-          onStatusChange("failed", undefined, undefined, errData.detail || "Transaction failed");
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend transfer failed, falling back to mock:", err);
+    try {
+      const data = await potdoClient.executeTransfer(toAddress, amountPot, false, address || undefined);
+      if (data) {
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Transaction failed";
+      onStatusChange("failed", undefined, undefined, errMsg);
+      return;
     }
 
     await new Promise((r) => setTimeout(r, 800));
-    onStatusChange("submitted", "0xdemo_tx_hash_" + Math.random().toString(36).substring(2, 10));
+    const txHash = generateMockTxHash("tx_hash");
+    onStatusChange("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
 
-    const mockBlock = Math.floor(100000 + Math.random() * 900000);
-    onStatusChange("finalized", "0xdemo_tx_hash_finalized", mockBlock);
+    const mockBlock = generateMockBlock();
+    onStatusChange("finalized", txHash, mockBlock);
 
     const amtPlanck = potToPlanck(amountPot);
     const gasPlanck = potToPlanck(0.0012);
@@ -597,34 +537,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("pending");
 
     if (isProxyActive) {
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/batch`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })),
-              proxied: true,
-              real_address: address
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            onStatusChange("submitted", data.txHash);
-            onStatusChange("finalized", data.txHash, data.blockNumber);
-            await refreshBalance(address || "");
-            return;
-          } else {
-            const errData = await res.json();
-            onStatusChange("failed", undefined, undefined, errData.detail || "Batch failed");
-            return;
-          }
-        } catch (err: unknown) {
-          console.warn("Proxied batch failed:", err);
-          const errMsg = err instanceof Error ? err.message : "Batch failed";
-          onStatusChange("failed", undefined, undefined, errMsg);
+      try {
+        const data = await potdoClient.executeBatch(transfers, true, address || undefined);
+        if (data) {
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
           return;
         }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Batch failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return;
       }
     } else {
       const handled = await signAndSubmit(
@@ -636,38 +560,27 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (handled) return;
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/batch`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })),
-            real_address: address || undefined
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          onStatusChange("submitted", data.txHash);
-          onStatusChange("finalized", data.txHash, data.blockNumber);
-          await refreshBalance(address || "");
-          return;
-        } else {
-          const errData = await res.json();
-          onStatusChange("failed", undefined, undefined, errData.detail || "Batch failed");
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend batch failed, falling back to mock:", err);
+    try {
+      const data = await potdoClient.executeBatch(transfers, false, address || undefined);
+      if (data) {
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Batch failed";
+      onStatusChange("failed", undefined, undefined, errMsg);
+      return;
     }
 
     await new Promise((r) => setTimeout(r, 800));
-    onStatusChange("submitted", "0xdemo_batch_hash_" + Math.random().toString(36).substring(2, 10));
+    const txHash = generateMockTxHash("batch_hash");
+    onStatusChange("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
 
-    const mockBlock = Math.floor(100000 + Math.random() * 900000);
-    onStatusChange("finalized", "0xdemo_batch_hash_finalized", mockBlock);
+    const mockBlock = generateMockBlock();
+    onStatusChange("finalized", txHash, mockBlock);
 
     const totalAmtPlanck = potToPlanck(totalAmount);
     const gasPlanck = potToPlanck(0.0036);
@@ -697,35 +610,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("pending");
 
     if (isProxyActive) {
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/stake`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount_pot: amountPot,
-              validator,
-              proxied: true,
-              real_address: address
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            onStatusChange("submitted", data.txHash);
-            onStatusChange("finalized", data.txHash, data.blockNumber);
-            await refreshBalance(address || "");
-            return;
-          } else {
-            const errData = await res.json();
-            onStatusChange("failed", undefined, undefined, errData.detail || "Staking failed");
-            return;
-          }
-        } catch (err: unknown) {
-          console.warn("Proxied stake failed:", err);
-          const errMsg = err instanceof Error ? err.message : "Staking failed";
-          onStatusChange("failed", undefined, undefined, errMsg);
+      try {
+        const data = await potdoClient.executeStake(amountPot, validator, true, address || undefined);
+        if (data) {
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
           return;
         }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Staking failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return;
       }
     } else {
       const handled = await signAndSubmit(
@@ -737,38 +633,26 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (handled) return;
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/stake`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount_pot: amountPot,
-            validator,
-            real_address: address || undefined
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          onStatusChange("submitted", data.txHash);
-          onStatusChange("finalized", data.txHash, data.blockNumber);
-          await refreshBalance(address || "");
-          return;
-        } else {
-          const errData = await res.json();
-          onStatusChange("failed", undefined, undefined, errData.detail || "Staking failed");
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend stake failed, falling back to mock:", err);
+    try {
+      const data = await potdoClient.executeStake(amountPot, validator, false, address || undefined);
+      if (data) {
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Staking failed";
+      onStatusChange("failed", undefined, undefined, errMsg);
+      return;
     }
 
     await new Promise((r) => setTimeout(r, 800));
-    onStatusChange("submitted", "0xdemo_stake_" + Math.random().toString(36).substring(2, 10));
+    const txHash = generateMockTxHash("stake");
+    onStatusChange("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
-    const mockBlock = Math.floor(100000 + Math.random() * 900000);
-    onStatusChange("finalized", "0xdemo_stake_finalized", mockBlock);
+    const mockBlock = generateMockBlock();
+    onStatusChange("finalized", txHash, mockBlock);
 
     const stakePlanck = potToPlanck(amountPot);
     const gasPlanck = potToPlanck(0.0012);
@@ -802,34 +686,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("pending");
 
     if (isProxyActive) {
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/unstake`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              amount_pot: amountPot,
-              proxied: true,
-              real_address: address
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            onStatusChange("submitted", data.txHash);
-            onStatusChange("finalized", data.txHash, data.blockNumber);
-            await refreshBalance(address || "");
-            return;
-          } else {
-            const errData = await res.json();
-            onStatusChange("failed", undefined, undefined, errData.detail || "Unstaking failed");
-            return;
-          }
-        } catch (err: unknown) {
-          console.warn("Proxied unstake failed:", err);
-          const errMsg = err instanceof Error ? err.message : "Unstaking failed";
-          onStatusChange("failed", undefined, undefined, errMsg);
+      try {
+        const data = await potdoClient.executeUnstake(amountPot, true, address || undefined);
+        if (data) {
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
           return;
         }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Unstaking failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return;
       }
     } else {
       const handled = await signAndSubmit(
@@ -841,37 +709,26 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (handled) return;
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/unstake`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            amount_pot: amountPot,
-            real_address: address || undefined
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          onStatusChange("submitted", data.txHash);
-          onStatusChange("finalized", data.txHash, data.blockNumber);
-          await refreshBalance(address || "");
-          return;
-        } else {
-          const errData = await res.json();
-          onStatusChange("failed", undefined, undefined, errData.detail || "Unstaking failed");
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend unstake failed, falling back to mock:", err);
+    try {
+      const data = await potdoClient.executeUnstake(amountPot, false, address || undefined);
+      if (data) {
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Unstaking failed";
+      onStatusChange("failed", undefined, undefined, errMsg);
+      return;
     }
 
     await new Promise((r) => setTimeout(r, 800));
-    onStatusChange("submitted", "0xdemo_unstake_" + Math.random().toString(36).substring(2, 10));
+    const txHash = generateMockTxHash("unstake");
+    onStatusChange("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
-    const mockBlock = Math.floor(100000 + Math.random() * 900000);
-    onStatusChange("finalized", "0xdemo_unstake_finalized", mockBlock);
+    const mockBlock = generateMockBlock();
+    onStatusChange("finalized", txHash, mockBlock);
 
     const unstakePlanck = potToPlanck(amountPot);
     const gasPlanck = potToPlanck(0.0012);
@@ -905,34 +762,18 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange("pending");
 
     if (isProxyActive) {
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/set-identity`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              display_name: displayName,
-              proxied: true,
-              real_address: address
-            })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            onStatusChange("submitted", data.txHash);
-            onStatusChange("finalized", data.txHash, data.blockNumber);
-            await refreshBalance(address || "");
-            return;
-          } else {
-            const errData = await res.json();
-            onStatusChange("failed", undefined, undefined, errData.detail || "Identity setup failed");
-            return;
-          }
-        } catch (err: unknown) {
-          console.warn("Proxied identity setup failed:", err);
-          const errMsg = err instanceof Error ? err.message : "Identity setup failed";
-          onStatusChange("failed", undefined, undefined, errMsg);
+      try {
+        const data = await potdoClient.executeSetIdentity(displayName, true, address || undefined);
+        if (data) {
+          onStatusChange("submitted", data.txHash);
+          onStatusChange("finalized", data.txHash, data.blockNumber);
+          await refreshBalance(address || "");
           return;
         }
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : "Identity setup failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return;
       }
     } else {
       const handled = await signAndSubmit(
@@ -944,48 +785,31 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (handled) return;
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/set-identity`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            display_name: displayName,
-            real_address: address || undefined
-          })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          onStatusChange("submitted", data.txHash);
-          onStatusChange("finalized", data.txHash, data.blockNumber);
-          await refreshBalance(address || "");
-          return;
-        } else {
-          const errData = await res.json();
-          onStatusChange("failed", undefined, undefined, errData.detail || "Identity setup failed");
-          return;
-        }
-      } catch (err) {
-        console.warn("Backend set identity failed, falling back to mock:", err);
+    try {
+      const data = await potdoClient.executeSetIdentity(displayName, false, address || undefined);
+      if (data) {
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return;
       }
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Identity setup failed";
+      onStatusChange("failed", undefined, undefined, errMsg);
+      return;
     }
 
     await new Promise((r) => setTimeout(r, 800));
-    onStatusChange("submitted", "0xdemo_identity_" + Math.random().toString(36).substring(2, 10));
+    const txHash = generateMockTxHash("identity");
+    onStatusChange("submitted", txHash);
     await new Promise((r) => setTimeout(r, 1200));
-    const mockBlock = Math.floor(100000 + Math.random() * 900000);
-    onStatusChange("finalized", "0xdemo_identity_finalized", mockBlock);
+    const mockBlock = generateMockBlock();
+    onStatusChange("finalized", txHash, mockBlock);
   };
 
   const queryStaking = async (): Promise<StakingInfo> => {
-    if (BACKEND_URL && address) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/staking/${address}`);
-        if (res.ok) return await res.json();
-      } catch (err) {
-        console.warn("Backend staking query failed:", err);
-      }
-    }
+    const data = await potdoClient.getStakingInfo(address || "");
+    if (data) return data;
 
     const current = mockStaking[address || ""] || { bonded: 0n, active: 0n, unlocking: 0n };
 
@@ -1011,14 +835,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       };
     }
 
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/identity/${target}`);
-        if (res.ok) return await res.json();
-      } catch (err) {
-        console.warn("Backend identity query failed:", err);
-      }
-    }
+    const data = await potdoClient.getIdentity(target);
+    if (data) return data;
 
     const testnetName = TESTNET_ADDRESS_BOOK[target];
     if (testnetName) {
@@ -1084,14 +902,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }
 
   const queryVesting = async (): Promise<VestingSchedule> => {
-    if (BACKEND_URL && address) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/vesting/${address}`);
-        if (res.ok) return await res.json();
-      } catch (err) {
-        console.warn("Backend vesting query failed:", err);
-      }
-    }
+    const data = await potdoClient.getVesting(address || "");
+    if (data) return data;
 
     return {
       locked: planckToPot(200000000000000000n),
@@ -1103,18 +915,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const estimateFee = async (command: string): Promise<FeeEstimate> => {
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/estimate-fee`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command })
-        });
-        if (res.ok) return await res.json();
-      } catch (err) {
-        console.warn("Backend fee estimate failed:", err);
-      }
-    }
+    const data = await potdoClient.estimateFee(command);
+    if (data) return data;
 
     return {
       partialFee: "0.0012",
@@ -1124,14 +926,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const queryChainInfo = async (): Promise<ChainInfo> => {
-    if (BACKEND_URL) {
-      try {
-        const res = await fetch(`${BACKEND_URL}/chain-info`);
-        if (res.ok) return await res.json();
-      } catch (err) {
-        console.warn("Backend chain info query failed:", err);
-      }
-    }
+    const data = await potdoClient.getChainInfo();
+    if (data) return data;
 
     return {
       chainName: "Portaldot",
@@ -1173,18 +969,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         if (active) setTargetChainName("Portaldot Network");
       }
       
-      if (BACKEND_URL) {
-        try {
-          const res = await fetch(`${BACKEND_URL}/health`);
-          if (res.ok && active) {
-            const data = await res.json();
-            if (data.rpc_endpoint) {
-              setRpcEndpoint(data.rpc_endpoint);
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to fetch backend health/RPC:", err);
+      try {
+        const health = await potdoClient.checkHealth();
+        if (health && health.rpc_endpoint && active) {
+          setRpcEndpoint(health.rpc_endpoint);
         }
+      } catch (err) {
+        console.warn("Failed to fetch backend health/RPC:", err);
       }
     };
     fetchTarget();

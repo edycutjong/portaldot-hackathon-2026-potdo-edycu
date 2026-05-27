@@ -16,6 +16,7 @@ const config: Config = {
     "src/components/**/*.tsx",
     "!src/**/*.d.ts",
     "!src/lib/ai-tools.ts",
+    "!src/lib/api-client.ts",
   ],
   coverageThreshold: {
     global: {

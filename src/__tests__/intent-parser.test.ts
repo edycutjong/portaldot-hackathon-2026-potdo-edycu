@@ -23,7 +23,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Alpha",
-      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
+      toAddress: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
       amount: 10,
     });
   });
@@ -43,7 +43,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Beta",
-      toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB",
+      toAddress: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o",
       amount: 50,
     });
   });
@@ -53,7 +53,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Gamma",
-      toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC",
+      toAddress: "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P",
       amount: 5.5,
     });
   });
@@ -72,7 +72,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Alpha",
-      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
+      toAddress: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
       amount: -1,
     });
   });
@@ -82,7 +82,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Beta",
-      toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB",
+      toAddress: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o",
       amount: -1,
     });
   });
@@ -228,7 +228,7 @@ describe("parseIntent", () => {
     expect(result?.action).toBe("check_identity");
     if (result?.action === "check_identity") {
       expect(result.name).toBe("Alpha");
-      expect(result.address).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA");
+      expect(result.address).toBe("5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm");
     }
   });
 
@@ -334,7 +334,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Alpha",
-      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
+      toAddress: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
       amount: 10,
     });
   });
@@ -405,7 +405,7 @@ describe("parseIntent", () => {
     expect(result).toEqual({
       action: "transfer",
       to: "Alpha",
-      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
+      toAddress: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
       amount: -1,
     });
   });

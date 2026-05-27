@@ -38,10 +38,10 @@ describe("constants", () => {
 
   it("DEMO_ADDRESS_BOOK has Alpha, Beta, Gamma, Delta", () => {
     expect(Object.values(DEMO_ADDRESS_BOOK)).toEqual(["Alpha", "Beta", "Gamma", "Delta"]);
-    expect(DEMO_ADDRESS_BOOK["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA"]).toBe("Alpha");
-    expect(DEMO_ADDRESS_BOOK["5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB"]).toBe("Beta");
-    expect(DEMO_ADDRESS_BOOK["5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC"]).toBe("Gamma");
-    expect(DEMO_ADDRESS_BOOK["5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD"]).toBe("Delta");
+    expect(DEMO_ADDRESS_BOOK["5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm"]).toBe("Alpha");
+    expect(DEMO_ADDRESS_BOOK["5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o"]).toBe("Beta");
+    expect(DEMO_ADDRESS_BOOK["5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P"]).toBe("Gamma");
+    expect(DEMO_ADDRESS_BOOK["5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX"]).toBe("Delta");
   });
 
   it("TESTNET_ADDRESS_BOOK has Alice, Bob, Charlie, Dave", () => {

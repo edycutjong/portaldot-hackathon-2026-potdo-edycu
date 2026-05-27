@@ -14,10 +14,10 @@ export const SS58_PREFIX = 42;
 
 // Named demo accounts (Greek alphabet) - Address -> Name mapping
 export const DEMO_ADDRESS_BOOK: Record<string, string> = {
-  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": "Alpha",
-  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": "Beta",
-  "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC": "Gamma",
-  "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD": "Delta",
+  "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": "Alpha",
+  "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": "Beta",
+  "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P": "Gamma",
+  "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX": "Delta",
 };
 
 // Named testnet accounts (Substrate defaults) - Address -> Name mapping
