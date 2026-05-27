@@ -745,8 +745,8 @@ export default function LandingPage() {
               © 2026 Edy Cu. MIT License.
             </p>
             <div className="flex items-center gap-4 text-xs text-slate-600">
-              <Link href="/dashboard" className="hover:text-slate-400 transition-colors">Privacy</Link>
-              <Link href="/dashboard" className="hover:text-slate-400 transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-slate-400 transition-colors">Privacy</Link>
+              <Link href="/terms" className="hover:text-slate-400 transition-colors">Terms</Link>
               <a href="https://github.com/edycutjong/potdo/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer" className="hover:text-slate-400 transition-colors">Security</a>
             </div>
           </div>
