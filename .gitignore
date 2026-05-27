@@ -43,3 +43,5 @@ assets/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+backend/__pycache__/
+.coverage
