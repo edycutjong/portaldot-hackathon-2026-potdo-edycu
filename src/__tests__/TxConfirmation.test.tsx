@@ -63,4 +63,32 @@ describe("TxConfirmation", () => {
     expect(screen.getByText("Transaction Confirmed!")).toBeInTheDocument();
     expect(screen.queryByText("View on Explorer")).not.toBeInTheDocument();
   });
+
+  it("shows 'Demo Transaction' badge for demo hashes", () => {
+    render(
+      <TxConfirmation
+        txResult={{
+          status: "finalized",
+          txHash: "0xdemo_tx_hash_finalized",
+          blockNumber: 42000,
+        }}
+      />
+    );
+    expect(screen.getByText("Demo Transaction ✨")).toBeInTheDocument();
+    expect(screen.queryByText("View on Explorer →")).not.toBeInTheDocument();
+  });
+
+  it("shows explorer link for real hashes", () => {
+    render(
+      <TxConfirmation
+        txResult={{
+          status: "finalized",
+          txHash: "0xabc123real",
+          explorerUrl: "https://portaldot.subscan.io/extrinsic/0xabc123real",
+        }}
+      />
+    );
+    expect(screen.getByText("View on Explorer →")).toBeInTheDocument();
+    expect(screen.queryByText("Demo Transaction ✨")).not.toBeInTheDocument();
+  });
 });

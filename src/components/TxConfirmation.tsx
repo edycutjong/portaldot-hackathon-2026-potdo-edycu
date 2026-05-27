@@ -126,14 +126,20 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
         )}
 
         {txResult.txHash && (
-          <a
-            href={txResult.explorerUrl || `#tx-${txResult.txHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
-          >
-            View on Explorer →
-          </a>
+          txResult.txHash.startsWith("0xdemo") ? (
+            <span className="inline-flex items-center gap-1 mt-3 text-sm text-amber-400">
+              Demo Transaction ✨
+            </span>
+          ) : (
+            <a
+              href={txResult.explorerUrl || `#tx-${txResult.txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              View on Explorer →
+            </a>
+          )
         )}
       </div>
     </motion.div>

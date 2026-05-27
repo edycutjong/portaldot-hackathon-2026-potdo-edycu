@@ -15,16 +15,34 @@ import { logTransaction } from "@/lib/supabase";
 import { planckToPot } from "@/lib/format";
 
 interface ChatInterfaceProps {
+  externalInput?: string;
+  onExternalInputConsumed?: () => void;
   onCommandExecuted?: () => void;
 }
 
-export function ChatInterface({ onCommandExecuted }: ChatInterfaceProps) {
+export function ChatInterface({ externalInput, onExternalInputConsumed, onCommandExecuted }: ChatInterfaceProps) {
   const { address, balance, executeTransfer, executeBatch, connect, connected } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const [lastConsumed, setLastConsumed] = useState<string | undefined>(undefined);
+
+  // Consume external input (e.g. from CommandHistory click)
+  // "Adjusting state during render" pattern — React 19 approved
+  if (externalInput && externalInput !== lastConsumed) {
+    setLastConsumed(externalInput);
+    setInput(externalInput);
+    onExternalInputConsumed?.();
+  }
+
+  // Focus the input when external input arrives (DOM side-effect)
+  useEffect(() => {
+    if (externalInput) {
+      inputRef.current?.focus();
+    }
+  }, [externalInput]);
 
   const handleExecute = async (msg: ChatMessage) => {
     if (!address || !connected) {

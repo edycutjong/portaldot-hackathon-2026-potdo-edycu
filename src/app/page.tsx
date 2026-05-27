@@ -23,6 +23,7 @@ export default function Home() {
   } = useWallet();
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [pendingInput, setPendingInput] = useState("");
 
   const triggerHistoryReload = useCallback(() => {
     setReloadTrigger((prev) => prev + 1);
@@ -75,9 +76,13 @@ export default function Home() {
         onSelectAccount={selectAccount}
       />
       <div className="flex flex-1 overflow-hidden">
-        <CommandHistory entries={history} />
+        <CommandHistory entries={history} onSelect={(entry) => setPendingInput(entry.command)} />
         <main className="flex-1 flex flex-col min-w-0">
-          <ChatInterface onCommandExecuted={triggerHistoryReload} />
+          <ChatInterface
+            externalInput={pendingInput}
+            onExternalInputConsumed={() => setPendingInput("")}
+            onCommandExecuted={triggerHistoryReload}
+          />
         </main>
       </div>
     </div>
