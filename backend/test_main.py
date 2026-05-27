@@ -1329,3 +1329,93 @@ def test_execute_batch_proxied_real(mock_keypair_class, mock_substrate):
     assert response.status_code == 200
     assert response.json()["txHash"] == "0xbatch_proxied"
     assert response.json()["proxied"] is True
+
+
+@patch('main.SubstrateInterface')
+def test_execute_add_proxy_simulated(mock_substrate):
+    with patch('main.MNEMONIC', ''):
+        response = client.post("/add-proxy", json={
+            "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+        })
+        assert response.status_code == 200
+        assert response.json()["simulated"] is True
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_execute_add_proxy_real(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xadd_proxy_success"
+    mock_receipt.block_number = 104
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+    
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+    
+    response = client.post("/add-proxy", json={
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xadd_proxy_success"
+
+
+@patch('main.SubstrateInterface')
+def test_execute_add_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("failed to compose")
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/add-proxy", json={
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_execute_remove_proxy_simulated(mock_substrate):
+    with patch('main.MNEMONIC', ''):
+        response = client.post("/remove-proxy", json={
+            "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+        })
+        assert response.status_code == 200
+        assert response.json()["simulated"] is True
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_execute_remove_proxy_real(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xremove_proxy_success"
+    mock_receipt.block_number = 105
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+    
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+    
+    response = client.post("/remove-proxy", json={
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xremove_proxy_success"
+
+
+@patch('main.SubstrateInterface')
+def test_execute_remove_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("failed to compose")
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/remove-proxy", json={
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 400

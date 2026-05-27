@@ -242,6 +242,29 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/add-proxy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ delegate_address: delegate, proxy_type: pType })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          statusCallback("submitted", data.txHash);
+          statusCallback("finalized", data.txHash, data.blockNumber);
+          await checkProxyStatus();
+          return;
+        } else {
+          const errData = await res.json();
+          statusCallback("failed", undefined, undefined, errData.detail || "Failed to add proxy");
+          return;
+        }
+      } catch (err: unknown) {
+        console.warn("Backend add-proxy failed:", err);
+      }
+    }
+    
     // Fallback/Simulated
     await new Promise((r) => setTimeout(r, 800));
     statusCallback("submitted", "0xdemo_add_proxy_tx");
@@ -268,6 +291,29 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (handled) {
       await checkProxyStatus();
       return;
+    }
+    
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/remove-proxy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ delegate_address: delegate, proxy_type: pType })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          statusCallback("submitted", data.txHash);
+          statusCallback("finalized", data.txHash, data.blockNumber);
+          await checkProxyStatus();
+          return;
+        } else {
+          const errData = await res.json();
+          statusCallback("failed", undefined, undefined, errData.detail || "Failed to remove proxy");
+          return;
+        }
+      } catch (err: unknown) {
+        console.warn("Backend remove-proxy failed:", err);
+      }
     }
     
     // Fallback/Simulated

@@ -185,6 +185,16 @@ class SubmitRemoveProxyRequest(BaseModel):
     proxy_type: str = "Any"
     signature: str
 
+class AddProxyRequest(BaseModel):
+    delegate_address: str
+    proxy_type: str = "Any"
+    seed: Optional[str] = None
+
+class RemoveProxyRequest(BaseModel):
+    delegate_address: str
+    proxy_type: str = "Any"
+    seed: Optional[str] = None
+
 class EstimateFeeRequest(BaseModel):
     command: str
 
@@ -1275,6 +1285,88 @@ def submit_remove_proxy(req: SubmitRemoveProxyRequest):
             }
         )
         return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/add-proxy")
+def execute_add_proxy(req: AddProxyRequest):
+    keypair = get_signing_keypair(req.seed)
+    if not keypair:
+        time.sleep(1.0)
+        return {
+            "status": "finalized",
+            "txHash": "0xdemo_add_proxy_" + "".join(random.choices("0123456789abcdef", k=16)),
+            "blockNumber": 142857,
+            "simulated": True
+        }
+        
+    client = get_substrate_client()
+    try:
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='add_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
+        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+        
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Add proxy failed: {rd['error_message']}" if rd.get("error_message") else "Add proxy failed"
+            raise HTTPException(status_code=400, detail=err_detail)
+            
+        return {
+            "status": "finalized",
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
+            "simulated": False
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/remove-proxy")
+def execute_remove_proxy(req: RemoveProxyRequest):
+    keypair = get_signing_keypair(req.seed)
+    if not keypair:
+        time.sleep(1.0)
+        return {
+            "status": "finalized",
+            "txHash": "0xdemo_remove_proxy_" + "".join(random.choices("0123456789abcdef", k=16)),
+            "blockNumber": 142857,
+            "simulated": True
+        }
+        
+    client = get_substrate_client()
+    try:
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='remove_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
+        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+        
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Remove proxy failed: {rd['error_message']}" if rd.get("error_message") else "Remove proxy failed"
+            raise HTTPException(status_code=400, detail=err_detail)
+            
+        return {
+            "status": "finalized",
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
+            "simulated": False
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
