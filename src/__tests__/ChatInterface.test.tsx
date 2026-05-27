@@ -450,10 +450,10 @@ describe("ChatInterface", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Confirm display name setting:")).toBeInTheDocument();
-      expect(screen.getByText("Execute Stake")).toBeInTheDocument(); // Set Identity uses preview StakingCard with amount 0
+      expect(screen.getByText("Set Identity Preview")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Execute Stake" }));
+    fireEvent.click(screen.getByRole("button", { name: "Set Identity" }));
     expect(mockExecuteSetIdentity).toHaveBeenCalled();
     const callbackId = mockExecuteSetIdentity.mock.calls[0][1];
     await act(async () => {
@@ -675,7 +675,7 @@ describe("ChatInterface", () => {
       expect(screen.getByText("Confirm identity:")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Execute Stake" }));
+    fireEvent.click(screen.getByRole("button", { name: "Set Identity" }));
     const idCallback = mockExecuteSetIdentity.mock.calls[0][1];
     await act(async () => {
       await idCallback("ready", undefined, undefined, undefined);

@@ -45,3 +45,6 @@ assets/
 next-env.d.ts
 backend/__pycache__/
 .coverage
+
+# portaldot local testnet binary
+testnet/

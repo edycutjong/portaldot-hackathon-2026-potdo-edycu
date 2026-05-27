@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback, type FormEvent, type KeyboardEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageBubble } from "./MessageBubble";
 import { TransferCard } from "./TransferCard";
@@ -9,12 +9,13 @@ import { BalanceWidget } from "./BalanceWidget";
 import { StakingCard } from "./StakingCard";
 import { StakingInfoWidget } from "./StakingInfoWidget";
 import { IdentityCard } from "./IdentityCard";
+import { SetIdentityCard } from "./SetIdentityCard";
 import { VestingWidget } from "./VestingWidget";
 import { FeeEstimateWidget } from "./FeeEstimateWidget";
 import { ChainInfoWidget } from "./ChainInfoWidget";
 import { TxConfirmation } from "./TxConfirmation";
 import { TxError } from "./TxError";
-import { SUGGESTED_COMMANDS } from "@/lib/constants";
+import { SUGGESTED_COMMANDS, SLASH_COMMANDS } from "@/lib/constants";
 import type { ChatMessage, ParsedIntent, TxResult, TxStatus, TransferIntent, BatchTransferIntent, StakeIntent, UnstakeIntent, SetIdentityIntent } from "@/lib/types";
 import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
@@ -277,8 +278,44 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
 
   const handleSuggestion = (cmd: string) => {
     setInput(cmd);
+    setSlashIndex(0);
     inputRef.current?.focus();
   };
+
+  // ── Slash command autocomplete ──────────────────────────
+  const [slashIndex, setSlashIndex] = useState(0);
+
+  const filteredSlash = useMemo(() => {
+    if (!input.startsWith("/")) return [];
+    const query = input.toLowerCase();
+    return SLASH_COMMANDS.filter((s) => s.command.startsWith(query));
+  }, [input]);
+
+  const showSlashMenu = input.startsWith("/") && filteredSlash.length > 0;
+
+  const selectSlashCommand = useCallback((idx: number) => {
+    const cmd = filteredSlash[idx];
+    if (cmd) {
+      setInput(cmd.example);
+      inputRef.current?.focus();
+    }
+  }, [filteredSlash]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+    if (!showSlashMenu) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSlashIndex((i) => Math.min(i + 1, filteredSlash.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSlashIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      selectSlashCommand(slashIndex);
+    } else if (e.key === "Escape") {
+      setInput("");
+    }
+  }, [showSlashMenu, filteredSlash.length, slashIndex, selectSlashCommand]);
 
   const renderIntentCard = (msg: ChatMessage) => {
     if (!msg.intent) return null;
@@ -328,9 +365,8 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         return msg.stakingInfo ? <StakingInfoWidget info={msg.stakingInfo} /> : null;
       case "set_identity":
         return (
-          <StakingCard
-            intent={{ action: "stake", amount: 0 } as never}
-            senderBalance={balance}
+          <SetIdentityCard
+            intent={msg.intent}
             isConnected={connected}
             status={msg.txResult?.status}
             onExecute={() => handleExecuteIdentity(msg)}
@@ -419,12 +455,51 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         className="p-4 border-t border-white/5"
       >
         <div className="relative">
+          {/* Slash command dropdown */}
+          <AnimatePresence>
+            {showSlashMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.15 }}
+                className="absolute bottom-full left-0 right-0 mb-2 bg-[#111118] border border-white/10 rounded-xl overflow-hidden shadow-xl shadow-black/40 max-h-[320px] overflow-y-auto z-50"
+                id="slash-menu"
+              >
+                <div className="px-3 py-2 text-[11px] text-slate-500 uppercase tracking-wider border-b border-white/5">
+                  Commands
+                </div>
+                {filteredSlash.map((cmd, i) => (
+                  <button
+                    key={cmd.command}
+                    onClick={() => selectSlashCommand(i)}
+                    className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors duration-100 ${
+                      i === slashIndex
+                        ? "bg-cyan-500/10 text-cyan-300"
+                        : "text-slate-300 hover:bg-white/5"
+                    }`}
+                  >
+                    <span className="font-mono text-sm font-semibold text-cyan-400 w-[80px] shrink-0">
+                      {cmd.command}
+                    </span>
+                    <span className="text-sm text-slate-400 truncate">
+                      {cmd.description}
+                    </span>
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
           <input
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder='Try: "Send 10 POT to Alice" or "Stake 100 POT"...'
+            onChange={(e) => {
+              setInput(e.target.value);
+              setSlashIndex(0);
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder='Try: "Send 10 POT to Alice" (or type "/" for commands)...'
             disabled={isLoading}
             className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200 disabled:opacity-50"
             id="chat-input"

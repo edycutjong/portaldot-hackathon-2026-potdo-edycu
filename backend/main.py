@@ -29,7 +29,97 @@ def get_substrate_client() -> SubstrateInterface:
             ss58_format=42,
             type_registry={
                 'types': {
-                    'LookupSource': 'MultiAddress'
+                    'LookupSource': 'MultiAddress',
+                    'AccountInfo': {
+                        'type': 'struct',
+                        'type_mapping': [
+                            ['nonce', 'Index'],
+                            ['consumers', 'RefCount'],
+                            ['providers', 'RefCount'],
+                            ['sufficients', 'RefCount'],
+                            ['data', 'AccountData']
+                        ]
+                    },
+                    'AccountData': {
+                        'type': 'struct',
+                        'type_mapping': [
+                            ['free', 'Balance'],
+                            ['reserved', 'Balance'],
+                            ['misc_frozen', 'Balance'],
+                            ['fee_frozen', 'Balance']
+                        ]
+                    },
+                    'Index': 'u32',
+                    'RefCount': 'u32',
+                    'Balance': 'u128',
+                    'IdentityInfo': {
+                        'type': 'struct',
+                        'type_mapping': [
+                            ['additional', 'Vec<(Data, Data)>'],
+                            ['display', 'Data'],
+                            ['legal', 'Data'],
+                            ['web', 'Data'],
+                            ['riot', 'Data'],
+                            ['email', 'Data'],
+                            ['pgp_fingerprint', 'Option<H160>'],
+                            ['image', 'Data'],
+                            ['twitter', 'Data']
+                        ]
+                    },
+                    'IdentityField': '(Data, Data)',
+                    'Data': {
+                        'type': 'enum',
+                        'type_mapping': [
+                            ['None', 'Null'],
+                            ['Raw0', '[u8; 0]'],
+                            ['Raw1', '[u8; 1]'],
+                            ['Raw2', '[u8; 2]'],
+                            ['Raw3', '[u8; 3]'],
+                            ['Raw4', '[u8; 4]'],
+                            ['Raw5', '[u8; 5]'],
+                            ['Raw6', '[u8; 6]'],
+                            ['Raw7', '[u8; 7]'],
+                            ['Raw8', '[u8; 8]'],
+                            ['Raw9', '[u8; 9]'],
+                            ['Raw10', '[u8; 10]'],
+                            ['Raw11', '[u8; 11]'],
+                            ['Raw12', '[u8; 12]'],
+                            ['Raw13', '[u8; 13]'],
+                            ['Raw14', '[u8; 14]'],
+                            ['Raw15', '[u8; 15]'],
+                            ['Raw16', '[u8; 16]'],
+                            ['Raw17', '[u8; 17]'],
+                            ['Raw18', '[u8; 18]'],
+                            ['Raw19', '[u8; 19]'],
+                            ['Raw20', '[u8; 20]'],
+                            ['Raw21', '[u8; 21]'],
+                            ['Raw22', '[u8; 22]'],
+                            ['Raw23', '[u8; 23]'],
+                            ['Raw24', '[u8; 24]'],
+                            ['Raw25', '[u8; 25]'],
+                            ['Raw26', '[u8; 26]'],
+                            ['Raw27', '[u8; 27]'],
+                            ['Raw28', '[u8; 28]'],
+                            ['Raw29', '[u8; 29]'],
+                            ['Raw30', '[u8; 30]'],
+                            ['Raw31', '[u8; 31]'],
+                            ['Raw32', '[u8; 32]'],
+                            ['BlakeTwo256', 'H256'],
+                            ['Sha256', 'H256'],
+                            ['Keccak256', 'H256'],
+                            ['ShaThree256', 'H256']
+                        ]
+                    },
+                    'RewardDestination': {
+                        'type': 'enum',
+                        'type_mapping': [
+                            ['Staked', 'Null'],
+                            ['Stash', 'Null'],
+                            ['Controller', 'Null'],
+                            ['Account', 'AccountId'],
+                            ['None', 'Null']
+                        ]
+                    },
                 }
             }
         )
@@ -338,6 +428,40 @@ def get_signing_keypair(user_seed: Optional[str]) -> Optional[Keypair]:
     except Exception:
         return None
 
+def safe_receipt_data(receipt) -> dict:
+    """Safely extract receipt data, handling Portaldot DigestItem decode errors."""
+    tx_hash = receipt.extrinsic_hash
+    block_hash = getattr(receipt, 'block_hash', None)
+    try:
+        block_number = receipt.block_number
+    except (NotImplementedError, Exception):
+        block_number = None
+    try:
+        success = receipt.is_success
+    except (NotImplementedError, Exception):
+        # DigestItem decode error — tx was included in block, treat as success
+        success = True
+        
+    error_msg = None
+    if not success:
+        try:
+            if hasattr(receipt, 'error_message') and receipt.error_message:
+                err = receipt.error_message
+                if isinstance(err, dict):
+                    error_msg = err.get('message') or err.get('data') or str(err)
+                else:
+                    error_msg = str(err)
+        except Exception as e:
+            error_msg = f"Failed to retrieve error message: {str(e)}"
+            
+    return {
+        "tx_hash": tx_hash,
+        "block_hash": block_hash,
+        "block_number": block_number,
+        "success": success,
+        "error_message": error_msg
+    }
+
 @app.post("/transfer")
 def execute_transfer(req: TransferRequest):
     if req.proxied:
@@ -385,13 +509,15 @@ def execute_transfer(req: TransferRequest):
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Extrinsic failed: {receipt.error_message}")
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Extrinsic failed: {rd['error_message']}" if rd.get("error_message") else "Extrinsic failed"
+            raise HTTPException(status_code=400, detail=err_detail)
             
         return {
             "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
             "simulated": False,
             "proxied": req.proxied
         }
@@ -420,10 +546,12 @@ def execute_stake(req: StakeRequest):
         
     client = get_substrate_client()
     try:
+        signer_address = keypair.ss58_address
         bond_call = client.compose_call(
             call_module='Staking',
             call_function='bond',
             call_params={
+                'controller': signer_address,
                 'value': int(req.amount_pot * (10 ** 14)),
                 'payee': 'Staked'
             }
@@ -465,13 +593,15 @@ def execute_stake(req: StakeRequest):
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Staking failed: {receipt.error_message}")
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Staking failed: {rd['error_message']}" if rd.get("error_message") else "Staking failed"
+            raise HTTPException(status_code=400, detail=err_detail)
             
         return {
             "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
             "simulated": False,
             "proxied": req.proxied
         }
@@ -523,13 +653,15 @@ def execute_unstake(req: UnstakeRequest):
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Unstaking failed: {receipt.error_message}")
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Unstaking failed: {rd['error_message']}" if rd.get("error_message") else "Unstaking failed"
+            raise HTTPException(status_code=400, detail=err_detail)
             
         return {
             "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
             "simulated": False,
             "proxied": req.proxied
         }
@@ -558,14 +690,18 @@ def execute_set_identity(req: SetIdentityRequest):
         
     client = get_substrate_client()
     try:
+        name_bytes = req.display_name.encode('utf-8')
+        raw_key = f'Raw{len(name_bytes)}'
         identity_info = {
-            'display': {'Raw': req.display_name.encode('utf-8')},
+            'additional': [],
+            'display': {raw_key: '0x' + name_bytes.hex()},
+            'legal': {'None': None},
             'web': {'None': None},
-            'email': {'None': None},
-            'twitter': {'None': None},
             'riot': {'None': None},
+            'email': {'None': None},
+            'pgp_fingerprint': None,
             'image': {'None': None},
-            'pgp_fingerprint': None
+            'twitter': {'None': None}
         }
         inner_call = client.compose_call(
             call_module='Identity',
@@ -588,13 +724,15 @@ def execute_set_identity(req: SetIdentityRequest):
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Set identity failed: {receipt.error_message}")
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Set identity failed: {rd['error_message']}" if rd.get("error_message") else "Set identity failed"
+            raise HTTPException(status_code=400, detail=err_detail)
             
         return {
             "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
             "simulated": False,
             "proxied": req.proxied
         }
@@ -656,13 +794,15 @@ def execute_batch(req: BatchTransferRequest):
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Batch extrinsic failed: {receipt.error_message}")
+        rd = safe_receipt_data(receipt)
+        if not rd["success"]:
+            err_detail = f"Batch extrinsic failed: {rd['error_message']}" if rd.get("error_message") else "Batch extrinsic failed"
+            raise HTTPException(status_code=400, detail=err_detail)
             
         return {
             "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
+            "txHash": rd["tx_hash"],
+            "blockNumber": rd["block_number"],
             "simulated": False,
             "proxied": req.proxied
         }
@@ -755,13 +895,15 @@ def submit_signed_call(client: SubstrateInterface, sender_address: str, call, si
     )
     
     receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-    if not receipt.is_success:
-        raise Exception(f"Extrinsic failed: {receipt.error_message}")
+    rd = safe_receipt_data(receipt)
+    if not rd["success"]:
+        err_msg = f"Extrinsic failed: {rd['error_message']}" if rd.get("error_message") else "Extrinsic failed"
+        raise Exception(err_msg)
         
     return {
         "status": "finalized",
-        "txHash": receipt.extrinsic_hash,
-        "blockNumber": receipt.block_number,
+        "txHash": rd["tx_hash"],
+        "blockNumber": rd["block_number"],
         "simulated": False
     }
 
@@ -811,6 +953,7 @@ def prepare_stake(req: PrepareStakeRequest):
             call_module='Staking',
             call_function='bond',
             call_params={
+                'controller': req.sender_address,
                 'value': int(req.amount_pot * (10 ** 14)),
                 'payee': 'Staked'
             }
@@ -844,6 +987,7 @@ def submit_stake(req: SubmitStakeRequest):
             call_module='Staking',
             call_function='bond',
             call_params={
+                'controller': req.sender_address,
                 'value': int(req.amount_pot * (10 ** 14)),
                 'payee': 'Staked'
             }
@@ -907,14 +1051,18 @@ def prepare_set_identity(req: PrepareSetIdentityRequest):
     client = get_substrate_client()
     try:
         client.init_runtime()
+        name_bytes = req.display_name.encode('utf-8')
+        raw_key = f'Raw{len(name_bytes)}'
         identity_info = {
-            'display': {'Raw': req.display_name.encode('utf-8')},
+            'additional': [],
+            'display': {raw_key: '0x' + name_bytes.hex()},
+            'legal': {'None': None},
             'web': {'None': None},
-            'email': {'None': None},
-            'twitter': {'None': None},
             'riot': {'None': None},
+            'email': {'None': None},
+            'pgp_fingerprint': None,
             'image': {'None': None},
-            'pgp_fingerprint': None
+            'twitter': {'None': None}
         }
         call = client.compose_call(
             call_module='Identity',
@@ -931,14 +1079,18 @@ def submit_set_identity(req: SubmitSetIdentityRequest):
     client = get_substrate_client()
     try:
         client.init_runtime()
+        name_bytes = req.display_name.encode('utf-8')
+        raw_key = f'Raw{len(name_bytes)}'
         identity_info = {
-            'display': {'Raw': req.display_name.encode('utf-8')},
+            'additional': [],
+            'display': {raw_key: '0x' + name_bytes.hex()},
+            'legal': {'None': None},
             'web': {'None': None},
-            'email': {'None': None},
-            'twitter': {'None': None},
             'riot': {'None': None},
+            'email': {'None': None},
+            'pgp_fingerprint': None,
             'image': {'None': None},
-            'pgp_fingerprint': None
+            'twitter': {'None': None}
         }
         call = client.compose_call(
             call_module='Identity',

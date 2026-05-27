@@ -1,6 +1,39 @@
-version: '3.8'
+# ─────────────────────────────────────────────────────────────
+# Potdo — Full Stack Docker Compose
+# ─────────────────────────────────────────────────────────────
+# Runs testnet (Substrate dev node) + backend + frontend
+# in a single `docker compose up` command.
+#
+# Usage:
+#   make docker-up     → start all services
+#   make docker-down   → stop all services
+#   make docker-clean  → remove everything
+# ─────────────────────────────────────────────────────────────
 
 services:
+  # ── Substrate Dev Node (Testnet) ────────────────────────────
+  # Uses official Substrate node image with --dev mode.
+  # Same core pallets as Portaldot: Balances, Staking, Identity,
+  # Vesting, Proxy, Utility (batch), System.
+  testnet:
+    image: parity/polkadot:latest
+    command:
+      - "--dev"
+      - "--tmp"
+      - "--rpc-external"
+      - "--rpc-cors=all"
+      - "--rpc-methods=unsafe"
+    ports:
+      - "9944:9944"
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/9944' 2>/dev/null || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+    restart: unless-stopped
+
+  # ── Python FastAPI Backend ──────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -9,10 +42,14 @@ services:
       - "8000:8000"
     environment:
       - PORT=8000
-      - PORTALDOT_RPC=wss://mainnet.portaldot.io
-      - MNEMONIC=${MNEMONIC:-}
+      - PORTALDOT_RPC=ws://testnet:9944
+      - MNEMONIC=//Alice
+    depends_on:
+      testnet:
+        condition: service_healthy
     restart: always
 
+  # ── Next.js Frontend ────────────────────────────────────────
   frontend:
     build:
       context: .

@@ -269,7 +269,7 @@ const FEATURES = [
 const STATS = [
   { value: "14", label: "Decimal Precision", color: "text-cyan-400" },
   { value: "12", label: "Portaldot APIs", color: "text-purple-400" },
-  { value: "148+", label: "Tests Passing", color: "text-green-400" },
+  { value: "262", label: "Tests Passing", color: "text-green-400" },
   { value: "100%", label: "Code Coverage", color: "text-amber-400" },
 ];
 

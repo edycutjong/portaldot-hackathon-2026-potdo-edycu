@@ -1,4 +1,4 @@
-.PHONY: help install dev dev-frontend dev-backend build lint typecheck test test-coverage ci docker-up docker-down docker-build
+.PHONY: help install dev dev-frontend dev-backend build lint typecheck test test-coverage ci docker-up docker-down docker-clean docker-build docker-logs setup-testnet setup-testnet-docker testnet
 
 # Colors for help output
 CYAN := \033[36m
@@ -16,9 +16,14 @@ help:
 	@echo "  ${CYAN}make test${RESET}          Run Jest test suite"
 	@echo "  ${CYAN}make test-coverage${RESET} Run Jest tests with coverage report"
 	@echo "  ${CYAN}make ci${RESET}             Run all checks and tests for continuous integration (Frontend & Backend)"
-	@echo "  ${CYAN}make docker-up${RESET}     Build and launch all services with Docker Compose"
-	@echo "  ${CYAN}make docker-down${RESET}   Stop and remove Docker Compose containers"
-	@echo "  ${CYAN}make docker-build${RESET}  Rebuild Docker Compose containers"
+	@echo "  ${CYAN}make docker-up${RESET}     Start all services (testnet + backend + frontend) with Docker"
+	@echo "  ${CYAN}make docker-down${RESET}   Stop containers"
+	@echo "  ${CYAN}make docker-clean${RESET}  Stop containers + remove images and volumes"
+	@echo "  ${CYAN}make docker-build${RESET}  Rebuild Docker images"
+	@echo "  ${CYAN}make docker-logs${RESET}   Tail logs from all containers"
+	@echo "  ${CYAN}make setup-testnet${RESET} Copy Portaldot dev node binary (auto-detects OS)"
+	@echo "  ${CYAN}make setup-testnet-docker${RESET} Copy Linux binary for Docker testnet"
+	@echo "  ${CYAN}make testnet${RESET}       Start local Portaldot dev node (ws://127.0.0.1:9944)"
 
 install:
 	@echo "Installing frontend Node dependencies..."
@@ -61,11 +66,46 @@ ci:
 		echo "⚠️  Skipping backend tests (substrate-interface not installed). Run 'make install' to enable."
 
 docker-up:
-	docker compose up --build
+	@echo "🚀 Starting all services (testnet + backend + frontend)..."
+	docker compose up --build -d
+	@echo ""
+	@echo "✅ All services running:"
+	@echo "   Testnet   → ws://localhost:9944 (Docker)"
+	@echo "   Backend   → http://localhost:8000"
+	@echo "   Frontend  → http://localhost:3000"
+	@echo ""
+	@echo "   Use 'make docker-logs' to tail logs"
+	@echo "   Use 'make docker-down' to stop"
 
 docker-down:
+	@echo "⏹  Stopping containers..."
 	docker compose down
+	@echo "✅ Stopped"
+
+docker-clean:
+	@echo "🧹 Stopping containers and removing images + volumes..."
+	docker compose down --rmi all --volumes --remove-orphans
+	@echo "✅ Clean — all containers, images, and volumes removed"
 
 docker-build:
 	docker compose build
+
+docker-logs:
+	docker compose logs -f --tail=50
+
+setup-testnet:
+	@./scripts/setup-testnet.sh
+
+setup-testnet-docker:
+	@./scripts/setup-testnet.sh --docker
+
+testnet:
+	@if [ ! -f testnet/portaldot_dev ]; then \
+		echo "❌ Dev node not found. Run 'make setup-testnet' first."; \
+		exit 1; \
+	fi
+	@echo "🚀 Starting Portaldot dev node on ws://127.0.0.1:9944 ..."
+	@echo "   Press Ctrl+C to stop"
+	@echo ""
+	./testnet/portaldot_dev --dev --tmp
 
