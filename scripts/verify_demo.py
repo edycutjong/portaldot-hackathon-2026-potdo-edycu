@@ -9,7 +9,6 @@ Usage: python3 scripts/verify_demo.py
 
 import sys
 import os
-import json
 import subprocess
 
 PASS = 0

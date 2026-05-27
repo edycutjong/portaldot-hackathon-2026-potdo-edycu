@@ -11,6 +11,7 @@ Usage: python3 scripts/check_submission_readiness.py
 import sys
 import os
 import re
+import json
 
 PASS = 0
 FAIL = 0
@@ -76,14 +77,14 @@ def main() -> None:
         "public/og-image.png",
         ".env.example",
     ]
-    for f in required:
-        check(f"  {f}", os.path.isfile(f))
+    for filepath in required:
+        check(f"  {filepath}", os.path.isfile(filepath))
 
     # ── 2. README has key sections ───────────────────────
     print("\n📝 README Sections:")
     if os.path.isfile("README.md"):
-        with open("README.md") as f:
-            readme = f.read()
+        with open("README.md") as fh:
+            readme = fh.read()
 
         sections = [
             ("Problem & Solution", "Problem"),
@@ -124,9 +125,8 @@ def main() -> None:
     # ── 4. Package.json fields ───────────────────────────
     print("\n📦 package.json:")
     if os.path.isfile("package.json"):
-        import json
-        with open("package.json") as f:
-            pkg = json.load(f)
+        with open("package.json") as fh:
+            pkg = json.load(fh)
         check(f"name: {pkg.get('name', 'MISSING')}", bool(pkg.get("name")))
         check(f"version: {pkg.get('version', 'MISSING')}", bool(pkg.get("version")))
         check("scripts.dev exists", "dev" in pkg.get("scripts", {}))
