@@ -66,7 +66,7 @@
 | **Chain SDK** | Portaldot SDK |
 | **Database** | Supabase (PostgreSQL) — transaction logging |
 | **Animation** | Framer Motion + Canvas API (confetti) |
-| **Testing** | Jest + React Testing Library (100% coverage) |
+| **Testing** | Jest + React Testing Library (99.8% coverage) |
 
 ```
 User Input → Intent Parser → Structured Intent → Generative UI Card → Execute on Chain
@@ -246,17 +246,17 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 244 tests
-npm run test:coverage # Coverage report (100%)
+npm run test          # Run 254 tests
+npm run test:coverage # Coverage report (99.8%)
 npm run ci            # Full CI pipeline
 ```
 
 **Coverage Report:**
 | Module | Stmts | Branch | Funcs | Lines |
 |---|---|---|---|---|
-| **Overall** | 100% | 100% | 100% | 100% |
+| **Overall** | 99.81% | 99.60% | 100% | 100% |
 | `lib/` | 100% | 100% | 100% | 100% |
-| `components/` | 100% | 100% | 100% | 100% |
+| `components/` | 99.70% | 99.42% | 100% | 100% |
 
 ## 📁 Project Structure
 ```
@@ -286,7 +286,7 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 23 test suites, 244 tests
+│   └── __tests__/             # 24 test suites, 254 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
