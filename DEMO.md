@@ -92,8 +92,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 npm run lint          # ESLint — 0 errors
 npm run typecheck     # TypeScript — 0 errors
-npm run test          # 23 suites, 244 tests
-npm run test:coverage # 100% coverage across all metrics
+npm run test          # 24 suites, 254 tests
+npm run test:coverage # 99.8% statement coverage / 100% line coverage
 npm run ci            # Full pipeline (lint + typecheck + test:coverage)
 npm run build         # Production build — static prerender
 ```
