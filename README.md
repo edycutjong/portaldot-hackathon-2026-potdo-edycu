@@ -8,6 +8,8 @@
 
   [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
   [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](#)
+  [![Pitch Deck](https://img.shields.io/badge/📊_Pitch-Deck-a855f7?style=for-the-badge)](docs/pitch_deck.md)
+  [![Demo Guide](https://img.shields.io/badge/📖_Demo-Guide-22c55e?style=for-the-badge)](DEMO.md)
   [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
 
   <br/>
@@ -273,10 +275,38 @@ potdo/
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
+├── DEMO.md              # Step-by-step demo walkthrough for judges
 ├── LICENSE              # MIT
 ├── SECURITY.md          # Security policy
+├── scripts/             # Verification scripts
 └── README.md            # You are here
 ```
+
+## ⚡ Portaldot Integration Depth
+
+Potdo is architecturally inseparable from Portaldot. Every component is hardwired to Portaldot's Substrate runtime, RPC layer, and native token economics.
+
+| # | Portaldot API | Usage in Potdo |
+|---|---|---|
+| 1 | `api.query.system.account(address)` | Pre-flight balance simulation |
+| 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
+| 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
+| 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
+| 5 | `@polkadot/extension-dapp` (web3Enable + web3Accounts) | Wallet integration |
+| 6 | WebSocket RPC subscription | Live balance updates |
+| 7 | POT native gas token (14 decimals) | Every tx pays gas in POT |
+| 8 | Substrate SS58 address format | AI validates against SS58 prefix |
+
+> Remove Portaldot and Potdo ceases to function. No fallback, no abstraction layer. This is a **Portaldot-native** application.
+
+## 🪞 Honest Limitations
+
+We believe transparency builds trust — especially in a hackathon:
+
+1. **No custom ink! contracts** — MVP uses only native pallets (`balances`, `utility`, `system`). Deliberate choice for demo reliability over complexity.
+2. **RPC endpoint dependency** — Demo depends on a working Portaldot RPC (`wss://mainnet.portaldot.io`). Fallback: demo mode with deterministic mock data.
+3. **AI is pattern matching (demo mode)** — Without an OpenAI API key, the intent parser uses deterministic word-to-number NLP rather than LLM inference. This is *honest* — the demo should work without external dependencies.
+4. **POT token acquisition unresolved** — No public faucet or exchange listing exists. On-chain transactions require organizer-provided tokens.
 
 ## 📄 License
 
@@ -285,3 +315,4 @@ potdo/
 ## 🙏 Acknowledgments
 
 Built for the [Portaldot Online S1 Hackathon](https://dorahacks.io/hackathon/portaldot-online-s1/detail) on DoraHacks. Thank you to the Portaldot team for the chain infrastructure and documentation.
+
