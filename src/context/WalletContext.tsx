@@ -85,6 +85,125 @@ const generateMockBlock = (): number => {
   return Math.floor(100000 + Math.random() * 900000);
 };
 
+const generateMockValidatorAddress = (seedString: string): string => {
+  const chars = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  let result = "5Val";
+  for (let i = 0; i < 44; i++) {
+    const idx = (seedString.charCodeAt(i % seedString.length) + i) % chars.length;
+    result += chars.charAt(idx);
+  }
+  return result;
+};
+
+const INITIAL_MOCK_BALANCES: Record<string, bigint> = {
+  // Testnet default dev accounts
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 100000000000000000n, // Alice: 1000 POT
+  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": 50000000000000000n,  // Bob: 500 POT
+  "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 15 POT
+  "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000n,    // Dave: 75 POT
+  // Demo accounts
+  "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": 100000000000000000n, // Alpha: 1000 POT
+  "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": 50000000000000000n,  // Beta: 500 POT
+  "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P": 1500000000000000n,   // Gamma: 15 POT
+  "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX": 7500000000000000n,    // Delta: 75 POT
+};
+
+const INITIAL_MOCK_STAKING: Record<string, { bonded: bigint; active: bigint; unlocking: bigint; nominations: string[] }> = {
+  // Testnet default dev accounts
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
+    bonded: 50000000000000000n,
+    active: 45000000000000000n,
+    unlocking: 5000000000000000n,
+    nominations: [
+      "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
+      "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
+    ],
+  },
+  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+    bonded: 20000000000000000n,
+    active: 20000000000000000n,
+    unlocking: 0n,
+    nominations: [],
+  },
+  // Demo accounts
+  "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": {
+    bonded: 50000000000000000n,
+    active: 45000000000000000n,
+    unlocking: 5000000000000000n,
+    nominations: [
+      "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
+      "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
+    ],
+  },
+  "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": {
+    bonded: 20000000000000000n,
+    active: 20000000000000000n,
+    unlocking: 0n,
+    nominations: [],
+  },
+};
+
+const INITIAL_MOCK_IDENTITIES: Record<string, OnChainIdentity> = {
+  // Testnet default dev accounts
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
+    display: "Alice",
+    web: "https://portaldot.io",
+    email: "alice@portaldot.io",
+    isVerified: true,
+    address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+  },
+  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+    display: "Bob",
+    web: "https://portaldot.io",
+    email: "bob@portaldot.io",
+    isVerified: true,
+    address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+  },
+  "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": {
+    display: "Charlie",
+    web: "https://portaldot.io",
+    email: "charlie@portaldot.io",
+    isVerified: true,
+    address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+  },
+  "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": {
+    display: "Dave",
+    web: "https://portaldot.io",
+    email: "dave@portaldot.io",
+    isVerified: true,
+    address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+  },
+  // Demo accounts
+  "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": {
+    display: "Alpha",
+    web: "https://portaldot.io",
+    email: "alpha@portaldot.io",
+    isVerified: true,
+    address: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
+  },
+  "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": {
+    display: "Beta",
+    web: "https://portaldot.io",
+    email: "beta@portaldot.io",
+    isVerified: true,
+    address: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o",
+  },
+  "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P": {
+    display: "Gamma",
+    web: "https://portaldot.io",
+    email: "gamma@portaldot.io",
+    isVerified: true,
+    address: "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P",
+  },
+  "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX": {
+    display: "Delta",
+    web: "https://portaldot.io",
+    email: "delta@portaldot.io",
+    isVerified: true,
+    address: "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX",
+  },
+};
+
 export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 export function WalletProvider({ children }: { children: React.ReactNode }) {
@@ -105,45 +224,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [checkingProxy, setCheckingProxy] = useState(false);
   const [isBalanceLoading, setIsBalanceLoading] = useState(false);
 
+  const [mockBalances, setMockBalances] = useState<Record<string, bigint>>(() => INITIAL_MOCK_BALANCES);
 
+  const [mockStaking, setMockStaking] = useState<Record<string, { bonded: bigint; active: bigint; unlocking: bigint; nominations: string[] }>>(() => INITIAL_MOCK_STAKING);
 
-  const [mockBalances, setMockBalances] = useState<Record<string, bigint>>({
-    // Testnet default dev accounts
-    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 100000000000000000n, // Alice: 1000 POT
-    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": 50000000000000000n,  // Bob: 500 POT
-    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 15 POT
-    "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000n,    // Dave: 75 POT
-    // Demo accounts
-    "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": 100000000000000000n, // Alpha: 1000 POT
-    "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": 50000000000000000n,  // Beta: 500 POT
-    "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P": 1500000000000000n,   // Gamma: 15 POT
-    "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX": 7500000000000000n,    // Delta: 75 POT
-  });
-
-  const [mockStaking, setMockStaking] = useState<Record<string, { bonded: bigint; active: bigint; unlocking: bigint }>>({
-    // Testnet default dev accounts
-    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
-      bonded: 50000000000000000n,
-      active: 45000000000000000n,
-      unlocking: 5000000000000000n,
-    },
-    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
-      bonded: 20000000000000000n,
-      active: 20000000000000000n,
-      unlocking: 0n,
-    },
-    // Demo accounts
-    "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm": {
-      bonded: 50000000000000000n,
-      active: 45000000000000000n,
-      unlocking: 5000000000000000n,
-    },
-    "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o": {
-      bonded: 20000000000000000n,
-      active: 20000000000000000n,
-      unlocking: 0n,
-    },
-  });
+  const [mockIdentities, setMockIdentities] = useState<Record<string, OnChainIdentity>>(() => INITIAL_MOCK_IDENTITIES);
 
   // Check if extension is installed (mocked/simulated)
   const extensionInstalled = typeof window !== "undefined" && !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
@@ -314,6 +399,26 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const disconnect = () => {
+    if (isDemoMode) {
+      setMockBalances(INITIAL_MOCK_BALANCES);
+      setMockStaking(INITIAL_MOCK_STAKING);
+      setMockIdentities(INITIAL_MOCK_IDENTITIES);
+      if (typeof window !== "undefined") {
+        try {
+          const keysToRemove: string[] = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith("potdo_chat_history_demo_network")) {
+              keysToRemove.push(key);
+            }
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+        } catch (err) {
+          console.warn("Failed to clear local storage demo chats:", err);
+        }
+      }
+    }
+
     setConnected(false);
     setAddress(null);
     setBalance(0n);
@@ -664,13 +769,28 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         [address]: prev[address] >= totalCost ? prev[address] - totalCost : 0n
       }));
       setMockStaking((prev) => {
-        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n };
+        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n, nominations: [] };
+        let nextNominations = [...(current.nominations || [])];
+        if (validator) {
+          const formattedValidator = validator.length >= 47 && validator.startsWith("5")
+            ? validator
+            : generateMockValidatorAddress(validator);
+          if (!nextNominations.includes(formattedValidator)) {
+            nextNominations.push(formattedValidator);
+          }
+        } else if (nextNominations.length === 0) {
+          nextNominations = [
+            "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
+            "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc"
+          ];
+        }
         return {
           ...prev,
           [address]: {
             bonded: current.bonded + stakePlanck,
             active: current.active + stakePlanck,
-            unlocking: current.unlocking
+            unlocking: current.unlocking,
+            nominations: nextNominations
           }
         };
       });
@@ -739,14 +859,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         [address]: prev[address] >= gasPlanck ? prev[address] - gasPlanck : 0n
       }));
       setMockStaking((prev) => {
-        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n };
+        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n, nominations: [] };
         const toUnstake = current.active >= unstakePlanck ? unstakePlanck : current.active;
+        const nextActive = current.active - toUnstake;
         return {
           ...prev,
           [address]: {
             bonded: current.bonded,
-            active: current.active - toUnstake,
-            unlocking: current.unlocking + toUnstake
+            active: nextActive,
+            unlocking: current.unlocking + toUnstake,
+            nominations: nextActive === 0n ? [] : current.nominations
           }
         };
       });
@@ -805,22 +927,49 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     await new Promise((r) => setTimeout(r, 1200));
     const mockBlock = generateMockBlock();
     onStatusChange("finalized", txHash, mockBlock);
+
+    if (address) {
+      setMockIdentities((prev) => {
+        const next = {
+          ...prev,
+          [address]: {
+            display: displayName,
+            address: address,
+            isVerified: true,
+            email: prev[address]?.email || `${displayName.toLowerCase()}@portaldot.io`,
+            web: prev[address]?.web || "https://portaldot.io",
+          }
+        };
+        // Update name in injected accounts list immediately
+        const nextAccounts = accounts.map(acc => {
+          if (acc.address === address) {
+            return {
+              ...acc,
+              meta: {
+                ...acc.meta,
+                name: displayName
+              }
+            };
+          }
+          return acc;
+        });
+        setAccounts(nextAccounts);
+        return next;
+      });
+    }
   };
 
   const queryStaking = async (): Promise<StakingInfo> => {
     const data = await potdoClient.getStakingInfo(address || "");
     if (data) return data;
 
-    const current = mockStaking[address || ""] || { bonded: 0n, active: 0n, unlocking: 0n };
+    const current = mockStaking[address || ""] || { bonded: 0n, active: 0n, unlocking: 0n, nominations: [] };
 
     return {
       bonded: planckToPot(current.bonded),
       active: planckToPot(current.active),
       unlocking: planckToPot(current.unlocking),
-      nominations: [
-        "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
-        "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
-      ],
+      nominations: current.nominations || [],
       rewardDestination: "Staked",
     };
   };
@@ -837,6 +986,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const data = await potdoClient.getIdentity(target);
     if (data) return data;
+
+    const mockId = mockIdentities[target];
+    if (mockId) return mockId;
 
     const testnetName = TESTNET_ADDRESS_BOOK[target];
     if (testnetName) {
