@@ -38,7 +38,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const lastLoadedAddressRef = useRef<string | undefined>(undefined);
+  const lastLoadedAddressRef = useRef<string | null | undefined>(undefined);
 
   // Load chat history when address changes
   useEffect(() => {
@@ -49,10 +49,14 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
     try {
       const stored = localStorage.getItem(key);
       const loadedMessages = stored ? JSON.parse(stored) : [];
-      setMessages(loadedMessages);
+      setTimeout(() => {
+        setMessages(loadedMessages);
+      }, 0);
     } catch (err) {
       console.error("Failed to load chat history:", err);
-      setMessages([]);
+      setTimeout(() => {
+        setMessages([]);
+      }, 0);
     }
     lastLoadedAddressRef.current = address;
   }, [address]);

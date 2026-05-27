@@ -145,6 +145,15 @@ def get_substrate_client() -> SubstrateInterface:
                             ['None', 'Null']
                         ]
                     },
+                    'ProxyType': {
+                        'type': 'enum',
+                        'type_mapping': [
+                            ['Any', 'Null'],
+                            ['NonTransfer', 'Null'],
+                            ['Governance', 'Null'],
+                            ['Staking', 'Null']
+                        ]
+                    },
                 }
             }
         )

@@ -952,7 +952,7 @@ describe("ChatInterface", () => {
     });
   });
 
-  it("persists chat history in localStorage per wallet address", () => {
+  it("persists chat history in localStorage per wallet address", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
     
@@ -975,7 +975,9 @@ describe("ChatInterface", () => {
     
     const { rerender } = render(<ChatInterface />);
     
-    expect(screen.getByText("hello guest query")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("hello guest query")).toBeInTheDocument();
+    });
     expect(screen.queryByText("hello alice query")).not.toBeInTheDocument();
     
     // 2. Switch to Alice wallet
@@ -984,7 +986,9 @@ describe("ChatInterface", () => {
     
     rerender(<ChatInterface />);
     
-    expect(screen.getByText("hello alice query")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("hello alice query")).toBeInTheDocument();
+    });
     expect(screen.queryByText("hello guest query")).not.toBeInTheDocument();
 
     localStorage.removeItem("test_enable_persistence");
