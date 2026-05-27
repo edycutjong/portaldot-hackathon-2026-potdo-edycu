@@ -1,6 +1,7 @@
 "use client";
 
 import type { HistoryEntry } from "@/lib/types";
+import { ProxySettingsWidget } from "./ProxySettingsWidget";
 
 interface CommandHistoryProps {
   entries: HistoryEntry[];
@@ -53,10 +54,11 @@ function HistoryList({ entries, onSelect }: Pick<CommandHistoryProps, "entries" 
 }
 
 export function CommandHistory({ entries, onSelect, isMobileDrawer }: CommandHistoryProps) {
-  // Mobile drawer variant: no aside wrapper, no heading (parent provides it)
+  // Mobile drawer variant: no aside wrapper
   if (isMobileDrawer) {
     return (
       <div className="p-4 overflow-y-auto flex-1">
+        <ProxySettingsWidget />
         <HistoryList entries={entries} onSelect={onSelect} />
       </div>
     );
@@ -66,7 +68,8 @@ export function CommandHistory({ entries, onSelect, isMobileDrawer }: CommandHis
   return (
     <aside className="w-[280px] border-r border-white/5 h-full overflow-y-auto hidden lg:block">
       <div className="p-4">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">
+        <ProxySettingsWidget />
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 mt-4">
           Command History
         </h2>
         <HistoryList entries={entries} onSelect={onSelect} />

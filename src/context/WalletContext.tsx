@@ -20,9 +20,22 @@ interface WalletContextType {
   connecting: boolean;
   extensionInstalled: boolean;
   accounts: InjectedAccount[];
+  isProxyActive: boolean;
+  proxyType: string;
+  agentAddress: string | null;
+  checkingProxy: boolean;
   connect: (useDemo?: boolean) => Promise<void>;
   disconnect: () => void;
   selectAccount: (address: string) => Promise<void>;
+  checkProxyStatus: () => Promise<void>;
+  addProxyDelegate: (
+    proxyType?: string,
+    onStatusChange?: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => Promise<void>;
+  removeProxyDelegate: (
+    proxyType?: string,
+    onStatusChange?: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => Promise<void>;
   executeTransfer: (
     toAddress: string,
     amountPot: number,
@@ -52,7 +65,7 @@ interface WalletContextType {
   queryChainInfo: () => Promise<ChainInfo>;
 }
 
-const WalletContext = createContext<WalletContextType | undefined>(undefined);
+export const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "";
 
@@ -63,9 +76,41 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isDemoMode, setIsDemoMode] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
+  
+  const [isProxyActive, setIsProxyActive] = useState(false);
+  const [proxyType, setProxyType] = useState("Any");
+  const [agentAddress, setAgentAddress] = useState<string | null>(null);
+  const [checkingProxy, setCheckingProxy] = useState(false);
 
   // Check if extension is installed (mocked/simulated)
   const extensionInstalled = typeof window !== "undefined" && !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
+
+  const checkProxyStatus = async (addr?: string) => {
+    const targetAddr = addr || address;
+    if (!targetAddr) return;
+    setCheckingProxy(true);
+    if (BACKEND_URL) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/proxy-status/${targetAddr}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsProxyActive(data.isProxyActive);
+          setProxyType(data.proxyType);
+          setAgentAddress(data.delegate);
+          setCheckingProxy(false);
+          return;
+        }
+      } catch (err) {
+        console.warn("Backend proxy status query failed:", err);
+      }
+    }
+    // Fallback/Demo mode
+    const isAlice = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    setIsProxyActive(isAlice);
+    setProxyType("Any");
+    setAgentAddress("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
+    setCheckingProxy(false);
+  };
 
   const refreshBalance = async (addr: string) => {
     if (BACKEND_URL) {
@@ -96,9 +141,43 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   };
 
   const connect = async (useDemo = false) => {
-    void useDemo;
     setConnecting(true);
-    // Simulate loading/extension response delay
+    try {
+      /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+      if (!useDemo && typeof window !== "undefined" && (window as any).injectedWeb3) {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const injectedWeb3 = (window as any).injectedWeb3;
+        const extensionNames = Object.keys(injectedWeb3);
+        if (extensionNames.length > 0) {
+          // Auto-connect to the first extension (Talisman, SubWallet, or polkadot-js)
+          const extName = extensionNames[0];
+          const extension = injectedWeb3[extName];
+          const enabledExtension = await extension.enable("Potdo");
+          const extAccounts = await enabledExtension.accounts.get();
+          
+          if (extAccounts && extAccounts.length > 0) {
+            /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+            const formattedAccounts: InjectedAccount[] = extAccounts.map((acc: any) => ({
+              address: acc.address,
+              meta: { name: acc.name || "Unnamed Account", source: extName },
+            }));
+            
+            setAccounts(formattedAccounts);
+            setAddress(formattedAccounts[0].address);
+            setIsDemoMode(false);
+            setConnected(true);
+            setConnecting(false);
+            await refreshBalance(formattedAccounts[0].address);
+            await checkProxyStatus(formattedAccounts[0].address);
+            return;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Substrate extension connection failed, falling back to demo mode:", err);
+    }
+
+    // Demo Mode Fallback
     await new Promise((r) => setTimeout(r, 600));
 
     const formattedAccounts: InjectedAccount[] = [
@@ -126,6 +205,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setIsDemoMode(true);
     setConnected(true);
     setConnecting(false);
+    await checkProxyStatus(formattedAccounts[0].address);
   };
 
   const disconnect = () => {
@@ -134,11 +214,126 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setBalance(0n);
     setIsDemoMode(true);
     setAccounts([]);
+    setIsProxyActive(false);
+    setProxyType("Any");
   };
 
   const selectAccount = async (addr: string) => {
     setAddress(addr);
     await refreshBalance(addr);
+    await checkProxyStatus(addr);
+  };
+
+  const addProxyDelegate = async (
+    pType = "Any",
+    onStatusChange?: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => {
+    const statusCallback = onStatusChange || (() => {});
+    statusCallback("pending");
+    const delegate = agentAddress || "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    const handled = await signAndSubmit(
+      "prepare-add-proxy",
+      "submit-add-proxy",
+      { delegate_address: delegate, proxy_type: pType },
+      statusCallback
+    );
+    if (handled) {
+      await checkProxyStatus();
+      return;
+    }
+    
+    // Fallback/Simulated
+    await new Promise((r) => setTimeout(r, 800));
+    statusCallback("submitted", "0xdemo_add_proxy_tx");
+    await new Promise((r) => setTimeout(r, 1200));
+    const mockBlock = 142857;
+    statusCallback("finalized", "0xdemo_add_proxy_finalized", mockBlock);
+    setIsProxyActive(true);
+    setProxyType(pType);
+  };
+
+  const removeProxyDelegate = async (
+    pType = "Any",
+    onStatusChange?: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ) => {
+    const statusCallback = onStatusChange || (() => {});
+    statusCallback("pending");
+    const delegate = agentAddress || "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    const handled = await signAndSubmit(
+      "prepare-remove-proxy",
+      "submit-remove-proxy",
+      { delegate_address: delegate, proxy_type: pType },
+      statusCallback
+    );
+    if (handled) {
+      await checkProxyStatus();
+      return;
+    }
+    
+    // Fallback/Simulated
+    await new Promise((r) => setTimeout(r, 800));
+    statusCallback("submitted", "0xdemo_remove_proxy_tx");
+    await new Promise((r) => setTimeout(r, 1200));
+    const mockBlock = 142857;
+    statusCallback("finalized", "0xdemo_remove_proxy_finalized", mockBlock);
+    setIsProxyActive(false);
+  };
+
+  const signAndSubmit = async (
+    prepareEndpoint: string,
+    submitEndpoint: string,
+    prepareBody: object,
+    onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
+  ): Promise<boolean> => {
+    const activeAccount = accounts.find(a => a.address === address);
+    const source = activeAccount?.meta.source;
+    /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+    if (!isDemoMode && typeof window !== "undefined" && source && (window as any).injectedWeb3?.[source]) {
+      try {
+        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+        const extension = (window as any).injectedWeb3[source];
+        const enabled = await extension.enable("Potdo");
+        const signer = enabled.signer;
+        
+        // 1. Prepare payload JSON on the backend
+        const prepRes = await fetch(`${BACKEND_URL}/${prepareEndpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sender_address: address, ...prepareBody })
+        });
+        if (!prepRes.ok) {
+          const errData = await prepRes.json();
+          throw new Error(errData.detail || `Failed to prepare transaction`);
+        }
+        const payload = await prepRes.json();
+        
+        // 2. Request signature from the wallet extension
+        const signResult = await signer.signPayload(payload);
+        const signature = signResult.signature;
+        
+        // 3. Submit transaction with the signature
+        const submitRes = await fetch(`${BACKEND_URL}/${submitEndpoint}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sender_address: address, signature, ...prepareBody })
+        });
+        if (!submitRes.ok) {
+          const errData = await submitRes.json();
+          throw new Error(errData.detail || `Failed to submit signed transaction`);
+        }
+        const data = await submitRes.json();
+        onStatusChange("submitted", data.txHash);
+        onStatusChange("finalized", data.txHash, data.blockNumber);
+        await refreshBalance(address || "");
+        return true;
+      } catch (err: unknown) {
+        console.error("Wallet extension transaction execution failed:", err);
+        const errMsg = err instanceof Error ? err.message : "Transaction failed";
+        onStatusChange("failed", undefined, undefined, errMsg);
+        return true;
+      }
+    }
+    return false;
   };
 
   const executeTransfer = async (
@@ -147,6 +342,47 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
     onStatusChange("pending");
+
+    if (isProxyActive) {
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/transfer`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to_address: toAddress,
+              amount_pot: amountPot,
+              proxied: true,
+              real_address: address
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            onStatusChange("submitted", data.txHash);
+            onStatusChange("finalized", data.txHash, data.blockNumber);
+            await refreshBalance(address || "");
+            return;
+          } else {
+            const errData = await res.json();
+            onStatusChange("failed", undefined, undefined, errData.detail || "Transaction failed");
+            return;
+          }
+        } catch (err: unknown) {
+          console.warn("Proxied transfer failed:", err);
+          const errMsg = err instanceof Error ? err.message : "Transaction failed";
+          onStatusChange("failed", undefined, undefined, errMsg);
+          return;
+        }
+      }
+    } else {
+      const handled = await signAndSubmit(
+        "prepare-transfer",
+        "submit-transfer",
+        { to_address: toAddress, amount_pot: amountPot },
+        onStatusChange
+      );
+      if (handled) return;
+    }
 
     if (BACKEND_URL) {
       try {
@@ -190,6 +426,46 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   ) => {
     const totalAmount = transfers.reduce((sum, t) => sum + t.amount, 0);
     onStatusChange("pending");
+
+    if (isProxyActive) {
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/batch`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })),
+              proxied: true,
+              real_address: address
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            onStatusChange("submitted", data.txHash);
+            onStatusChange("finalized", data.txHash, data.blockNumber);
+            await refreshBalance(address || "");
+            return;
+          } else {
+            const errData = await res.json();
+            onStatusChange("failed", undefined, undefined, errData.detail || "Batch failed");
+            return;
+          }
+        } catch (err: unknown) {
+          console.warn("Proxied batch failed:", err);
+          const errMsg = err instanceof Error ? err.message : "Batch failed";
+          onStatusChange("failed", undefined, undefined, errMsg);
+          return;
+        }
+      }
+    } else {
+      const handled = await signAndSubmit(
+        "prepare-batch",
+        "submit-batch",
+        { transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })) },
+        onStatusChange
+      );
+      if (handled) return;
+    }
 
     if (BACKEND_URL) {
       try {
@@ -236,6 +512,47 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   ) => {
     onStatusChange("pending");
 
+    if (isProxyActive) {
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/stake`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount_pot: amountPot,
+              validator,
+              proxied: true,
+              real_address: address
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            onStatusChange("submitted", data.txHash);
+            onStatusChange("finalized", data.txHash, data.blockNumber);
+            await refreshBalance(address || "");
+            return;
+          } else {
+            const errData = await res.json();
+            onStatusChange("failed", undefined, undefined, errData.detail || "Staking failed");
+            return;
+          }
+        } catch (err: unknown) {
+          console.warn("Proxied stake failed:", err);
+          const errMsg = err instanceof Error ? err.message : "Staking failed";
+          onStatusChange("failed", undefined, undefined, errMsg);
+          return;
+        }
+      }
+    } else {
+      const handled = await signAndSubmit(
+        "prepare-stake",
+        "submit-stake",
+        { amount_pot: amountPot, validator },
+        onStatusChange
+      );
+      if (handled) return;
+    }
+
     if (BACKEND_URL) {
       try {
         const res = await fetch(`${BACKEND_URL}/stake`, {
@@ -277,6 +594,46 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   ) => {
     onStatusChange("pending");
 
+    if (isProxyActive) {
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/unstake`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              amount_pot: amountPot,
+              proxied: true,
+              real_address: address
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            onStatusChange("submitted", data.txHash);
+            onStatusChange("finalized", data.txHash, data.blockNumber);
+            await refreshBalance(address || "");
+            return;
+          } else {
+            const errData = await res.json();
+            onStatusChange("failed", undefined, undefined, errData.detail || "Unstaking failed");
+            return;
+          }
+        } catch (err: unknown) {
+          console.warn("Proxied unstake failed:", err);
+          const errMsg = err instanceof Error ? err.message : "Unstaking failed";
+          onStatusChange("failed", undefined, undefined, errMsg);
+          return;
+        }
+      }
+    } else {
+      const handled = await signAndSubmit(
+        "prepare-unstake",
+        "submit-unstake",
+        { amount_pot: amountPot },
+        onStatusChange
+      );
+      if (handled) return;
+    }
+
     if (BACKEND_URL) {
       try {
         const res = await fetch(`${BACKEND_URL}/unstake`, {
@@ -312,6 +669,46 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     onStatusChange: (status: string, txHash?: string, blockNumber?: number, error?: string) => void
   ) => {
     onStatusChange("pending");
+
+    if (isProxyActive) {
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/set-identity`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              display_name: displayName,
+              proxied: true,
+              real_address: address
+            })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            onStatusChange("submitted", data.txHash);
+            onStatusChange("finalized", data.txHash, data.blockNumber);
+            await refreshBalance(address || "");
+            return;
+          } else {
+            const errData = await res.json();
+            onStatusChange("failed", undefined, undefined, errData.detail || "Identity setup failed");
+            return;
+          }
+        } catch (err: unknown) {
+          console.warn("Proxied identity setup failed:", err);
+          const errMsg = err instanceof Error ? err.message : "Identity setup failed";
+          onStatusChange("failed", undefined, undefined, errMsg);
+          return;
+        }
+      }
+    } else {
+      const handled = await signAndSubmit(
+        "prepare-set-identity",
+        "submit-set-identity",
+        { display_name: displayName },
+        onStatusChange
+      );
+      if (handled) return;
+    }
 
     if (BACKEND_URL) {
       try {
@@ -463,9 +860,16 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         connecting,
         extensionInstalled,
         accounts,
+        isProxyActive,
+        proxyType,
+        agentAddress,
+        checkingProxy,
         connect,
         disconnect,
         selectAccount,
+        checkProxyStatus,
+        addProxyDelegate,
+        removeProxyDelegate,
         executeTransfer,
         executeBatch,
         executeStake,

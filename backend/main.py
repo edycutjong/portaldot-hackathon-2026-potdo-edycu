@@ -27,7 +27,11 @@ def get_substrate_client() -> SubstrateInterface:
         return SubstrateInterface(
             url=PORTALDOT_RPC,
             ss58_format=42,
-            type_registry_preset='substrate'
+            type_registry={
+                'types': {
+                    'LookupSource': 'MultiAddress'
+                }
+            }
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to connect to Portaldot: {str(e)}")
@@ -37,6 +41,8 @@ class TransferRequest(BaseModel):
     to_address: str = ""
     amount_pot: float
     seed: Optional[str] = None  # Allow overriding keypair from request if needed
+    proxied: bool = False
+    real_address: Optional[str] = None
 
 class BatchTransferItem(BaseModel):
     to_address: str
@@ -45,19 +51,49 @@ class BatchTransferItem(BaseModel):
 class BatchTransferRequest(BaseModel):
     transfers: List[BatchTransferItem]
     seed: Optional[str] = None
+    proxied: bool = False
+    real_address: Optional[str] = None
 
 class StakeRequest(BaseModel):
     amount_pot: float
     validator: Optional[str] = None
     seed: Optional[str] = None
+    proxied: bool = False
+    real_address: Optional[str] = None
 
 class UnstakeRequest(BaseModel):
     amount_pot: float
     seed: Optional[str] = None
+    proxied: bool = False
+    real_address: Optional[str] = None
 
 class SetIdentityRequest(BaseModel):
     display_name: str
     seed: Optional[str] = None
+    proxied: bool = False
+    real_address: Optional[str] = None
+
+class PrepareAddProxyRequest(BaseModel):
+    sender_address: str
+    delegate_address: str
+    proxy_type: str = "Any"
+
+class SubmitAddProxyRequest(BaseModel):
+    sender_address: str
+    delegate_address: str
+    proxy_type: str = "Any"
+    signature: str
+
+class PrepareRemoveProxyRequest(BaseModel):
+    sender_address: str
+    delegate_address: str
+    proxy_type: str = "Any"
+
+class SubmitRemoveProxyRequest(BaseModel):
+    sender_address: str
+    delegate_address: str
+    proxy_type: str = "Any"
+    signature: str
 
 class EstimateFeeRequest(BaseModel):
     command: str
@@ -304,7 +340,12 @@ def get_signing_keypair(user_seed: Optional[str]) -> Optional[Keypair]:
 
 @app.post("/transfer")
 def execute_transfer(req: TransferRequest):
-    keypair = get_signing_keypair(req.seed)
+    if req.proxied:
+        if not req.real_address:
+            raise HTTPException(status_code=400, detail="real_address is required for proxied transaction")
+        keypair = get_signing_keypair(req.seed or None)
+    else:
+        keypair = get_signing_keypair(req.seed)
     
     # If no keypair/mnemonic configured, run in high-fidelity mock/simulation mode
     if not keypair:
@@ -314,12 +355,13 @@ def execute_transfer(req: TransferRequest):
             "status": "finalized",
             "txHash": mock_hash,
             "blockNumber": 142857,
-            "simulated": True
+            "simulated": True,
+            "proxied": req.proxied
         }
         
     client = get_substrate_client()
     try:
-        call = client.compose_call(
+        inner_call = client.compose_call(
             call_module='Balances',
             call_function='transfer_keep_alive',
             call_params={
@@ -327,6 +369,19 @@ def execute_transfer(req: TransferRequest):
                 'value': int(req.amount_pot * (10 ** 14))
             }
         )
+        if req.proxied:
+            call = client.compose_call(
+                call_module='Proxy',
+                call_function='proxy',
+                call_params={
+                    'real': req.real_address,
+                    'force_proxy_type': None,
+                    'call': inner_call
+                }
+            )
+        else:
+            call = inner_call
+            
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
@@ -337,14 +392,21 @@ def execute_transfer(req: TransferRequest):
             "status": "finalized",
             "txHash": receipt.extrinsic_hash,
             "blockNumber": receipt.block_number,
-            "simulated": False
+            "simulated": False,
+            "proxied": req.proxied
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/stake")
 def execute_stake(req: StakeRequest):
-    keypair = get_signing_keypair(req.seed)
+    if req.proxied:
+        if not req.real_address:
+            raise HTTPException(status_code=400, detail="real_address is required for proxied transaction")
+        keypair = get_signing_keypair(req.seed or None)
+    else:
+        keypair = get_signing_keypair(req.seed)
+        
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_stake_" + "".join(random.choices("0123456789abcdef", k=16))
@@ -352,7 +414,8 @@ def execute_stake(req: StakeRequest):
             "status": "finalized",
             "txHash": mock_hash,
             "blockNumber": 142857,
-            "simulated": True
+            "simulated": True,
+            "proxied": req.proxied
         }
         
     client = get_substrate_client()
@@ -378,15 +441,28 @@ def execute_stake(req: StakeRequest):
             calls.append(nominate_call)
             
         if len(calls) > 1:
-            final_call = client.compose_call(
+            inner_call = client.compose_call(
                 call_module='Utility',
                 call_function='batch',
                 call_params={'calls': calls}
             )
         else:
-            final_call = bond_call
+            inner_call = bond_call
             
-        extrinsic = client.create_signed_extrinsic(call=final_call, keypair=keypair)
+        if req.proxied:
+            call = client.compose_call(
+                call_module='Proxy',
+                call_function='proxy',
+                call_params={
+                    'real': req.real_address,
+                    'force_proxy_type': None,
+                    'call': inner_call
+                }
+            )
+        else:
+            call = inner_call
+            
+        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
         if not receipt.is_success:
@@ -396,14 +472,21 @@ def execute_stake(req: StakeRequest):
             "status": "finalized",
             "txHash": receipt.extrinsic_hash,
             "blockNumber": receipt.block_number,
-            "simulated": False
+            "simulated": False,
+            "proxied": req.proxied
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/unstake")
 def execute_unstake(req: UnstakeRequest):
-    keypair = get_signing_keypair(req.seed)
+    if req.proxied:
+        if not req.real_address:
+            raise HTTPException(status_code=400, detail="real_address is required for proxied transaction")
+        keypair = get_signing_keypair(req.seed or None)
+    else:
+        keypair = get_signing_keypair(req.seed)
+        
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_unstake_" + "".join(random.choices("0123456789abcdef", k=16))
@@ -411,18 +494,32 @@ def execute_unstake(req: UnstakeRequest):
             "status": "finalized",
             "txHash": mock_hash,
             "blockNumber": 142857,
-            "simulated": True
+            "simulated": True,
+            "proxied": req.proxied
         }
         
     client = get_substrate_client()
     try:
-        call = client.compose_call(
+        inner_call = client.compose_call(
             call_module='Staking',
             call_function='unbond',
             call_params={
                 'value': int(req.amount_pot * (10 ** 14))
             }
         )
+        if req.proxied:
+            call = client.compose_call(
+                call_module='Proxy',
+                call_function='proxy',
+                call_params={
+                    'real': req.real_address,
+                    'force_proxy_type': None,
+                    'call': inner_call
+                }
+            )
+        else:
+            call = inner_call
+            
         extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
         receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
         
@@ -433,14 +530,21 @@ def execute_unstake(req: UnstakeRequest):
             "status": "finalized",
             "txHash": receipt.extrinsic_hash,
             "blockNumber": receipt.block_number,
-            "simulated": False
+            "simulated": False,
+            "proxied": req.proxied
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/set-identity")
 def execute_set_identity(req: SetIdentityRequest):
-    keypair = get_signing_keypair(req.seed)
+    if req.proxied:
+        if not req.real_address:
+            raise HTTPException(status_code=400, detail="real_address is required for proxied transaction")
+        keypair = get_signing_keypair(req.seed or None)
+    else:
+        keypair = get_signing_keypair(req.seed)
+        
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_identity_" + "".join(random.choices("0123456789abcdef", k=16))
@@ -448,11 +552,361 @@ def execute_set_identity(req: SetIdentityRequest):
             "status": "finalized",
             "txHash": mock_hash,
             "blockNumber": 142857,
-            "simulated": True
+            "simulated": True,
+            "proxied": req.proxied
         }
         
     client = get_substrate_client()
     try:
+        identity_info = {
+            'display': {'Raw': req.display_name.encode('utf-8')},
+            'web': {'None': None},
+            'email': {'None': None},
+            'twitter': {'None': None},
+            'riot': {'None': None},
+            'image': {'None': None},
+            'pgp_fingerprint': None
+        }
+        inner_call = client.compose_call(
+            call_module='Identity',
+            call_function='set_identity',
+            call_params={'info': identity_info}
+        )
+        if req.proxied:
+            call = client.compose_call(
+                call_module='Proxy',
+                call_function='proxy',
+                call_params={
+                    'real': req.real_address,
+                    'force_proxy_type': None,
+                    'call': inner_call
+                }
+            )
+        else:
+            call = inner_call
+            
+        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
+        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+        
+        if not receipt.is_success:
+            raise HTTPException(status_code=400, detail=f"Set identity failed: {receipt.error_message}")
+            
+        return {
+            "status": "finalized",
+            "txHash": receipt.extrinsic_hash,
+            "blockNumber": receipt.block_number,
+            "simulated": False,
+            "proxied": req.proxied
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/batch")
+def execute_batch(req: BatchTransferRequest):
+    if req.proxied:
+        if not req.real_address:
+            raise HTTPException(status_code=400, detail="real_address is required for proxied transaction")
+        keypair = get_signing_keypair(req.seed or None)
+    else:
+        keypair = get_signing_keypair(req.seed)
+        
+    if not keypair:
+        time.sleep(1.0)
+        mock_hash = "0xdemo_batch_" + "".join(random.choices("0123456789abcdef", k=16))
+        return {
+            "status": "finalized",
+            "txHash": mock_hash,
+            "blockNumber": 142857,
+            "simulated": True,
+            "proxied": req.proxied
+        }
+        
+    client = get_substrate_client()
+    try:
+        calls = []
+        for t in req.transfers:
+            c = client.compose_call(
+                call_module='Balances',
+                call_function='transfer_keep_alive',
+                call_params={
+                    'dest': t.to_address,
+                    'value': int(t.amount * (10 ** 14))
+                }
+            )
+            calls.append(c)
+            
+        inner_call = client.compose_call(
+            call_module='Utility',
+            call_function='batch',
+            call_params={'calls': calls}
+        )
+        if req.proxied:
+            call = client.compose_call(
+                call_module='Proxy',
+                call_function='proxy',
+                call_params={
+                    'real': req.real_address,
+                    'force_proxy_type': None,
+                    'call': inner_call
+                }
+            )
+        else:
+            call = inner_call
+            
+        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
+        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+        
+        if not receipt.is_success:
+            raise HTTPException(status_code=400, detail=f"Batch extrinsic failed: {receipt.error_message}")
+            
+        return {
+            "status": "finalized",
+            "txHash": receipt.extrinsic_hash,
+            "blockNumber": receipt.block_number,
+            "simulated": False,
+            "proxied": req.proxied
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# --- Preparation & External Signature Submission Endpoints ---
+
+class PrepareTransferRequest(BaseModel):
+    sender_address: str
+    to_address: str
+    amount_pot: float
+
+class SubmitTransferRequest(BaseModel):
+    sender_address: str
+    to_address: str
+    amount_pot: float
+    signature: str
+
+class PrepareStakeRequest(BaseModel):
+    sender_address: str
+    amount_pot: float
+    validator: Optional[str] = None
+
+class SubmitStakeRequest(BaseModel):
+    sender_address: str
+    amount_pot: float
+    validator: Optional[str] = None
+    signature: str
+
+class PrepareUnstakeRequest(BaseModel):
+    sender_address: str
+    amount_pot: float
+
+class SubmitUnstakeRequest(BaseModel):
+    sender_address: str
+    amount_pot: float
+    signature: str
+
+class PrepareSetIdentityRequest(BaseModel):
+    sender_address: str
+    display_name: str
+
+class SubmitSetIdentityRequest(BaseModel):
+    sender_address: str
+    display_name: str
+    signature: str
+
+class PrepareBatchRequest(BaseModel):
+    sender_address: str
+    transfers: List[BatchTransferItem]
+
+class SubmitBatchRequest(BaseModel):
+    sender_address: str
+    transfers: List[BatchTransferItem]
+    signature: str
+
+
+def make_signer_payload(client: SubstrateInterface, sender_address: str, call) -> dict:
+    nonce = client.get_account_nonce(sender_address) or 0
+    genesis_hash = client.get_block_hash(0)
+    
+    return {
+        "address": sender_address,
+        "blockHash": genesis_hash,
+        "blockNumber": "0x00000000",
+        "era": "0x00",
+        "genesisHash": genesis_hash,
+        "method": f"0x{call.data.hex()}",
+        "nonce": f"0x{nonce:02x}",
+        "specVersion": f"0x{client.runtime_version:08x}",
+        "transactionVersion": f"0x{client.transaction_version:08x}",
+        "tip": "0x00000000000000000000000000000000",
+        "signedExtensions": list(client.metadata.get_signed_extensions().keys()),
+        "version": 4
+    }
+
+
+def submit_signed_call(client: SubstrateInterface, sender_address: str, call, signature: str) -> dict:
+    nonce = client.get_account_nonce(sender_address) or 0
+    public_keypair = Keypair(ss58_address=sender_address)
+    
+    extrinsic = client.create_signed_extrinsic(
+        call=call,
+        keypair=public_keypair,
+        era='00',
+        nonce=nonce,
+        signature=signature
+    )
+    
+    receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
+    if not receipt.is_success:
+        raise Exception(f"Extrinsic failed: {receipt.error_message}")
+        
+    return {
+        "status": "finalized",
+        "txHash": receipt.extrinsic_hash,
+        "blockNumber": receipt.block_number,
+        "simulated": False
+    }
+
+
+@app.post("/prepare-transfer")
+def prepare_transfer(req: PrepareTransferRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Balances',
+            call_function='transfer_keep_alive',
+            call_params={
+                'dest': req.to_address,
+                'value': int(req.amount_pot * (10 ** 14))
+            }
+        )
+        return make_signer_payload(client, req.sender_address, call)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-transfer")
+def submit_transfer(req: SubmitTransferRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Balances',
+            call_function='transfer_keep_alive',
+            call_params={
+                'dest': req.to_address,
+                'value': int(req.amount_pot * (10 ** 14))
+            }
+        )
+        return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/prepare-stake")
+def prepare_stake(req: PrepareStakeRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        bond_call = client.compose_call(
+            call_module='Staking',
+            call_function='bond',
+            call_params={
+                'value': int(req.amount_pot * (10 ** 14)),
+                'payee': 'Staked'
+            }
+        )
+        calls = [bond_call]
+        if req.validator:
+            nominate_call = client.compose_call(
+                call_module='Staking',
+                call_function='nominate',
+                call_params={'targets': [req.validator]}
+            )
+            calls.append(nominate_call)
+            
+        final_call = client.compose_call(
+            call_module='Utility',
+            call_function='batch',
+            call_params={'calls': calls}
+        ) if len(calls) > 1 else bond_call
+        
+        return make_signer_payload(client, req.sender_address, final_call)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-stake")
+def submit_stake(req: SubmitStakeRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        bond_call = client.compose_call(
+            call_module='Staking',
+            call_function='bond',
+            call_params={
+                'value': int(req.amount_pot * (10 ** 14)),
+                'payee': 'Staked'
+            }
+        )
+        calls = [bond_call]
+        if req.validator:
+            nominate_call = client.compose_call(
+                call_module='Staking',
+                call_function='nominate',
+                call_params={'targets': [req.validator]}
+            )
+            calls.append(nominate_call)
+            
+        final_call = client.compose_call(
+            call_module='Utility',
+            call_function='batch',
+            call_params={'calls': calls}
+        ) if len(calls) > 1 else bond_call
+        
+        return submit_signed_call(client, req.sender_address, final_call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/prepare-unstake")
+def prepare_unstake(req: PrepareUnstakeRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Staking',
+            call_function='unbond',
+            call_params={
+                'value': int(req.amount_pot * (10 ** 14))
+            }
+        )
+        return make_signer_payload(client, req.sender_address, call)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-unstake")
+def submit_unstake(req: SubmitUnstakeRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Staking',
+            call_function='unbond',
+            call_params={
+                'value': int(req.amount_pot * (10 ** 14))
+            }
+        )
+        return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/prepare-set-identity")
+def prepare_set_identity(req: PrepareSetIdentityRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
         identity_info = {
             'display': {'Raw': req.display_name.encode('utf-8')},
             'web': {'None': None},
@@ -467,36 +921,40 @@ def execute_set_identity(req: SetIdentityRequest):
             call_function='set_identity',
             call_params={'info': identity_info}
         )
-        extrinsic = client.create_signed_extrinsic(call=call, keypair=keypair)
-        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-        
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Set identity failed: {receipt.error_message}")
-            
-        return {
-            "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
-            "simulated": False
-        }
+        return make_signer_payload(client, req.sender_address, call)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/batch")
-def execute_batch(req: BatchTransferRequest):
-    keypair = get_signing_keypair(req.seed)
-    if not keypair:
-        time.sleep(1.0)
-        mock_hash = "0xdemo_batch_" + "".join(random.choices("0123456789abcdef", k=16))
-        return {
-            "status": "finalized",
-            "txHash": mock_hash,
-            "blockNumber": 142857,
-            "simulated": True
-        }
-        
+
+@app.post("/submit-set-identity")
+def submit_set_identity(req: SubmitSetIdentityRequest):
     client = get_substrate_client()
     try:
+        client.init_runtime()
+        identity_info = {
+            'display': {'Raw': req.display_name.encode('utf-8')},
+            'web': {'None': None},
+            'email': {'None': None},
+            'twitter': {'None': None},
+            'riot': {'None': None},
+            'image': {'None': None},
+            'pgp_fingerprint': None
+        }
+        call = client.compose_call(
+            call_module='Identity',
+            call_function='set_identity',
+            call_params={'info': identity_info}
+        )
+        return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/prepare-batch")
+def prepare_batch(req: PrepareBatchRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
         calls = []
         for t in req.transfers:
             c = client.compose_call(
@@ -514,18 +972,168 @@ def execute_batch(req: BatchTransferRequest):
             call_function='batch',
             call_params={'calls': calls}
         )
-        extrinsic = client.create_signed_extrinsic(call=batch_call, keypair=keypair)
-        receipt = client.submit_extrinsic(extrinsic, wait_for_inclusion=True)
-        
-        if not receipt.is_success:
-            raise HTTPException(status_code=400, detail=f"Batch extrinsic failed: {receipt.error_message}")
-            
-        return {
-            "status": "finalized",
-            "txHash": receipt.extrinsic_hash,
-            "blockNumber": receipt.block_number,
-            "simulated": False
-        }
+        return make_signer_payload(client, req.sender_address, batch_call)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-batch")
+def submit_batch(req: SubmitBatchRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        calls = []
+        for t in req.transfers:
+            c = client.compose_call(
+                call_module='Balances',
+                call_function='transfer_keep_alive',
+                call_params={
+                    'dest': t.to_address,
+                    'value': int(t.amount * (10 ** 14))
+                }
+            )
+            calls.append(c)
+            
+        batch_call = client.compose_call(
+            call_module='Utility',
+            call_function='batch',
+            call_params={'calls': calls}
+        )
+        return submit_signed_call(client, req.sender_address, batch_call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+def get_agent_address() -> str:
+    keypair = get_signing_keypair(None)
+    if keypair:
+        return keypair.ss58_address
+    # Fallback to Alice address for demo mode
+    return "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+
+
+@app.get("/proxy-status/{address}")
+def get_proxy_status(address: str):
+    agent_address = get_agent_address()
+    try:
+        client = get_substrate_client()
+        delegate_pubkey = Keypair(ss58_address=agent_address).public_key.hex()
+        storage_key = client.create_storage_key(
+            module='Proxy',
+            storage_function='Proxies',
+            params=[address]
+        )
+        response = client.rpc_request('state_getStorage', [storage_key])
+        raw_hex = response.get('result')
+        
+        is_active = False
+        proxy_type = "Any"
+        
+        if raw_hex:
+            raw_hex = raw_hex[2:]
+            if delegate_pubkey in raw_hex:
+                is_active = True
+                idx = raw_hex.index(delegate_pubkey)
+                if len(raw_hex) >= idx + 66:
+                    type_byte = raw_hex[idx + 64 : idx + 66]
+                    mapping = {
+                        "00": "Any",
+                        "01": "NonTransfer",
+                        "02": "Governance",
+                        "03": "Staking"
+                    }
+                    proxy_type = mapping.get(type_byte, "Any")
+                    
+        return {
+            "address": address,
+            "delegate": agent_address,
+            "isProxyActive": is_active,
+            "proxyType": proxy_type
+        }
+    except Exception:
+        # Fallback for local testing / demo mode (default to true for Alice address, false otherwise)
+        is_alice = address == "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        return {
+            "address": address,
+            "delegate": agent_address,
+            "isProxyActive": is_alice,
+            "proxyType": "Any"
+        }
+
+
+@app.post("/prepare-add-proxy")
+def prepare_add_proxy(req: PrepareAddProxyRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='add_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        return make_signer_payload(client, req.sender_address, call)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-add-proxy")
+def submit_add_proxy(req: SubmitAddProxyRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='add_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/prepare-remove-proxy")
+def prepare_remove_proxy(req: PrepareRemoveProxyRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='remove_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        return make_signer_payload(client, req.sender_address, call)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/submit-remove-proxy")
+def submit_remove_proxy(req: SubmitRemoveProxyRequest):
+    client = get_substrate_client()
+    try:
+        client.init_runtime()
+        call = client.compose_call(
+            call_module='Proxy',
+            call_function='remove_proxy',
+            call_params={
+                'delegate': req.delegate_address,
+                'proxy_type': req.proxy_type,
+                'delay': 0
+            }
+        )
+        return submit_signed_call(client, req.sender_address, call, req.signature)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 

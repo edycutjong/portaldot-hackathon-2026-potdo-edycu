@@ -550,3 +550,530 @@ def test_estimate_fee_failure(mock_substrate):
     assert data["partialFee"] == "0.0012"
     assert data["weight"] == "186,423,000"
     assert data["class"] == "Normal"
+
+
+# --- Preparation & External Signature Submission Endpoint Tests ---
+
+@patch('main.SubstrateInterface')
+def test_prepare_transfer(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1002
+    mock_instance.transaction_version = 2
+    mock_instance.metadata.get_signed_extensions.return_value = {"CheckNonce": {}, "CheckGenesis": {}}
+    
+    mock_call = MagicMock()
+    mock_call.data = b"transfer_call_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-transfer", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["address"] == "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    assert data["genesisHash"] == "0xgenesis"
+    assert data["nonce"] == "0x05"
+    assert data["method"] == "0x" + b"transfer_call_data".hex()
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_transfer_success(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xext_hash"
+    mock_receipt.block_number = 42
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-transfer", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0,
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "finalized"
+    assert data["txHash"] == "0xext_hash"
+    assert data["blockNumber"] == 42
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_stake(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1002
+    mock_instance.transaction_version = 2
+    mock_instance.metadata.get_signed_extensions.return_value = {"CheckNonce": {}, "CheckGenesis": {}}
+    
+    mock_call = MagicMock()
+    mock_call.data = b"stake_call_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+
+    # Test prepare stake with validator (creates utility.batch call)
+    response = client.post("/prepare-stake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 15.0,
+        "validator": "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk"
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["address"] == "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+    
+    # Test prepare stake without validator (creates simple bond call)
+    response = client.post("/prepare-stake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 15.0
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_stake(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xext_hash"
+    mock_receipt.block_number = 43
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-stake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 15.0,
+        "validator": "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xext_hash"
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_unstake(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1002
+    mock_instance.transaction_version = 2
+    mock_instance.metadata.get_signed_extensions.return_value = {"CheckNonce": {}, "CheckGenesis": {}}
+    
+    mock_call = MagicMock()
+    mock_call.data = b"unstake_call_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-unstake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 5.0
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_unstake(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xext_hash"
+    mock_receipt.block_number = 44
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-unstake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 5.0,
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_set_identity(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1002
+    mock_instance.transaction_version = 2
+    mock_instance.metadata.get_signed_extensions.return_value = {"CheckNonce": {}, "CheckGenesis": {}}
+    
+    mock_call = MagicMock()
+    mock_call.data = b"identity_call_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-set-identity", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "display_name": "NewName"
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_set_identity(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xext_hash"
+    mock_receipt.block_number = 45
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-set-identity", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "display_name": "NewName",
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_batch(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1002
+    mock_instance.transaction_version = 2
+    mock_instance.metadata.get_signed_extensions.return_value = {"CheckNonce": {}, "CheckGenesis": {}}
+    
+    mock_call = MagicMock()
+    mock_call.data = b"batch_call_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-batch", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "transfers": [{"to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", "amount": 10.0}]
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_batch(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 5
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xext_hash"
+    mock_receipt.block_number = 46
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-batch", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "transfers": [{"to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", "amount": 10.0}],
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 200
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_transfer_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("Failed call")
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-transfer", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_submit_transfer_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.submit_extrinsic.side_effect = Exception("Broadcasting failed")
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/submit-transfer", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0,
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_stake_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("Staking compose failed")
+    mock_substrate.return_value = mock_instance
+
+    response = client.post("/prepare-stake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 15.0
+    })
+    assert response.status_code == 400
+
+
+    response = client.post("/submit-stake", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "amount_pot": 15.0,
+        "signature": "0xsigsigsig"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_get_proxy_status_not_active(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.rpc_request.return_value = {"result": None}
+    mock_substrate.return_value = mock_instance
+    
+    response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["isProxyActive"] is False
+    assert data["proxyType"] == "Any"
+
+
+@patch('main.SubstrateInterface')
+def test_get_proxy_status_active_any(mock_substrate):
+    mock_instance = MagicMock()
+    alice_pub = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
+    raw_storage_hex = "0x" + "0400" + alice_pub + "00" + "00000000" + "00000000000000000000"
+    mock_instance.rpc_request.return_value = {"result": raw_storage_hex}
+    mock_substrate.return_value = mock_instance
+    
+    response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["isProxyActive"] is True
+    assert data["proxyType"] == "Any"
+
+
+@patch('main.SubstrateInterface')
+def test_get_proxy_status_active_staking(mock_substrate):
+    mock_instance = MagicMock()
+    alice_pub = "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
+    raw_storage_hex = "0x" + "0400" + alice_pub + "03" + "00000000"
+    mock_instance.rpc_request.return_value = {"result": raw_storage_hex}
+    mock_substrate.return_value = mock_instance
+    
+    response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["isProxyActive"] is True
+    assert data["proxyType"] == "Staking"
+
+
+@patch('main.SubstrateInterface')
+def test_get_proxy_status_fallback(mock_substrate):
+    mock_substrate.side_effect = Exception("Connection error")
+    response = client.get("/proxy-status/5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+    assert response.status_code == 200
+    assert response.json()["isProxyActive"] is True
+    
+    response2 = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assert response2.status_code == 200
+    assert response2.json()["isProxyActive"] is False
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_add_proxy(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 0
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1
+    mock_instance.transaction_version = 1
+    mock_instance.metadata.get_signed_extensions.return_value = {}
+    mock_call = MagicMock()
+    mock_call.data = b"add_proxy_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/prepare-add-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any"
+    })
+    assert response.status_code == 200
+    assert response.json()["method"] == "0x" + b"add_proxy_data".hex()
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_add_proxy(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xadd_proxy_hash"
+    mock_receipt.block_number = 12
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/submit-add-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any",
+        "signature": "0xsig"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xadd_proxy_hash"
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_remove_proxy(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.get_account_nonce.return_value = 0
+    mock_instance.get_block_hash.return_value = "0xgenesis"
+    mock_instance.runtime_version = 1
+    mock_instance.transaction_version = 1
+    mock_instance.metadata.get_signed_extensions.return_value = {}
+    mock_call = MagicMock()
+    mock_call.data = b"remove_proxy_data"
+    mock_instance.compose_call.return_value = mock_call
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/prepare-remove-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any"
+    })
+    assert response.status_code == 200
+    assert response.json()["method"] == "0x" + b"remove_proxy_data".hex()
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_submit_remove_proxy(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xremove_proxy_hash"
+    mock_receipt.block_number = 12
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+    
+    response = client.post("/submit-remove-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any",
+        "signature": "0xsig"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xremove_proxy_hash"
+
+
+@patch('main.SubstrateInterface')
+def test_execute_transfer_proxied_simulated(mock_substrate):
+    with patch('main.MNEMONIC', ''):
+        response = client.post("/transfer", json={
+            "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+            "amount_pot": 10.0,
+            "proxied": True,
+            "real_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        })
+        assert response.status_code == 200
+        assert response.json()["simulated"] is True
+        assert response.json()["proxied"] is True
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_execute_transfer_proxied_real(mock_keypair_class, mock_substrate):
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = True
+    mock_receipt.extrinsic_hash = "0xproxied_hash"
+    mock_receipt.block_number = 99
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+    
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+    
+    response = client.post("/transfer", json={
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0,
+        "proxied": True,
+        "real_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 200
+    assert response.json()["txHash"] == "0xproxied_hash"
+    assert response.json()["proxied"] is True
+
+
+@patch('main.SubstrateInterface')
+def test_execute_transfer_proxied_missing_real_address(mock_substrate):
+    response = client.post("/transfer", json={
+        "to_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "amount_pot": 10.0,
+        "proxied": True
+    })
+    assert response.status_code == 400
+    assert "real_address is required" in response.json()["detail"]
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_add_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("compose fail")
+    mock_substrate.return_value = mock_instance
+    response = client.post("/prepare-add-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_submit_add_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("submit compose fail")
+    mock_substrate.return_value = mock_instance
+    response = client.post("/submit-add-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any",
+        "signature": "0xsig"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_prepare_remove_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("compose fail")
+    mock_substrate.return_value = mock_instance
+    response = client.post("/prepare-remove-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any"
+    })
+    assert response.status_code == 400
+
+
+@patch('main.SubstrateInterface')
+def test_submit_remove_proxy_failure(mock_substrate):
+    mock_instance = MagicMock()
+    mock_instance.compose_call.side_effect = Exception("submit compose fail")
+    mock_substrate.return_value = mock_instance
+    response = client.post("/submit-remove-proxy", json={
+        "sender_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "delegate_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "proxy_type": "Any",
+        "signature": "0xsig"
+    })
+    assert response.status_code == 400
