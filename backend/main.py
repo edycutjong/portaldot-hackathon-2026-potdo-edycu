@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from substrateinterface import SubstrateInterface, Keypair
+from substrateinterface import SubstrateInterface, Keypair  # type: ignore
 
 app = FastAPI(title="Portaldot Backend Bridge", version="1.0.0")
 
