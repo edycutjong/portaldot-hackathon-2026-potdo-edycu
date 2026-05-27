@@ -61,11 +61,11 @@ export function BatchCard({
               <tr key={i} className="border-t border-white/5">
                 <td className="px-3 py-2 text-slate-300">
                   {t.to}{" "}
-                  <span className="text-slate-600 font-[family-name:var(--font-jetbrains)] text-xs">
+                  <span className="text-slate-600 font-(family-name:--font-jetbrains) text-xs">
                     ({truncateAddress(t.toAddress)})
                   </span>
                 </td>
-                <td className="px-3 py-2 text-right text-cyan-400 font-[family-name:var(--font-jetbrains)]">
+                <td className="px-3 py-2 text-right text-cyan-400 font-(family-name:--font-jetbrains)">
                   {t.amount.toFixed(2)} {TOKEN_SYMBOL}
                 </td>
                 <td className="px-3 py-2 text-right">
@@ -82,20 +82,20 @@ export function BatchCard({
         {hasBalance && (
           <div className="flex justify-between">
             <span className="text-slate-500">Balance</span>
-            <span className="font-[family-name:var(--font-jetbrains)] text-slate-300">
+            <span className="font-(family-name:--font-jetbrains) text-slate-300">
               {formatPot(senderBalance)}
             </span>
           </div>
         )}
         <div className="flex justify-between">
           <span className="text-slate-500">Total</span>
-          <span className="text-cyan-400 font-semibold font-[family-name:var(--font-jetbrains)]">
+          <span className="text-cyan-400 font-semibold font-(family-name:--font-jetbrains)">
             {totalAmount.toFixed(2)} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Gas</span>
-          <span className="text-slate-600 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-600 font-(family-name:--font-jetbrains)">
             ~0.003 {TOKEN_SYMBOL}
           </span>
         </div>
@@ -116,7 +116,7 @@ export function BatchCard({
         className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
           (insufficient && isConnected) || isProcessing
             ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-            : "bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
+            : "bg-linear-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
         }`}
         id="execute-batch"
       >

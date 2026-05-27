@@ -52,7 +52,7 @@ export function TransferCard({
         {hasBalance && (
           <div className="flex justify-between">
             <span className="text-slate-500">Balance</span>
-            <span className="font-[family-name:var(--font-jetbrains)] text-slate-300">
+            <span className="font-(family-name:--font-jetbrains) text-slate-300">
               {formatPot(senderBalance)}
             </span>
           </div>
@@ -62,14 +62,14 @@ export function TransferCard({
           <span className="text-slate-500">To</span>
           <span className="text-slate-300">
             {intent.to}{" "}
-            <span className="text-slate-600 font-[family-name:var(--font-jetbrains)] text-xs">
+            <span className="text-slate-600 font-(family-name:--font-jetbrains) text-xs">
               ({truncateAddress(intent.toAddress)})
             </span>
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Amount</span>
-          <span className="text-cyan-400 font-semibold font-[family-name:var(--font-jetbrains)]">
+          <span className="text-cyan-400 font-semibold font-(family-name:--font-jetbrains)">
             {intent.amount.toFixed(2)} {TOKEN_SYMBOL}
           </span>
         </div>
@@ -78,7 +78,7 @@ export function TransferCard({
         {hasBalance && !insufficient && afterBalance !== undefined && (
           <div className="flex justify-between">
             <span className="text-slate-500">⚡ After</span>
-            <span className="text-amber-400 font-[family-name:var(--font-jetbrains)]">
+            <span className="text-amber-400 font-(family-name:--font-jetbrains)">
               {formatPot(afterBalance)} →{" "}
               <span className="text-red-400">
                 -{intent.amount.toFixed(2)}
@@ -90,7 +90,7 @@ export function TransferCard({
         {/* Gas estimate */}
         <div className="flex justify-between">
           <span className="text-slate-500">Gas</span>
-          <span className="text-slate-600 font-[family-name:var(--font-jetbrains)]">
+          <span className="text-slate-600 font-(family-name:--font-jetbrains)">
             ~0.001 {TOKEN_SYMBOL}
           </span>
         </div>
@@ -111,7 +111,7 @@ export function TransferCard({
         className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
           (insufficient && isConnected) || isProcessing
             ? "bg-slate-800 text-slate-600 cursor-not-allowed"
-            : "bg-gradient-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
+            : "bg-linear-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
         }`}
         id="execute-transfer"
       >

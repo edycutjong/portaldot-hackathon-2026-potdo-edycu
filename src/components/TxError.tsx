@@ -80,7 +80,7 @@ export function TxError({ txResult }: TxErrorProps) {
 
       {txResult.error && (
         <div className="mt-3 p-2 rounded-md bg-white/5 border border-white/5">
-          <p className="text-xs text-slate-600 font-[family-name:var(--font-jetbrains)] break-all">
+          <p className="text-xs text-slate-600 font-(family-name:--font-jetbrains) break-all">
             {txResult.error}
           </p>
         </div>

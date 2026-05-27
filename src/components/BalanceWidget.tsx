@@ -35,7 +35,7 @@ export function BalanceWidget({
 
       {/* Free balance (large) */}
       <div className="text-center mb-4">
-        <p className="text-3xl font-bold text-green-400 font-[family-name:var(--font-jetbrains)]">
+        <p className="text-3xl font-bold text-green-400 font-(family-name:--font-jetbrains)">
           {free}
         </p>
         <p className="text-xs text-slate-500 mt-1">{TOKEN_SYMBOL} (Free)</p>
@@ -44,13 +44,13 @@ export function BalanceWidget({
       {/* Reserved + Frozen */}
       <div className="grid grid-cols-2 gap-3">
         <div className="text-center p-2 rounded-lg bg-white/5">
-          <p className="text-sm text-amber-400 font-[family-name:var(--font-jetbrains)]">
+          <p className="text-sm text-amber-400 font-(family-name:--font-jetbrains)">
             {reserved}
           </p>
           <p className="text-xs text-slate-600 mt-0.5">Reserved</p>
         </div>
         <div className="text-center p-2 rounded-lg bg-white/5">
-          <p className="text-sm text-slate-400 font-[family-name:var(--font-jetbrains)]">
+          <p className="text-sm text-slate-400 font-(family-name:--font-jetbrains)">
             {frozen}
           </p>
           <p className="text-xs text-slate-600 mt-0.5">Frozen</p>

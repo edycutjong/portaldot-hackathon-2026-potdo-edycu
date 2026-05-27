@@ -59,14 +59,14 @@ export default function LandingPage() {
       <div className="relative z-10 max-w-3xl mx-auto text-center animate-fade-in-up">
         {/* Hackathon badge */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-400 text-sm font-[family-name:var(--font-jetbrains)] mb-6">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-400 text-sm font-(family-name:--font-jetbrains) mb-6">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
             DoraHacks × Portaldot Online S1 Hackathon 2026
           </div>
 
           {/* Title */}
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-400">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-cyan-400 via-purple-400 to-cyan-400">
               Potdo
             </span>
             <span className="ml-3">⚡</span>
@@ -143,7 +143,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-3 gap-4 max-w-md mx-auto mb-16">
           {STATS.map((stat) => (
             <div key={stat.label} className="glass-card p-3 text-center">
-              <p className={`text-2xl font-bold font-[family-name:var(--font-jetbrains)] ${stat.color}`}>
+              <p className={`text-2xl font-bold font-(family-name:--font-jetbrains) ${stat.color}`}>
                 {stat.value}
               </p>
               <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
@@ -171,7 +171,7 @@ export default function LandingPage() {
 
         {/* Sponsor Section */}
         <div className="border-t border-slate-800/50 pt-10">
-          <p className="text-xs font-[family-name:var(--font-jetbrains)] text-slate-500 uppercase tracking-widest mb-6">
+          <p className="text-xs font-(family-name:--font-jetbrains) text-slate-500 uppercase tracking-widest mb-6">
             Built for
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -180,11 +180,11 @@ export default function LandingPage() {
               href="https://portaldot.io"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2.5 h-14 px-5 rounded-lg border border-slate-800 bg-white/[0.02] hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all duration-200"
+              className="flex items-center gap-2.5 h-14 px-5 rounded-lg border border-slate-800 bg-white/2 hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all duration-200"
             >
               <span className="text-lg">⚡</span>
               <span className="text-sm font-semibold text-slate-200">Portaldot</span>
-              <span className="text-xs text-slate-500 font-[family-name:var(--font-jetbrains)]">Substrate L1</span>
+              <span className="text-xs text-slate-500 font-(family-name:--font-jetbrains)">Substrate L1</span>
             </a>
 
             {/* DoraHacks */}
@@ -192,11 +192,11 @@ export default function LandingPage() {
               href="https://dorahacks.io/hackathon/portaldot-online-s1/detail"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2.5 h-14 px-5 rounded-lg border border-slate-800 bg-white/[0.02] hover:border-purple-500/40 hover:bg-purple-500/5 transition-all duration-200"
+              className="flex items-center gap-2.5 h-14 px-5 rounded-lg border border-slate-800 bg-white/2 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all duration-200"
             >
               <span className="text-lg">🏗️</span>
               <span className="text-sm font-semibold text-slate-200">DoraHacks</span>
-              <span className="text-xs text-slate-500 font-[family-name:var(--font-jetbrains)]">Online S1 2026</span>
+              <span className="text-xs text-slate-500 font-(family-name:--font-jetbrains)">Online S1 2026</span>
             </a>
           </div>
         </div>

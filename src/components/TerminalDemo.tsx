@@ -61,13 +61,13 @@ export function TerminalDemo() {
           <span className="w-3 h-3 rounded-full bg-amber-500/70" />
           <span className="w-3 h-3 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-xs text-slate-500 font-[family-name:var(--font-jetbrains)] ml-2">
+        <span className="text-xs text-slate-500 font-(family-name:--font-jetbrains) ml-2">
           potdo terminal
         </span>
       </div>
 
       {/* Command input line */}
-      <div className="font-[family-name:var(--font-jetbrains)] text-sm space-y-3">
+      <div className="font-(family-name:--font-jetbrains) text-sm space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-cyan-500 text-xs">❯</span>
           <span className="text-slate-200">

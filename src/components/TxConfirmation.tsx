@@ -120,7 +120,7 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
         </h3>
 
         {txResult.blockNumber && (
-          <p className="text-sm text-slate-400 font-[family-name:var(--font-jetbrains)]">
+          <p className="text-sm text-slate-400 font-(family-name:--font-jetbrains)">
             Block #{txResult.blockNumber.toLocaleString()}
           </p>
         )}

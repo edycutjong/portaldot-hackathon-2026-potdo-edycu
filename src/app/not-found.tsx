@@ -5,11 +5,11 @@ export default function NotFound() {
     <div className="min-h-screen flex flex-col items-center justify-center grid-bg text-slate-100 p-4">
       <div className="relative max-w-md w-full text-center space-y-6 bg-slate-900/60 backdrop-blur-md border border-cyan-500/20 p-8 rounded-2xl shadow-[0_0_50px_rgba(6,182,212,0.1)]">
         {/* Glow effect */}
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition duration-1000 -z-10 animate-pulse"></div>
+        <div className="absolute -inset-0.5 bg-linear-to-r from-cyan-500 to-purple-600 rounded-2xl blur-xl opacity-20 group-hover:opacity-30 transition duration-1000 -z-10 animate-pulse"></div>
 
         {/* 404 Title */}
         <div className="space-y-2">
-          <h1 className="text-8xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 font-mono animate-pulse">
+          <h1 className="text-8xl font-black tracking-widest text-transparent bg-clip-text bg-linear-to-r from-cyan-400 to-purple-500 font-mono animate-pulse">
             404
           </h1>
           <p className="text-xs uppercase tracking-widest text-cyan-400 font-mono font-bold">
