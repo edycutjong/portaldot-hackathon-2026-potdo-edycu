@@ -40,6 +40,7 @@
 - 🔴 **Smart Error Translation** — Substrate errors decoded into plain English with actionable suggestions
 - 🎉 **Celebration UX** — Canvas confetti burst on successful transactions
 - 🛡️ **Insufficient Balance Protection** — Red-bordered cards with clear warnings before you can execute
+- 🛡️ **Secure Delegation (Guarded AI Proxy)** — Delegate restricted execution authority to the agent. Send transactions instantly without browser wallet signature popups, fully guarded by the Substrate proxy pallet.
 
 ## 📸 Screenshots
 
@@ -61,6 +62,7 @@
 | Layer | Technology |
 |---|---|
 | **Frontend** | Next.js 16 (App Router), React 19 |
+| **Backend API** | Python 3.12 (FastAPI), substrate-interface (100% coverage) |
 | **Styling** | Tailwind CSS v4 |
 | **AI Intent Parser** | Deterministic NLP (pattern matching + word-to-number) |
 | **Chain SDK** | Portaldot SDK |
@@ -86,7 +88,7 @@ User Input → Intent Parser → Structured Intent → Generative UI Card → Ex
 ### Thesis
 Potdo is architecturally inseparable from Portaldot. Every component is hardwired to Portaldot's Substrate runtime, RPC layer, and native token economics. Removing Portaldot would require a complete rewrite of the entire application.
 
-### Portaldot API Methods Used (8 total)
+### Portaldot API Methods Used (12 total)
 
 | # | Feature | Usage |
 |---|---------|-------|
@@ -98,6 +100,10 @@ Potdo is architecturally inseparable from Portaldot. Every component is hardwire
 | 6 | WebSocket RPC subscription | Live balance updates |
 | 7 | POT native gas token | Every tx pays gas in POT |
 | 8 | Substrate SS58 address format | AI validates against SS58 prefix |
+| 9 | `api.query.proxy.proxies(address)` | Pre-flight proxy delegation status |
+| 10 | `api.tx.proxy.addProxy(delegate, type, delay)` | Delegate restricted proxy authority |
+| 11 | `api.tx.proxy.removeProxy(delegate, type, delay)` | Revoke delegated proxy authority |
+| 12 | `api.tx.proxy.proxy(real, force_type, call)` | Wrap and execute call via proxy delegate |
 
 ### Without Portaldot
 - **Balance simulation** → Custom API adapter per chain
@@ -118,9 +124,9 @@ graph TB
         Wallet["Portaldot compatible Wallet"]
     end
 
-    subgraph Server["Vercel Edge / Serverless"]
+    subgraph Server["Vercel Edge / FastAPI Backend"]
         RSC["React Server Components"]
-        AI["Vercel AI SDK"]
+        API["FastAPI Backend (Python)"]
         Parser["Intent Parser"]
     end
 
@@ -131,14 +137,19 @@ graph TB
     end
 
     UI -->|"User types command"| RSC
-    RSC --> AI
-    AI -->|"Structured Output"| OpenAI
+    RSC --> Parser
+    Parser -->|"Structured Output"| OpenAI
     OpenAI -->|"Intent JSON"| Parser
     Parser -->|"Fetch balance"| RPC
     Parser -->|"Stream UI Card"| RSC
     RSC -->|"Generative UI"| UI
-    UI -->|"User clicks Execute"| Wallet
-    Wallet -->|"Sign extrinsic"| RPC
+    
+    UI -->|"1. Standard: Sign Extrinsic"| Wallet
+    Wallet -->|"Broadcast"| RPC
+    
+    UI -->|"2. Guarded Proxy: Direct Execution"| API
+    API -->|"Sign with Agent Key & Wrap proxy.proxy"| RPC
+    
     RPC -->|"Tx hash"| Supa
     Supa -->|"Tx status"| UI
 
@@ -153,24 +164,34 @@ sequenceDiagram
     actor User
     participant UI as Next.js Frontend
     participant RSC as Server Components
-    participant AI as OpenAI API
+    participant API as FastAPI Backend (Python)
     participant RPC as Portaldot RPC
     participant Wallet as Portaldot Wallet
 
     User->>UI: "Send 10 POT to Alice"
     UI->>RSC: Stream request
-    RSC->>AI: Parse intent (Structured Outputs)
-    AI-->>RSC: { action: "transfer", amount: 10, to: "5Grw..." }
-    RSC->>RPC: Query sender balance
-    RPC-->>RSC: { free: 100.5 POT }
+    RSC->>API: Fetch sender balance & proxy status
+    API->>RPC: Query state
+    RPC-->>API: { balance: 100.5 POT, proxied: true/false }
+    API-->>RSC: { balance: 100.5 POT, isProxyActive: true/false }
     RSC-->>UI: Stream <TransferCard> component
-    Note over UI: User sees:<br/>From: You (100.5 POT)<br/>To: Alice<br/>Amount: 10 POT<br/>After: 90.5 POT<br/>[Execute]
-    User->>UI: Clicks "Execute"
-    UI->>Wallet: Sign extrinsic
-    Wallet-->>UI: Signed payload
-    UI->>RPC: Submit extrinsic
-    RPC-->>UI: Tx hash + block
-    Note over UI: 🎉 Confetti animation<br/>+ Explorer link
+    
+    alt Option A: Guarded Proxy Enabled
+        User->>UI: Click "Execute" (popup-free)
+        UI->>API: POST /transfer { proxied: true }
+        API->>RPC: Submit proxy(real, transferKeepAlive) signed by Agent Key
+        RPC-->>API: Tx Hash
+        API-->>UI: Confirmed (finalized)
+    else Option B: Standard Wallet Signing
+        User->>UI: Click "Execute"
+        UI->>Wallet: Request Signature (popup)
+        Wallet-->>UI: Signed payload
+        UI->>API: POST /submit-transfer { signature }
+        API->>RPC: Submit signed extrinsic
+        RPC-->>API: Tx Hash
+        API-->>UI: Confirmed (finalized)
+    end
+    Note over UI: 🎉 Confetti animation + Explorer link
 ```
 
 ## 🚀 Getting Started
