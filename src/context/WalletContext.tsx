@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { ConnectWalletModal } from "@/components/ConnectWalletModal";
-import { PORTALDOT_RPC } from "@/lib/constants";
+import { PORTALDOT_RPC, TESTNET_ADDRESS_BOOK, DEMO_ADDRESS_BOOK } from "@/lib/constants";
 import { potToPlanck, planckToPot } from "@/lib/format";
 import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
 
@@ -21,6 +21,7 @@ interface WalletContextType {
   balance: bigint;
   isDemoMode: boolean;
   connecting: boolean;
+  isBalanceLoading: boolean;
   extensionInstalled: boolean;
   accounts: InjectedAccount[];
   isProxyActive: boolean;
@@ -95,23 +96,42 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [proxyType, setProxyType] = useState("Any");
   const [agentAddress, setAgentAddress] = useState<string | null>(null);
   const [checkingProxy, setCheckingProxy] = useState(false);
+  const [isBalanceLoading, setIsBalanceLoading] = useState(false);
 
 
 
   const [mockBalances, setMockBalances] = useState<Record<string, bigint>>({
+    // Testnet default dev accounts
     "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 100000000000000000n, // Alice: 1000 POT
     "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": 50000000000000000n,  // Bob: 500 POT
-    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 150 POT
+    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 15 POT
     "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000n,    // Dave: 75 POT
+    // Demo accounts
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": 100000000000000000n, // Alpha: 1000 POT
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": 50000000000000000n,  // Beta: 500 POT
+    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC": 1500000000000000n,   // Gamma: 15 POT
+    "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD": 7500000000000000n,    // Delta: 75 POT
   });
 
   const [mockStaking, setMockStaking] = useState<Record<string, { bonded: bigint; active: bigint; unlocking: bigint }>>({
+    // Testnet default dev accounts
     "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
       bonded: 50000000000000000n,
       active: 45000000000000000n,
       unlocking: 5000000000000000n,
     },
     "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+      bonded: 20000000000000000n,
+      active: 20000000000000000n,
+      unlocking: 0n,
+    },
+    // Demo accounts
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": {
+      bonded: 50000000000000000n,
+      active: 45000000000000000n,
+      unlocking: 5000000000000000n,
+    },
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": {
       bonded: 20000000000000000n,
       active: 20000000000000000n,
       unlocking: 0n,
@@ -141,20 +161,22 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
     }
     // Fallback/Demo mode
-    const isAlice = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
-    setIsProxyActive(isAlice);
+    const isAliceOrAlpha = targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" || targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA";
+    setIsProxyActive(isAliceOrAlpha);
     setProxyType("Any");
-    setAgentAddress("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
+    setAgentAddress(targetAddr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA" ? "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB" : "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
     setCheckingProxy(false);
   };
 
   const refreshBalance = async (addr: string) => {
+    setIsBalanceLoading(true);
     if (BACKEND_URL) {
       try {
         const res = await fetch(`${BACKEND_URL}/balance/${addr}`);
         if (res.ok) {
           const data = await res.json();
           setBalance(BigInt(data.balancePlanck));
+          setIsBalanceLoading(false);
           return;
         }
       } catch (err) {
@@ -162,7 +184,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    setBalance(mockBalances[addr] || 10000000000000000n);
+    setBalance(mockBalances[addr] || 100000000000000000n);
+    setIsBalanceLoading(false);
   };
 
   const connectExtension = async () => {
@@ -195,14 +218,57 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
             setShowConnectModal(false);
             await refreshBalance(formattedAccounts[0].address);
             await checkProxyStatus(formattedAccounts[0].address);
+            await fetchOnChainIdentities(formattedAccounts);
             return;
           }
         }
       }
       throw new Error("No Substrate extension accounts found");
     } catch (err) {
-      console.warn("Substrate extension connection failed, falling back to demo mode:", err);
-      await connectDemo();
+      console.warn("Substrate extension connection failed, falling back to simulated testnet dev accounts:", err);
+      
+      const isTestnet =
+        rpcEndpoint.includes("127.0.0.1") ||
+        rpcEndpoint.includes("localhost") ||
+        rpcEndpoint.includes("testnet") ||
+        rpcEndpoint.includes("dev") ||
+        targetChainName.toLowerCase().includes("testnet") ||
+        targetChainName.toLowerCase().includes("dev") ||
+        targetChainName.toLowerCase().includes("local");
+
+      if (isTestnet) {
+        const formattedAccounts: InjectedAccount[] = [
+          {
+            address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+            meta: { name: "Alice", source: "portaldotjs" },
+          },
+          {
+            address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+            meta: { name: "Bob", source: "portaldotjs" },
+          },
+          {
+            address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+            meta: { name: "Charlie", source: "portaldotjs" },
+          },
+          {
+            address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+            meta: { name: "Dave", source: "portaldotjs" },
+          },
+        ];
+        
+        setAccounts(formattedAccounts);
+        setAddress(formattedAccounts[0].address);
+        setBalance(mockBalances[formattedAccounts[0].address] || 100000000000000000n);
+        setIsDemoMode(false);
+        setConnected(true);
+        setConnecting(false);
+        setShowConnectModal(false);
+        await refreshBalance(formattedAccounts[0].address);
+        await checkProxyStatus(formattedAccounts[0].address);
+        await fetchOnChainIdentities(formattedAccounts);
+      } else {
+        await connectDemo();
+      }
     }
   };
 
@@ -212,19 +278,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
 
     const formattedAccounts: InjectedAccount[] = [
       {
-        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA",
         meta: { name: "Alpha", source: "portaldotjs" },
       },
       {
-        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB",
         meta: { name: "Beta", source: "portaldotjs" },
       },
       {
-        address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+        address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC",
         meta: { name: "Gamma", source: "portaldotjs" },
       },
       {
-        address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+        address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD",
         meta: { name: "Delta", source: "portaldotjs" },
       },
     ];
@@ -237,6 +303,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setConnecting(false);
     setShowConnectModal(false);
     await checkProxyStatus(formattedAccounts[0].address);
+    await fetchOnChainIdentities(formattedAccounts);
   };
 
   const connect = async (useDemo = false) => {
@@ -256,6 +323,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     setAccounts([]);
     setIsProxyActive(false);
     setProxyType("Any");
+    setIsBalanceLoading(false);
   };
 
   const selectAccount = async (addr: string) => {
@@ -933,7 +1001,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const queryIdentity = async (targetAddress?: string): Promise<OnChainIdentity> => {
+  async function queryIdentity(targetAddress?: string): Promise<OnChainIdentity> {
     const target = targetAddress || address || "";
     if (!target) {
       return {
@@ -952,14 +1020,68 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    const testnetName = TESTNET_ADDRESS_BOOK[target];
+    if (testnetName) {
+      return {
+        display: testnetName,
+        web: "https://portaldot.io",
+        email: `${testnetName.toLowerCase()}@portaldot.io`,
+        isVerified: true,
+        address: target,
+      };
+    }
+    const demoName = DEMO_ADDRESS_BOOK[target];
+    if (demoName) {
+      return {
+        display: demoName,
+        web: "https://portaldot.io",
+        email: `${demoName.toLowerCase()}@portaldot.io`,
+        isVerified: true,
+        address: target,
+      };
+    }
+
     return {
-      display: target === address ? "Potdo User" : "Alpha",
+      display: target === address ? "Potdo User" : target.slice(0, 8) + "...",
       web: "https://portaldot.io",
       email: "user@portaldot.io",
       isVerified: true,
       address: target,
     };
-  };
+  }
+
+  async function fetchOnChainIdentities(accs: InjectedAccount[]) {
+    try {
+      const updated = await Promise.all(
+        accs.map(async (acc) => {
+          try {
+            const identity = await queryIdentity(acc.address);
+            if (
+              identity &&
+              identity.display &&
+              identity.display !== "Not Connected" &&
+              identity.display !== "Potdo User" &&
+              !identity.display.includes("...")
+            ) {
+              return {
+                ...acc,
+                meta: {
+                  ...acc.meta,
+                  name: identity.display,
+                },
+              };
+            }
+          } catch (e) {
+            console.warn("Failed to fetch on-chain identity for", acc.address, e);
+          }
+          return acc;
+        })
+      );
+      setAccounts(updated);
+    } catch (err) {
+      console.warn("fetchOnChainIdentities failed:", err);
+    }
+  }
 
   const queryVesting = async (): Promise<VestingSchedule> => {
     if (BACKEND_URL && address) {
@@ -1079,6 +1201,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         balance,
         isDemoMode,
         connecting,
+        isBalanceLoading,
         extensionInstalled,
         accounts,
         isProxyActive,

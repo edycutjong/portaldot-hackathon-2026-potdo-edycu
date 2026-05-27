@@ -19,6 +19,7 @@ export default function DashboardPage() {
     disconnect,
     isDemoMode,
     connecting,
+    isBalanceLoading,
     accounts,
     selectAccount,
     chainName,
@@ -82,7 +83,7 @@ export default function DashboardPage() {
     }
   }, [connect]);
 
-  const balanceStr = connected ? formatPot(balance) : undefined;
+  const balanceStr = connected ? (isBalanceLoading ? "..." : formatPot(balance)) : undefined;
 
   return (
     <div className="h-screen flex flex-col grid-bg">

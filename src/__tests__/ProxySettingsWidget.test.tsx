@@ -8,6 +8,7 @@ const mockWalletBase = {
   balance: 0n,
   isDemoMode: true,
   connecting: false,
+  isBalanceLoading: false,
   extensionInstalled: false,
   accounts: [],
   isProxyActive: false,

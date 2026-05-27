@@ -56,24 +56,20 @@ export function resolveRecipient(
   nameOrAddress: string,
   addressBook: Record<string, string>
 ): { name: string; address: string } | null {
-  // Check if it's already a valid address
+  // Check if it's already a valid address (key lookup)
   if (isValidSS58Address(nameOrAddress)) {
-    // Reverse lookup for display name
-    const name =
-      Object.entries(addressBook).find(
-        ([, addr]) => addr === nameOrAddress
-      )?.[0] || truncateAddress(nameOrAddress);
+    const name = addressBook[nameOrAddress] || truncateAddress(nameOrAddress);
     return { name, address: nameOrAddress };
   }
 
-  // Look up by name (case-insensitive)
+  // Look up by name (case-insensitive) - name is the value, address is the key
   const normalized = nameOrAddress.trim().toLowerCase();
   const entry = Object.entries(addressBook).find(
-    ([name]) => name.toLowerCase() === normalized
+    ([, name]) => name.toLowerCase() === normalized
   );
 
   if (entry) {
-    return { name: entry[0], address: entry[1] };
+    return { name: entry[1], address: entry[0] };
   }
 
   return null;

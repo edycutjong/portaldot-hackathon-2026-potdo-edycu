@@ -55,6 +55,7 @@ describe("ChatInterface", () => {
     queryVesting: jest.Mock;
     estimateFee: jest.Mock;
     queryChainInfo: jest.Mock;
+    isBalanceLoading: boolean;
   };
 
   beforeEach(() => {
@@ -74,6 +75,7 @@ describe("ChatInterface", () => {
       queryVesting: mockQueryVesting,
       estimateFee: mockEstimateFee,
       queryChainInfo: mockQueryChainInfo,
+      isBalanceLoading: false,
     };
     (useWallet as jest.Mock).mockImplementation(() => currentWallet);
     global.fetch = jest.fn();

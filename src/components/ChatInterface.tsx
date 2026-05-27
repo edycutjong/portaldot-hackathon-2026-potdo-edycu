@@ -31,7 +31,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const {
     address, balance, executeTransfer, executeBatch, executeStake, executeUnstake,
     executeSetIdentity, queryStaking, queryIdentity, queryVesting, estimateFee,
-    queryChainInfo, connect, connected, accounts, chainName, isDemoMode,
+    queryChainInfo, connect, connected, accounts, chainName, isDemoMode, isBalanceLoading,
   } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
@@ -428,7 +428,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         );
       }
       case "check_balance":
-        return <BalanceWidget free={planckToPot(balance)} />;
+        return <BalanceWidget free={isBalanceLoading ? "..." : planckToPot(balance)} />;
       case "stake":
       case "unstake":
         return (

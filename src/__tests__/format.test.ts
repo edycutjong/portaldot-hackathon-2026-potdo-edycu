@@ -135,8 +135,8 @@ describe("truncateAddress", () => {
 
 describe("resolveRecipient", () => {
   const addressBook = {
-    Alpha: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-    Beta: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": "Alpha",
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": "Beta",
   };
 
   it("resolves name to address (case-insensitive)", () => {

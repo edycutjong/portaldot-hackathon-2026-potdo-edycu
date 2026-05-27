@@ -12,20 +12,20 @@ export const CHAIN_NAME = "Portaldot";
 // SS58 address prefix for Portaldot (Substrate default = 42)
 export const SS58_PREFIX = 42;
 
-// Named demo accounts (Greek alphabet)
+// Named demo accounts (Greek alphabet) - Address -> Name mapping
 export const DEMO_ADDRESS_BOOK: Record<string, string> = {
-  Alpha: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-  Beta: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-  Gamma: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
-  Delta: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA": "Alpha",
+  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB": "Beta",
+  "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC": "Gamma",
+  "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD": "Delta",
 };
 
-// Named testnet accounts (Substrate defaults)
+// Named testnet accounts (Substrate defaults) - Address -> Name mapping
 export const TESTNET_ADDRESS_BOOK: Record<string, string> = {
-  Alice: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-  Bob: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-  Charlie: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
-  Dave: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
+  "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": "Alice",
+  "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": "Bob",
+  "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": "Charlie",
+  "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": "Dave",
 };
 
 // Default address book for compatibility

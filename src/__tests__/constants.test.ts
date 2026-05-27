@@ -33,23 +33,23 @@ describe("constants", () => {
   });
 
   it("ADDRESS_BOOK has Alpha, Beta, Gamma, Delta", () => {
-    expect(Object.keys(ADDRESS_BOOK)).toEqual(["Alpha", "Beta", "Gamma", "Delta"]);
+    expect(Object.values(ADDRESS_BOOK)).toEqual(["Alpha", "Beta", "Gamma", "Delta"]);
   });
 
   it("DEMO_ADDRESS_BOOK has Alpha, Beta, Gamma, Delta", () => {
-    expect(Object.keys(DEMO_ADDRESS_BOOK)).toEqual(["Alpha", "Beta", "Gamma", "Delta"]);
-    expect(DEMO_ADDRESS_BOOK.Alpha).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
-    expect(DEMO_ADDRESS_BOOK.Beta).toBe("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
-    expect(DEMO_ADDRESS_BOOK.Gamma).toBe("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y");
-    expect(DEMO_ADDRESS_BOOK.Delta).toBe("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew");
+    expect(Object.values(DEMO_ADDRESS_BOOK)).toEqual(["Alpha", "Beta", "Gamma", "Delta"]);
+    expect(DEMO_ADDRESS_BOOK["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGdemoA"]).toBe("Alpha");
+    expect(DEMO_ADDRESS_BOOK["5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJMdemoB"]).toBe("Beta");
+    expect(DEMO_ADDRESS_BOOK["5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXdemoC"]).toBe("Gamma");
+    expect(DEMO_ADDRESS_BOOK["5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3demoD"]).toBe("Delta");
   });
 
   it("TESTNET_ADDRESS_BOOK has Alice, Bob, Charlie, Dave", () => {
-    expect(Object.keys(TESTNET_ADDRESS_BOOK)).toEqual(["Alice", "Bob", "Charlie", "Dave"]);
-    expect(TESTNET_ADDRESS_BOOK.Alice).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
-    expect(TESTNET_ADDRESS_BOOK.Bob).toBe("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
-    expect(TESTNET_ADDRESS_BOOK.Charlie).toBe("5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y");
-    expect(TESTNET_ADDRESS_BOOK.Dave).toBe("5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew");
+    expect(Object.values(TESTNET_ADDRESS_BOOK)).toEqual(["Alice", "Bob", "Charlie", "Dave"]);
+    expect(TESTNET_ADDRESS_BOOK["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]).toBe("Alice");
+    expect(TESTNET_ADDRESS_BOOK["5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"]).toBe("Bob");
+    expect(TESTNET_ADDRESS_BOOK["5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"]).toBe("Charlie");
+    expect(TESTNET_ADDRESS_BOOK["5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew"]).toBe("Dave");
   });
 
   it("SUGGESTED_COMMANDS has 9 entries covering all capabilities", () => {
