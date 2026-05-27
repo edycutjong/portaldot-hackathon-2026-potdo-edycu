@@ -36,7 +36,7 @@ COMMANDS = [
 
 def bench(n: int = 50) -> None:
     """Run n iterations of intent parsing and report latency stats."""
-    print(f"\n⚡ Potdo Intent Parsing Benchmark")
+    print("\n⚡ Potdo Intent Parsing Benchmark")
     print(f"   Endpoint: {ENDPOINT}")
     print(f"   Iterations: {n}")
     print(f"   Commands: {len(COMMANDS)} unique\n")
