@@ -18,6 +18,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load environment variables from .env.local or .env in the parent directory if present
+def load_env():
+    for filename in ['.env.local', '.env']:
+        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), filename)
+        if os.path.exists(filepath):
+            try:
+                with open(filepath, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line or line.startswith('#'):
+                            continue
+                        if '=' in line:
+                            key, val = line.split('=', 1)
+                            key = key.strip()
+                            val = val.strip()
+                            # Strip quotes if present
+                            if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                                val = val[1:-1]
+                            if key not in os.environ:
+                                os.environ[key] = val
+            except Exception:
+                pass
+
+load_env()
+
 # Configuration from environment variables
 PORTALDOT_RPC = os.getenv("PORTALDOT_RPC", "wss://mainnet.portaldot.io")
 MNEMONIC = os.getenv("MNEMONIC", "")  # Seed phrase for transaction signing

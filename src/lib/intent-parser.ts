@@ -11,7 +11,45 @@ import type { ParsedIntent } from "./types";
  * Parse a natural language command into a structured intent.
  */
 export function parseIntent(command: string): ParsedIntent | null {
-  const original = command.trim();
+  let original = command.trim();
+
+  // Preprocess slash commands to map them to natural language formats
+  if (original.startsWith("/")) {
+    const parts = original.split(/\s+/);
+    const slashCmd = parts[0].toLowerCase();
+    const args = parts.slice(1).join(" ");
+
+    if (slashCmd === "/sendall") {
+      original = args ? `send everything to ${args}` : "";
+    } else if (slashCmd === "/send") {
+      original = args ? `send ${args}` : "";
+    } else if (slashCmd === "/balance") {
+      original = args ? `balance ${args}` : "check my balance";
+    } else if (slashCmd === "/airdrop") {
+      original = args ? `airdrop ${args}` : "";
+    } else if (slashCmd === "/stake") {
+      original = args ? `stake ${args}` : "";
+    } else if (slashCmd === "/unstake") {
+      original = args ? `unstake ${args}` : "";
+    } else if (slashCmd === "/staking") {
+      original = "show my staking info";
+    } else if (slashCmd === "/identity") {
+      original = args ? `set my name to ${args}` : "my identity";
+    } else if (slashCmd === "/whois") {
+      original = args ? `who is ${args}` : "";
+    } else if (slashCmd === "/vesting") {
+      original = "show vesting schedule";
+    } else if (slashCmd === "/fee") {
+      original = args ? `how much gas for ${args}` : "estimate fee";
+    } else if (slashCmd === "/chain") {
+      original = "chain info";
+    }
+  }
+
+  original = original.trim();
+  if (!original) {
+    return null;
+  }
   const normalized = original.toLowerCase();
 
   // ── Chain Info ──────────────────────────────────────────────

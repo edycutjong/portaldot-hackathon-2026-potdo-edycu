@@ -317,6 +317,97 @@ describe("parseIntent", () => {
     const result = parseIntent("chain status");
     expect(result).toEqual({ action: "check_chain_info" });
   });
+
+  // === Slash Commands ===
+  it("parses '/send 10 POT to Alice'", () => {
+    const result = parseIntent("/send 10 POT to Alice");
+    expect(result).toEqual({
+      action: "transfer",
+      to: "Alice",
+      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      amount: 10,
+    });
+  });
+
+  it("parses '/balance'", () => {
+    const result = parseIntent("/balance");
+    expect(result).toEqual({ action: "check_balance" });
+  });
+
+  it("parses '/airdrop 5 POT to Alice, Bob, and Charlie'", () => {
+    const result = parseIntent("/airdrop 5 POT to Alice, Bob, and Charlie");
+    expect(result?.action).toBe("batch_transfer");
+    if (result?.action === "batch_transfer") {
+      expect(result.transfers).toHaveLength(3);
+    }
+  });
+
+  it("parses '/stake 100 POT'", () => {
+    const result = parseIntent("/stake 100 POT");
+    expect(result).toEqual({ action: "stake", amount: 100 });
+  });
+
+  it("parses '/unstake 50 POT'", () => {
+    const result = parseIntent("/unstake 50 POT");
+    expect(result).toEqual({ action: "unstake", amount: 50 });
+  });
+
+  it("parses '/staking'", () => {
+    const result = parseIntent("/staking");
+    expect(result).toEqual({ action: "check_staking" });
+  });
+
+  it("parses '/identity Edy'", () => {
+    const result = parseIntent("/identity Edy");
+    expect(result).toEqual({ action: "set_identity", displayName: "Edy" });
+  });
+
+  it("parses '/identity' without args as check_identity (self)", () => {
+    const result = parseIntent("/identity");
+    expect(result).toEqual({ action: "check_identity" });
+  });
+
+  it("parses '/whois Alice'", () => {
+    const result = parseIntent("/whois Alice");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.name).toBe("Alice");
+    }
+  });
+
+  it("parses '/vesting'", () => {
+    const result = parseIntent("/vesting");
+    expect(result).toEqual({ action: "check_vesting" });
+  });
+
+  it("parses '/fee Send 10 POT to Alice'", () => {
+    const result = parseIntent("/fee Send 10 POT to Alice");
+    expect(result?.action).toBe("estimate_fee");
+  });
+
+  it("parses '/chain'", () => {
+    const result = parseIntent("/chain");
+    expect(result).toEqual({ action: "check_chain_info" });
+  });
+
+  it("parses '/sendall Alice'", () => {
+    const result = parseIntent("/sendall Alice");
+    expect(result).toEqual({
+      action: "transfer",
+      to: "Alice",
+      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      amount: -1,
+    });
+  });
+
+  it("returns null for empty slash command arguments when arguments are required", () => {
+    expect(parseIntent("/send")).toBeNull();
+    expect(parseIntent("/airdrop")).toBeNull();
+    expect(parseIntent("/stake")).toBeNull();
+    expect(parseIntent("/unstake")).toBeNull();
+    expect(parseIntent("/whois")).toBeNull();
+    expect(parseIntent("/sendall")).toBeNull();
+  });
 });
 
 describe("validateIntent", () => {
