@@ -19,7 +19,7 @@ import { SUGGESTED_COMMANDS, SLASH_COMMANDS } from "@/lib/constants";
 import type { ChatMessage, ParsedIntent, TxResult, TxStatus, TransferIntent, BatchTransferIntent, StakeIntent, UnstakeIntent, SetIdentityIntent } from "@/lib/types";
 import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
-import { planckToPot } from "@/lib/format";
+import { planckToPot, potToPlanck } from "@/lib/format";
 
 interface ChatInterfaceProps {
   externalInput?: string;
@@ -31,21 +31,28 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const {
     address, balance, executeTransfer, executeBatch, executeStake, executeUnstake,
     executeSetIdentity, queryStaking, queryIdentity, queryVesting, estimateFee,
-    queryChainInfo, connect, connected,
+    queryChainInfo, connect, connected, accounts, chainName, isDemoMode,
   } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const lastLoadedAddressRef = useRef<string | null | undefined>(undefined);
+  const getStorageKey = useCallback(() => {
+    const networkKey = (chainName || "Demo Network").toLowerCase().replace(/[^a-z0-9]+/g, "_");
+    return address
+      ? `potdo_chat_history_${networkKey}_${address}`
+      : `potdo_chat_history_${networkKey}_guest`;
+  }, [address, chainName]);
 
-  // Load chat history when address changes
+  const lastLoadedKeyRef = useRef<string | null>(null);
+
+  // Load chat history when address or chainName changes
   useEffect(() => {
     if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
       return;
     }
-    const key = address ? `potdo_chat_history_${address}` : "potdo_chat_history_guest";
+    const key = getStorageKey();
     try {
       const stored = localStorage.getItem(key);
       const loadedMessages = stored ? JSON.parse(stored) : [];
@@ -58,18 +65,18 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         setMessages([]);
       }, 0);
     }
-    lastLoadedAddressRef.current = address;
-  }, [address]);
+    lastLoadedKeyRef.current = key;
+  }, [getStorageKey]);
 
   // Save chat history when messages change
   useEffect(() => {
     if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
       return;
     }
-    if (lastLoadedAddressRef.current !== address) {
+    const key = getStorageKey();
+    if (lastLoadedKeyRef.current !== key) {
       return;
     }
-    const key = address ? `potdo_chat_history_${address}` : "potdo_chat_history_guest";
     if (messages.length > 0) {
       try {
         localStorage.setItem(key, JSON.stringify(messages));
@@ -83,7 +90,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         console.error("Failed to clear chat history:", err);
       }
     }
-  }, [messages, address]);
+  }, [messages, getStorageKey]);
   const [lastConsumed, setLastConsumed] = useState<string | undefined>(undefined);
 
   // Consume external input (e.g. from CommandHistory click)
@@ -114,9 +121,19 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
     }
     const intent = msg.intent as TransferIntent;
     const userMessage = messages.findLast((m) => m.role === "user");
-    const commandText = userMessage ? userMessage.content : `Send ${intent.amount} POT to ${intent.to}`;
 
-    await executeTransfer(intent.toAddress, intent.amount, async (status, txHash, blockNumber, error) => {
+    // Resolve Max Transfer (-1) to the actual balance minus the gas fee
+    let finalAmount = intent.amount;
+    const gasFeePot = 0.0012;
+    const gasFeePlanck = potToPlanck(gasFeePot);
+    if (intent.amount === -1 && balance !== undefined) {
+      const maxSendPlanck = balance > gasFeePlanck ? balance - gasFeePlanck : 0n;
+      finalAmount = Number(planckToPot(maxSendPlanck));
+    }
+
+    const commandText = userMessage ? userMessage.content : `Send ${finalAmount} POT to ${intent.to}`;
+
+    await executeTransfer(intent.toAddress, finalAmount, async (status, txHash, blockNumber, error) => {
       setMessages((prev) =>
         prev.map((m) =>
           m.id === msg.id
@@ -138,12 +155,12 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
         await logTransaction({
           sender: address,
           command: commandText,
-          intent: intent as unknown as Record<string, unknown>,
+          intent: { ...intent, amount: finalAmount } as unknown as Record<string, unknown>,
           txHash,
           blockNumber,
           status,
           errorMessage: error,
-          gasFee: "0.001",
+          gasFee: "0.0012",
         });
 
         onCommandExecuted?.();
@@ -273,7 +290,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
+        body: JSON.stringify({ message: trimmed, isDemo: isDemoMode }),
       });
 
       const data = await res.json();
@@ -380,7 +397,9 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
     }
 
     switch (msg.intent.action) {
-      case "transfer":
+      case "transfer": {
+        const activeAccount = accounts?.find((a) => a.address === address);
+        const senderName = activeAccount?.meta?.name || "Guest";
         return (
           <TransferCard
             intent={msg.intent}
@@ -388,9 +407,14 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             isConnected={connected}
             status={msg.txResult?.status}
             onExecute={() => handleExecute(msg)}
+            senderAddress={address || undefined}
+            senderName={senderName}
           />
         );
-      case "batch_transfer":
+      }
+      case "batch_transfer": {
+        const activeAccount = accounts?.find((a) => a.address === address);
+        const senderName = activeAccount?.meta?.name || "Guest";
         return (
           <BatchCard
             intent={msg.intent}
@@ -398,8 +422,11 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             isConnected={connected}
             status={msg.txResult?.status}
             onExecute={() => handleExecuteBatch(msg)}
+            senderAddress={address || undefined}
+            senderName={senderName}
           />
         );
+      }
       case "check_balance":
         return <BalanceWidget free={planckToPot(balance)} />;
       case "stake":
@@ -471,7 +498,11 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <MessageBubble message={msg} />
+              <MessageBubble
+                message={msg}
+                senderAddress={address || undefined}
+                senderName={accounts?.find((a) => a.address === address)?.meta?.name || "Guest"}
+              />
               {msg.role === "assistant" && renderIntentCard(msg)}
             </motion.div>
           ))}
@@ -551,7 +582,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
               setSlashIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder='Try: "Send 10 POT to Alice" (or type "/" for commands)...'
+            placeholder='Try: "Send 10 POT to Alpha" (or type "/" for commands)...'
             disabled={isLoading}
             className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200 disabled:opacity-50"
             id="chat-input"

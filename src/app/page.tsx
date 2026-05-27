@@ -463,6 +463,14 @@ export default function LandingPage() {
                 }}
               />
             </Link>
+            <Link
+              href="/dashboard?demo=true"
+              id="hero-demo-cta"
+              className="inline-flex items-center gap-2.5 px-8 py-4 rounded-xl border border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/5 hover:border-amber-500/60 transition-all duration-200 hover:scale-105"
+            >
+              <IconBolt className="w-5.5 h-5.5 shrink-0" />
+              Launch Demo Mode
+            </Link>
             <a
               href="https://github.com/edycutjong/potdo"
               target="_blank"
@@ -671,6 +679,14 @@ export default function LandingPage() {
                   animation: "shimmer 3s linear infinite",
                 }}
               />
+            </Link>
+            <Link
+              href="/dashboard?demo=true"
+              id="final-demo-cta"
+              className="inline-flex items-center gap-2.5 px-8 py-4.5 rounded-xl border border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/5 hover:border-amber-500/60 transition-all duration-200 hover:scale-105 font-bold"
+            >
+              <IconBolt className="w-5.5 h-5.5 shrink-0" />
+              Launch Demo Mode
             </Link>
             <a
               href="https://github.com/edycutjong/potdo"

@@ -21,21 +21,21 @@ Below is the complete guide to all natural language commands supported by Potdo,
 ### 1. Pallet: `balances` (Token Transfers)
 Handles simple token transfers and balance queries.
 * **Commands:**
-  * *"Send 10 POT to Alice"*
+  * *"Send 10 POT to Alpha"*
   * *"Transfer all POT to Bob"*
   * *"What's my balance?"* / *"Check balance"*
 * **Pallet Extrinsic:** `api.tx.balances.transferKeepAlive(recipient, amountPlanck)`
 * **Pallet Query:** `api.query.system.account(address)`
 * **UI Card:** `TransferCard` & `BalanceWidget`
-* **Details:** Potdo uses a predefined address book for easy lookup (e.g., Alice, Bob) and verifies that recipient addresses are valid SS58 formats. It estimates transaction fees and checks if the sender's balance is sufficient before showing the execute button.
+* **Details:** Potdo uses a predefined address book for easy lookup (e.g., Alpha, Beta) and verifies that recipient addresses are valid SS58 formats. It estimates transaction fees and checks if the sender's balance is sufficient before showing the execute button.
 
 ---
 
 ### 2. Pallet: `utility` (Batch Actions)
 Allows bundling multiple transactions into a single atomic signature, saving gas fees.
 * **Commands:**
-  * *"Airdrop 5 POT to Alice, Bob, and Charlie"*
-  * *"Send 1.5 POT to Alice and 2.5 POT to Dave"*
+  * *"Airdrop 5 POT to Alpha, Beta, and Gamma"*
+  * *"Send 1.5 POT to Alpha and 2.5 POT to Delta"*
 * **Pallet Extrinsic:** `api.tx.utility.batch([extrinsics])`
 * **UI Card:** `BatchCard`
 * **Details:** Potdo parses multiple names separated by commas or "and", aggregates them, computes the cumulative POT amount, and executes a batch extrinsic.
@@ -45,7 +45,7 @@ Allows bundling multiple transactions into a single atomic signature, saving gas
 ### 3. Pallet: `staking` (On-Chain Bonding)
 Handles staking (bonding) POT tokens to secure the network and earning rewards.
 * **Commands:**
-  * *"Stake 100 POT"* / *"Bond 50 POT to validator Dave"*
+  * *"Stake 100 POT"* / *"Bond 50 POT to validator Delta"*
   * *"Unstake 50 POT"* / *"Unbond 20 POT"*
   * *"Show staking info"* / *"Check my nominations"*
 * **Pallet Extrinsic:**
@@ -60,7 +60,7 @@ Handles staking (bonding) POT tokens to secure the network and earning rewards.
 Allows users to associate real-world display names and metadata with their cryptographic addresses.
 * **Commands:**
   * *"Set display name to Edy"* / *"Set my identity display as Antigravity"*
-  * *"Who is Alice?"* / *"Lookup Bob"* / *"Check my identity"*
+  * *"Who is Alpha?"* / *"Lookup Bob"* / *"Check my identity"*
 * **Pallet Extrinsic:** `api.tx.identity.setIdentity(identityInfo)`
 * **Pallet Query:** `api.query.identity.identityOf(address)`
 * **UI Card:** `IdentityCard` (Lookup display)

@@ -13,7 +13,7 @@
 **Visual:** Hero banner with chat interface mockup showing a TransferCard flowing from a user message.
 
 **Speaker Notes:**
-> "What if you could simply type 'Send 10 POT to Alice' and see exactly what will happen — the balance diff, the gas, the recipient address — all in a beautiful interactive card, before you ever touch your wallet? That's Potdo."
+> "What if you could simply type 'Send 10 POT to Alpha' and see exactly what will happen — the balance diff, the gas, the recipient address — all in a beautiful interactive card, before you ever touch your wallet? That's Potdo."
 
 ---
 
@@ -41,7 +41,7 @@ Potdo is an AI copilot that transforms plain English commands into **interactive
 | Before (Raw) | After (Potdo) |
 |---|---|
 | `0x060003d43...` | TransferCard: Alice → 10 POT |
-| `balances.transfer(...)` | BalanceWidget: 500 → 490 POT |
+| `balances.transfer(...)` | BalanceWidget: 500 → 990 POT |
 | `Error: 1010` | "Insufficient balance — you need 10 POT but have 8.5" |
 
 **Speaker Notes:**
@@ -61,8 +61,8 @@ Potdo is an AI copilot that transforms plain English commands into **interactive
 ```
 
 **3 Command Types:**
-1. **Transfer** — "Send 10 POT to Alice" → TransferCard with balance diff
-2. **Batch Airdrop** — "Airdrop 5 POT to Alice, Bob, Charlie" → BatchCard with table
+1. **Transfer** — "Send 10 POT to Alpha" → TransferCard with balance diff
+2. **Batch Airdrop** — "Airdrop 5 POT to Alpha, Beta, Gamma" → BatchCard with table
 3. **Balance Check** — "What's my balance?" → BalanceWidget with free/reserved/frozen
 
 **Speaker Notes:**
@@ -162,7 +162,7 @@ git clone https://github.com/edycutjong/potdo.git
 npm install && npm run dev
 ```
 
-> *"Send 10 POT to Alice."*
+> *"Send 10 POT to Alpha."*
 
 **Speaker Notes:**
 > "Potdo isn't just a hackathon project. It's the transaction UX that Portaldot deserves. Thank you."

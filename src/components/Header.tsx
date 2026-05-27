@@ -10,6 +10,8 @@ interface HeaderProps {
   isDemoMode?: boolean;
   connecting?: boolean;
   accounts?: InjectedAccount[];
+  chainName?: string;
+  targetChainName?: string;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onSelectAccount?: (addr: string) => void;
@@ -22,6 +24,8 @@ export function Header({
   isDemoMode = true,
   connecting = false,
   accounts = [],
+  chainName = "Demo Network",
+  targetChainName = "Portaldot Network",
   onConnect,
   onDisconnect,
   onSelectAccount,
@@ -30,7 +34,7 @@ export function Header({
     <header className="h-14 border-b border-white/5 flex items-center justify-between px-4">
       {/* Logo */}
       <div className="flex items-center gap-2">
-        <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/icon.svg"
@@ -42,6 +46,11 @@ export function Header({
         {connected && isDemoMode && (
           <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-amber-500/30 bg-amber-500/10 text-amber-400 select-none ml-1.5">
             Demo Mode ⚡
+          </span>
+        )}
+        {connected && !isDemoMode && (
+          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 select-none ml-1.5">
+            {chainName} 🌐
           </span>
         )}
       </div>
@@ -104,14 +113,19 @@ export function Header({
             </button>
           </div>
         ) : (
-          <button
-            onClick={onConnect}
-            disabled={connecting}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-linear-to-r from-purple-500 to-purple-400 text-white hover:from-purple-400 hover:to-purple-300 disabled:opacity-55 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
-            id="connect-wallet"
-          >
-            {connecting ? "Connecting..." : "Connect Wallet"}
-          </button>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-slate-500 select-none">
+              Target Node: <span className="text-slate-400 font-semibold">{targetChainName}</span>
+            </span>
+            <button
+              onClick={onConnect}
+              disabled={connecting}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-linear-to-r from-purple-500 to-purple-400 text-white hover:from-purple-400 hover:to-purple-300 disabled:opacity-55 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
+              id="connect-wallet"
+            >
+              {connecting ? "Connecting..." : "Connect Wallet"}
+            </button>
+          </div>
         )}
       </div>
     </header>

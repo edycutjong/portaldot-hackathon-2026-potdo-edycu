@@ -17,7 +17,7 @@ describe("CommandHistory", () => {
     const entries: HistoryEntry[] = [
       {
         id: "1",
-        command: "Send 10 POT to Alice",
+        command: "Send 10 POT to Alpha",
         status: "finalized",
         timestamp: new Date(),
       },
@@ -29,7 +29,7 @@ describe("CommandHistory", () => {
       },
     ];
     render(<CommandHistory entries={entries} />);
-    expect(screen.getByText("Send 10 POT to Alice")).toBeInTheDocument();
+    expect(screen.getByText("Send 10 POT to Alpha")).toBeInTheDocument();
     expect(screen.getByText("Check balance")).toBeInTheDocument();
   });
 

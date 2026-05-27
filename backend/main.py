@@ -47,6 +47,27 @@ load_env()
 PORTALDOT_RPC = os.getenv("PORTALDOT_RPC", "wss://mainnet.portaldot.io")
 MNEMONIC = os.getenv("MNEMONIC", "")  # Seed phrase for transaction signing
 
+# In-memory database for demo/fallback mode
+mock_balances = {
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 100000000000000000, # Alice: 1000 POT
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": 50000000000000000,  # Bob: 500 POT
+    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 15000000000000000,  # Charlie: 150 POT
+    "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000,   # Dave: 75 POT
+}
+
+mock_staking = {
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
+        "bonded": 50000000000000000,  # 500 POT
+        "active": 45000000000000000,  # 450 POT
+        "unlocking": 5000000000000000, # 50 POT
+    },
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+        "bonded": 20000000000000000,  # 200 POT
+        "active": 20000000000000000,
+        "unlocking": 0,
+    }
+}
+
 def get_substrate_client() -> SubstrateInterface:
     try:
         return SubstrateInterface(
@@ -282,12 +303,22 @@ def get_balance(address: str):
         if result and result.value:
             planck_balance = result.value.get('data', {}).get('free', 0)
             
+        if planck_balance == 0 and not MNEMONIC:
+            planck_balance = mock_balances.get(address, 10000000000000000)
+            
         return {
             "address": address,
             "balancePlanck": str(planck_balance),
             "balancePot": str(planck_balance / (10 ** 14))
         }
     except Exception as e:
+        if not MNEMONIC:
+            planck_balance = mock_balances.get(address, 10000000000000000)
+            return {
+                "address": address,
+                "balancePlanck": str(planck_balance),
+                "balancePot": str(planck_balance / (10 ** 14))
+            }
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/staking/{address}")
@@ -302,6 +333,16 @@ def get_staking_info(address: str):
         nominations = []
         reward_destination = "Staked"
         
+        if not MNEMONIC and address in mock_staking:
+            curr = mock_staking[address]
+            return {
+                "bonded": str(curr["bonded"] / (10 ** 14)),
+                "active": str(curr["active"] / (10 ** 14)),
+                "unlocking": str(curr["unlocking"] / (10 ** 14)),
+                "nominations": ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk"],
+                "rewardDestination": reward_destination
+            }
+
         if bonded_opt and bonded_opt.value:
             controller = bonded_opt.value
             ledger_opt = client.query(module='Staking', storage_function='Ledger', params=[controller])
@@ -318,23 +359,36 @@ def get_staking_info(address: str):
             if payee_opt and payee_opt.value:
                 reward_destination = str(payee_opt.value)
                 
-        nominators_opt = client.query(module='Staking', storage_function='Nominators', params=[address])
-        if nominators_opt and nominators_opt.value:
-            nominations = nominators_opt.value.get('targets', [])
-            
-        return {
-            "bonded": str(total / (10 ** 14)),
-            "active": str(active / (10 ** 14)),
-            "unlocking": str(unlocking / (10 ** 14)),
-            "nominations": nominations,
-            "rewardDestination": reward_destination
-        }
+            nominators_opt = client.query(module='Staking', storage_function='Nominators', params=[address])
+            if nominators_opt and nominators_opt.value:
+                nominations = nominators_opt.value.get('targets', [])
+                
+            return {
+                "bonded": str(total / (10 ** 14)),
+                "active": str(active / (10 ** 14)),
+                "unlocking": str(unlocking / (10 ** 14)),
+                "nominations": nominations,
+                "rewardDestination": reward_destination
+            }
+        else:
+            curr = mock_staking.get(address, {"bonded": 0, "active": 0, "unlocking": 0})
+            return {
+                "bonded": str(curr["bonded"] / (10 ** 14)),
+                "active": str(curr["active"] / (10 ** 14)),
+                "unlocking": str(curr["unlocking"] / (10 ** 14)),
+                "nominations": ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk"],
+                "rewardDestination": reward_destination
+            }
     except Exception:
-        # Graceful fallback mock values if staking module is query restricted
+        curr = mock_staking.get(address, {
+            "bonded": 50000000000000000,
+            "active": 45000000000000000,
+            "unlocking": 5000000000000000,
+        })
         return {
-            "bonded": "500.0",
-            "active": "450.0",
-            "unlocking": "50.0",
+            "bonded": str(curr["bonded"] / (10 ** 14)),
+            "active": str(curr["active"] / (10 ** 14)),
+            "unlocking": str(curr["unlocking"] / (10 ** 14)),
             "nominations": ["5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk"],
             "rewardDestination": "Staked"
         }
@@ -536,6 +590,18 @@ def execute_transfer(req: TransferRequest):
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_tx_" + "".join(random.choices("0123456789abcdef", k=16))
+        
+        # Update in-memory mock balance
+        amt_planck = int(req.amount_pot * (10 ** 14))
+        gas_planck = int(0.0012 * (10 ** 14))
+        total_cost = amt_planck + gas_planck
+        
+        sender = req.real_address or "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        if sender in mock_balances:
+            mock_balances[sender] = max(0, mock_balances[sender] - total_cost)
+        if req.to_address in mock_balances:
+            mock_balances[req.to_address] += amt_planck
+            
         return {
             "status": "finalized",
             "txHash": mock_hash,
@@ -597,6 +663,21 @@ def execute_stake(req: StakeRequest):
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_stake_" + "".join(random.choices("0123456789abcdef", k=16))
+        
+        # Update in-memory mock balance and staking
+        stake_planck = int(req.amount_pot * (10 ** 14))
+        gas_planck = int(0.0012 * (10 ** 14))
+        total_cost = stake_planck + gas_planck
+        
+        sender = req.real_address or "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        if sender in mock_balances:
+            mock_balances[sender] = max(0, mock_balances[sender] - total_cost)
+            
+        if sender not in mock_staking:
+            mock_staking[sender] = {"bonded": 0, "active": 0, "unlocking": 0}
+        mock_staking[sender]["bonded"] += stake_planck
+        mock_staking[sender]["active"] += stake_planck
+        
         return {
             "status": "finalized",
             "txHash": mock_hash,
@@ -681,6 +762,22 @@ def execute_unstake(req: UnstakeRequest):
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_unstake_" + "".join(random.choices("0123456789abcdef", k=16))
+        
+        # Update in-memory mock balance and staking
+        unstake_planck = int(req.amount_pot * (10 ** 14))
+        gas_planck = int(0.0012 * (10 ** 14))
+        
+        sender = req.real_address or "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        if sender in mock_balances:
+            mock_balances[sender] = max(0, mock_balances[sender] - gas_planck)
+            
+        if sender not in mock_staking:
+            mock_staking[sender] = {"bonded": 0, "active": 0, "unlocking": 0}
+            
+        to_unstake = min(unstake_planck, mock_staking[sender]["active"])
+        mock_staking[sender]["active"] -= to_unstake
+        mock_staking[sender]["unlocking"] += to_unstake
+        
         return {
             "status": "finalized",
             "txHash": mock_hash,
@@ -812,6 +909,20 @@ def execute_batch(req: BatchTransferRequest):
     if not keypair:
         time.sleep(1.0)
         mock_hash = "0xdemo_batch_" + "".join(random.choices("0123456789abcdef", k=16))
+        
+        # Update in-memory mock balances
+        total_amount_planck = sum(int(t.amount * (10 ** 14)) for t in req.transfers)
+        gas_planck = int(0.0036 * (10 ** 14))
+        total_cost = total_amount_planck + gas_planck
+        
+        sender = req.real_address or "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        if sender in mock_balances:
+            mock_balances[sender] = max(0, mock_balances[sender] - total_cost)
+            
+        for t in req.transfers:
+            if t.to_address in mock_balances:
+                mock_balances[t.to_address] += int(t.amount * (10 ** 14))
+                
         return {
             "status": "finalized",
             "txHash": mock_hash,

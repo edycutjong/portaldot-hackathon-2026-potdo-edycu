@@ -76,4 +76,17 @@ describe("BatchCard", () => {
     expect(button).toBeInTheDocument();
     expect(button).toBeDisabled();
   });
+
+  it("shows self-transfer warning when any recipient in batch is sender", () => {
+    render(
+      <BatchCard
+        intent={intent}
+        isConnected={true}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      />
+    );
+    expect(screen.getByText(/Cannot send tokens to yourself! One or more recipients match the sender address./)).toBeInTheDocument();
+    expect(screen.getByText("Cannot Send to Yourself")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cannot Send to Yourself" })).toBeDisabled();
+  });
 });

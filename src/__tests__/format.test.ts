@@ -76,13 +76,13 @@ describe("formatPot", () => {
 });
 
 describe("isValidSS58Address", () => {
-  it("validates correct Alice address", () => {
+  it("validates correct Alpha address", () => {
     expect(
       isValidSS58Address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
     ).toBe(true);
   });
 
-  it("validates correct Bob address", () => {
+  it("validates correct Beta address", () => {
     expect(
       isValidSS58Address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
     ).toBe(true);
@@ -135,27 +135,27 @@ describe("truncateAddress", () => {
 
 describe("resolveRecipient", () => {
   const addressBook = {
-    Alice: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-    Bob: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    Alpha: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+    Beta: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
   };
 
   it("resolves name to address (case-insensitive)", () => {
-    const result = resolveRecipient("alice", addressBook);
+    const result = resolveRecipient("alpha", addressBook);
     expect(result).toEqual({
-      name: "Alice",
+      name: "Alpha",
       address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
     });
   });
 
   it("resolves uppercase name", () => {
-    const result = resolveRecipient("ALICE", addressBook);
-    expect(result?.name).toBe("Alice");
+    const result = resolveRecipient("ALPHA", addressBook);
+    expect(result?.name).toBe("Alpha");
   });
 
   it("resolves a raw SS58 address", () => {
     const addr = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
     const result = resolveRecipient(addr, addressBook);
-    expect(result).toEqual({ name: "Alice", address: addr });
+    expect(result).toEqual({ name: "Alpha", address: addr });
   });
 
   it("resolves unknown SS58 address with truncated name", () => {

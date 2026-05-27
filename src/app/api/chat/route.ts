@@ -5,7 +5,7 @@ import type { ParsedIntent } from "@/lib/types";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { message } = body;
+    const { message, isDemo } = body;
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(
@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     }
 
     // Parse the intent using the deterministic parser
-    const intent: ParsedIntent | null = parseIntent(message);
+    const intent: ParsedIntent | null = parseIntent(message, isDemo !== false);
 
     if (!intent) {
       return NextResponse.json({

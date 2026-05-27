@@ -14,7 +14,7 @@ jest.mock("framer-motion", () => ({
 describe("TransferCard", () => {
   const intent: TransferIntent = {
     action: "transfer",
-    to: "Alice",
+    to: "Alpha",
     toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
     amount: 10,
   };
@@ -26,12 +26,12 @@ describe("TransferCard", () => {
 
   it("shows recipient name", () => {
     render(<TransferCard intent={intent} />);
-    expect(screen.getByText(/Alice/)).toBeInTheDocument();
+    expect(screen.getByText(/Alpha/)).toBeInTheDocument();
   });
 
   it("shows amount", () => {
     render(<TransferCard intent={intent} />);
-    expect(screen.getByText("10.00 POT")).toBeInTheDocument();
+    expect(screen.getByText("10.0000 POT")).toBeInTheDocument();
   });
 
   it("shows execute button when balance is sufficient", () => {
@@ -41,7 +41,7 @@ describe("TransferCard", () => {
 
   it("shows gas estimate", () => {
     render(<TransferCard intent={intent} />);
-    expect(screen.getByText("~0.001 POT")).toBeInTheDocument();
+    expect(screen.getByText("~0.0012 POT")).toBeInTheDocument();
   });
 
   it("shows insufficient balance warning", () => {
@@ -67,5 +67,56 @@ describe("TransferCard", () => {
     const button = screen.getByText("⏳ Processing...");
     expect(button).toBeInTheDocument();
     expect(button).toBeDisabled();
+  });
+
+  it("renders Max transfer correctly", () => {
+    const maxIntent: TransferIntent = {
+      action: "transfer",
+      to: "Alpha",
+      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      amount: -1,
+    };
+    render(<TransferCard intent={maxIntent} senderBalance={100000000000000000n} isConnected={true} />);
+    expect(screen.getByText("Max (999.9988 POT)")).toBeInTheDocument();
+    expect(screen.getAllByText(/1000\.0000 POT/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/0\.0000 POT/).length).toBeGreaterThan(0);
+  });
+
+  it("renders From details with senderAddress and senderName", () => {
+    render(
+      <TransferCard
+        intent={intent}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        senderName="Alpha"
+      />
+    );
+    expect(screen.getByText((_content, element) => {
+      return element?.tagName === "SPAN" && (element?.textContent?.includes("You (Alpha - ") || false);
+    })).toBeInTheDocument();
+  });
+
+  it("renders From details with senderAddress but no senderName (Guest fallback)", () => {
+    render(
+      <TransferCard
+        intent={intent}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      />
+    );
+    expect(screen.getByText((_content, element) => {
+      return element?.tagName === "SPAN" && (element?.textContent?.includes("You (Guest - ") || false);
+    })).toBeInTheDocument();
+  });
+
+  it("shows self-transfer warning when recipient is sender", () => {
+    render(
+      <TransferCard
+        intent={intent}
+        isConnected={true}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      />
+    );
+    expect(screen.getByText(/Cannot send tokens to yourself!/)).toBeInTheDocument();
+    expect(screen.getByText("Cannot Send to Yourself")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cannot Send to Yourself" })).toBeDisabled();
   });
 });

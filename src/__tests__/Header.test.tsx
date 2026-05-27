@@ -13,6 +13,12 @@ describe("Header", () => {
     expect(screen.getByText("Connect Wallet")).toBeInTheDocument();
   });
 
+  it("renders Target Node name when disconnected", () => {
+    render(<Header connected={false} targetChainName="Portaldot Testnet" />);
+    expect(screen.getByText("Target Node:")).toBeInTheDocument();
+    expect(screen.getByText("Portaldot Testnet")).toBeInTheDocument();
+  });
+
   it("shows wallet address when connected", () => {
     render(
       <Header
@@ -55,6 +61,18 @@ describe("Header", () => {
       />
     );
     expect(screen.queryByText("Demo Mode ⚡")).not.toBeInTheDocument();
+  });
+
+  it("shows chain name badge when connected and isDemoMode is false", () => {
+    render(
+      <Header
+        connected={true}
+        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        isDemoMode={false}
+        chainName="Portaldot Testnet"
+      />
+    );
+    expect(screen.getByText("Portaldot Testnet 🌐")).toBeInTheDocument();
   });
 
   it("shows Connecting... state when connecting is true", () => {

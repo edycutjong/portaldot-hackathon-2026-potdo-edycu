@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { truncateAddress, formatPot, potToPlanck } from "@/lib/format";
+import { truncateAddress, formatPot, potToPlanck, planckToPot } from "@/lib/format";
 import { TOKEN_SYMBOL } from "@/lib/constants";
 import type { TransferIntent, TxStatus } from "@/lib/types";
 
@@ -11,6 +11,8 @@ interface TransferCardProps {
   isConnected?: boolean;
   status?: TxStatus;
   onExecute?: () => void;
+  senderAddress?: string;
+  senderName?: string;
 }
 
 export function TransferCard({
@@ -19,12 +21,28 @@ export function TransferCard({
   isConnected = false,
   status,
   onExecute,
+  senderAddress,
+  senderName,
 }: TransferCardProps) {
-  const amountPlanck = potToPlanck(intent.amount);
+  const isMaxTransfer = intent.amount === -1;
+  const gasFeePot = 0.0012; // matching WalletContext.tsx execution cost estimate
+  const gasFeePlanck = potToPlanck(gasFeePot);
+
   const hasBalance = senderBalance !== undefined;
-  const insufficient = hasBalance && senderBalance < amountPlanck;
-  const afterBalance = hasBalance ? senderBalance - amountPlanck : undefined;
+  const maxSendPlanck = hasBalance && senderBalance > gasFeePlanck ? senderBalance - gasFeePlanck : 0n;
+  const displayAmount = isMaxTransfer ? Number(planckToPot(maxSendPlanck)) : intent.amount;
+
+  const amountPlanck = potToPlanck(displayAmount);
+  const insufficient = hasBalance && !isMaxTransfer && senderBalance < amountPlanck;
+  const afterBalance = hasBalance
+    ? isMaxTransfer
+      ? 0n
+      : senderBalance - amountPlanck >= gasFeePlanck
+      ? senderBalance - amountPlanck - gasFeePlanck
+      : 0n
+    : undefined;
   const isProcessing = status === "pending" || status === "submitted" || status === "in_block";
+  const isSelfTransfer = isConnected && !!senderAddress && intent.toAddress === senderAddress;
 
   return (
     <motion.div
@@ -32,7 +50,7 @@ export function TransferCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", damping: 20, stiffness: 300 }}
       className={`glass-card p-5 mt-3 max-w-md ${
-        insufficient && isConnected ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
+        (insufficient || isSelfTransfer) && isConnected ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
       }`}
     >
       {/* Header */}
@@ -47,7 +65,22 @@ export function TransferCard({
       <div className="space-y-3 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">From</span>
-          <span className="text-slate-300">You</span>
+          <span className="text-slate-300">
+            {senderAddress ? (
+              <>
+                You{" "}
+                <span className="text-slate-400 text-xs ml-1 font-normal">
+                  ({senderName || "Guest"} -{" "}
+                  <span className="font-(family-name:--font-jetbrains)">
+                    {truncateAddress(senderAddress)}
+                  </span>
+                  )
+                </span>
+              </>
+            ) : (
+              "You"
+            )}
+          </span>
         </div>
         {hasBalance && (
           <div className="flex justify-between">
@@ -70,7 +103,7 @@ export function TransferCard({
         <div className="flex justify-between">
           <span className="text-slate-500">Amount</span>
           <span className="text-cyan-400 font-semibold font-(family-name:--font-jetbrains)">
-            {intent.amount.toFixed(2)} {TOKEN_SYMBOL}
+            {isMaxTransfer ? "Max (" : ""}{displayAmount.toFixed(4)} {TOKEN_SYMBOL}{isMaxTransfer ? ")" : ""}
           </span>
         </div>
 
@@ -79,9 +112,9 @@ export function TransferCard({
           <div className="flex justify-between">
             <span className="text-slate-500">⚡ After</span>
             <span className="text-amber-400 font-(family-name:--font-jetbrains)">
-              {formatPot(afterBalance)} →{" "}
-              <span className="text-red-400">
-                -{intent.amount.toFixed(2)}
+              {formatPot(senderBalance)} →{" "}
+              <span className="text-slate-300">
+                {formatPot(afterBalance)}
               </span>
             </span>
           </div>
@@ -91,25 +124,32 @@ export function TransferCard({
         <div className="flex justify-between">
           <span className="text-slate-500">Gas</span>
           <span className="text-slate-600 font-(family-name:--font-jetbrains)">
-            ~0.001 {TOKEN_SYMBOL}
+            ~0.0012 {TOKEN_SYMBOL}
           </span>
         </div>
       </div>
 
       {/* Insufficient balance warning */}
-      {insufficient && isConnected && (
+      {insufficient && isConnected && !isSelfTransfer && (
         <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           ⚠️ Insufficient Balance! You have {formatPot(senderBalance)} — this
-          transfer requires {intent.amount.toFixed(2)} {TOKEN_SYMBOL}
+          transfer requires {displayAmount.toFixed(4)} {TOKEN_SYMBOL}
+        </div>
+      )}
+
+      {/* Self-transfer warning */}
+      {isSelfTransfer && (
+        <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          ⚠️ Cannot send tokens to yourself! Sender and recipient addresses are identical.
         </div>
       )}
 
       {/* Execute button */}
       <button
         onClick={onExecute}
-        disabled={(insufficient && isConnected) || isProcessing}
+        disabled={(insufficient && isConnected) || isSelfTransfer || isProcessing}
         className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
-          (insufficient && isConnected) || isProcessing
+          ((insufficient && isConnected) || isSelfTransfer || isProcessing)
             ? "bg-slate-800 text-slate-600 cursor-not-allowed"
             : "bg-linear-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
         }`}
@@ -119,6 +159,8 @@ export function TransferCard({
           ? "🔌 Connect Wallet to Execute"
           : isProcessing
           ? "⏳ Processing..."
+          : isSelfTransfer
+          ? "Cannot Send to Yourself"
           : insufficient
           ? "Cannot Execute"
           : "✅ Execute Transfer"}

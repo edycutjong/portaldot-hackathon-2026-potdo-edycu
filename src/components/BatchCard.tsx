@@ -11,6 +11,8 @@ interface BatchCardProps {
   isConnected?: boolean;
   status?: TxStatus;
   onExecute?: () => void;
+  senderAddress?: string;
+  senderName?: string;
 }
 
 export function BatchCard({
@@ -19,12 +21,15 @@ export function BatchCard({
   isConnected = false,
   status,
   onExecute,
+  senderAddress,
+  senderName,
 }: BatchCardProps) {
   const totalAmount = intent.transfers.reduce((sum, t) => sum + t.amount, 0);
   const totalAmountPlanck = potToPlanck(totalAmount);
   const hasBalance = senderBalance !== undefined;
   const insufficient = hasBalance && senderBalance < totalAmountPlanck;
   const isProcessing = status === "pending" || status === "submitted" || status === "in_block";
+  const hasSelfTransfer = isConnected && !!senderAddress && intent.transfers.some((t) => t.toAddress === senderAddress);
 
   return (
     <motion.div
@@ -32,7 +37,7 @@ export function BatchCard({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", damping: 20, stiffness: 300 }}
       className={`glass-card p-5 mt-3 max-w-md ${
-        insufficient && isConnected ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
+        (insufficient || hasSelfTransfer) && isConnected ? "border-red-500/30 pulse-red-border" : "border-cyan-500/20"
       }`}
     >
       {/* Header */}
@@ -78,7 +83,22 @@ export function BatchCard({
       </div>
 
       {/* Summary */}
-      <div className="mt-3 space-y-1.5 text-sm">
+      <div className="mt-3 space-y-1.5 text-sm border-t border-white/5 pt-3">
+        <div className="flex justify-between">
+          <span className="text-slate-500">From</span>
+          <span className="text-slate-300">
+            {senderAddress ? (
+              <>
+                You{" "}
+                <span className="text-slate-400 text-xs ml-1 font-normal">
+                  ({senderName || "Guest"} - {truncateAddress(senderAddress)})
+                </span>
+              </>
+            ) : (
+              "You"
+            )}
+          </span>
+        </div>
         {hasBalance && (
           <div className="flex justify-between">
             <span className="text-slate-500">Balance</span>
@@ -102,19 +122,26 @@ export function BatchCard({
       </div>
 
       {/* Insufficient balance warning */}
-      {insufficient && isConnected && (
+      {insufficient && isConnected && !hasSelfTransfer && (
         <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           ⚠️ Insufficient Balance! You have {formatPot(senderBalance)} — this
           batch requires {totalAmount.toFixed(2)} {TOKEN_SYMBOL}
         </div>
       )}
 
+      {/* Self-transfer warning */}
+      {hasSelfTransfer && (
+        <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
+          ⚠️ Cannot send tokens to yourself! One or more recipients match the sender address.
+        </div>
+      )}
+
       {/* Execute button */}
       <button
         onClick={onExecute}
-        disabled={(insufficient && isConnected) || isProcessing}
+        disabled={(insufficient && isConnected) || hasSelfTransfer || isProcessing}
         className={`mt-4 w-full py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
-          (insufficient && isConnected) || isProcessing
+          ((insufficient && isConnected) || hasSelfTransfer || isProcessing)
             ? "bg-slate-800 text-slate-600 cursor-not-allowed"
             : "bg-linear-to-r from-cyan-500 to-cyan-400 text-slate-900 hover:from-cyan-400 hover:to-cyan-300 glow-cyan"
         }`}
@@ -124,6 +151,8 @@ export function BatchCard({
           ? "🔌 Connect Wallet to Execute"
           : isProcessing
           ? "⏳ Processing..."
+          : hasSelfTransfer
+          ? "Cannot Send to Yourself"
           : insufficient
           ? "Cannot Execute"
           : "📦 Execute Batch"}

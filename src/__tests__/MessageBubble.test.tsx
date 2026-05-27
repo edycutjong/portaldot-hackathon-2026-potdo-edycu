@@ -7,12 +7,31 @@ describe("MessageBubble", () => {
     const msg: ChatMessage = {
       id: "1",
       role: "user",
-      content: "Send 10 POT to Alice",
+      content: "Send 10 POT to Alpha",
       timestamp: new Date(),
     };
     render(<MessageBubble message={msg} />);
     expect(screen.getByText("You")).toBeInTheDocument();
-    expect(screen.getByText("Send 10 POT to Alice")).toBeInTheDocument();
+    expect(screen.getByText("Send 10 POT to Alpha")).toBeInTheDocument();
+  });
+
+  it("renders user message with name and address when connected", () => {
+    const msg: ChatMessage = {
+      id: "1",
+      role: "user",
+      content: "Send 10 POT to Alpha",
+      timestamp: new Date(),
+    };
+    render(
+      <MessageBubble
+        message={msg}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+        senderName="Alpha"
+      />
+    );
+    expect(screen.getByText(/You/)).toBeInTheDocument();
+    expect(screen.getByText(/\(Alpha - 5Grwva.*GKutQY\)/)).toBeInTheDocument();
+    expect(screen.getByText("Send 10 POT to Alpha")).toBeInTheDocument();
   });
 
   it("renders assistant message with 'Potdo' label", () => {

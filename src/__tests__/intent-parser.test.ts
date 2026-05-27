@@ -18,8 +18,18 @@ describe("parseIntent", () => {
   });
 
   // === Single transfers ===
-  it("parses 'Send 10 POT to Alice'", () => {
-    const result = parseIntent("Send 10 POT to Alice");
+  it("parses 'Send 10 POT to Alpha'", () => {
+    const result = parseIntent("Send 10 POT to Alpha");
+    expect(result).toEqual({
+      action: "transfer",
+      to: "Alpha",
+      toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      amount: 10,
+    });
+  });
+
+  it("parses 'Send 10 POT to Alice' when isDemo is false", () => {
+    const result = parseIntent("Send 10 POT to Alice", false);
     expect(result).toEqual({
       action: "transfer",
       to: "Alice",
@@ -28,50 +38,50 @@ describe("parseIntent", () => {
     });
   });
 
-  it("parses 'transfer 50 tokens to Bob'", () => {
-    const result = parseIntent("transfer 50 tokens to Bob");
+  it("parses 'transfer 50 tokens to Beta'", () => {
+    const result = parseIntent("transfer 50 tokens to Beta");
     expect(result).toEqual({
       action: "transfer",
-      to: "Bob",
+      to: "Beta",
       toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
       amount: 50,
     });
   });
 
-  it("parses 'pay 5.5 pot to charlie'", () => {
-    const result = parseIntent("pay 5.5 pot to charlie");
+  it("parses 'pay 5.5 pot to gamma'", () => {
+    const result = parseIntent("pay 5.5 pot to gamma");
     expect(result).toEqual({
       action: "transfer",
-      to: "Charlie",
+      to: "Gamma",
       toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
       amount: 5.5,
     });
   });
 
   it("strips trailing punctuation from recipient name", () => {
-    const result = parseIntent("Send 10 POT to Alice.");
+    const result = parseIntent("Send 10 POT to Alpha.");
     expect(result?.action).toBe("transfer");
     if (result?.action === "transfer") {
-      expect(result.to).toBe("Alice");
+      expect(result.to).toBe("Alpha");
     }
   });
 
   // === Send everything ===
-  it("parses 'Send everything to Alice'", () => {
-    const result = parseIntent("Send everything to Alice");
+  it("parses 'Send everything to Alpha'", () => {
+    const result = parseIntent("Send everything to Alpha");
     expect(result).toEqual({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: -1,
     });
   });
 
-  it("parses 'transfer all to Bob'", () => {
-    const result = parseIntent("transfer all to Bob");
+  it("parses 'transfer all to Beta'", () => {
+    const result = parseIntent("transfer all to Beta");
     expect(result).toEqual({
       action: "transfer",
-      to: "Bob",
+      to: "Beta",
       toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
       amount: -1,
     });
@@ -82,20 +92,20 @@ describe("parseIntent", () => {
   });
 
   // === Batch transfers ===
-  it("parses 'Airdrop 5 POT to Alice, Bob, and Charlie'", () => {
-    const result = parseIntent("Airdrop 5 POT to Alice, Bob, and Charlie");
+  it("parses 'Airdrop 5 POT to Alpha, Beta, and Gamma'", () => {
+    const result = parseIntent("Airdrop 5 POT to Alpha, Beta, and Gamma");
     expect(result?.action).toBe("batch_transfer");
     if (result?.action === "batch_transfer") {
       expect(result.transfers).toHaveLength(3);
-      expect(result.transfers[0].to).toBe("Alice");
+      expect(result.transfers[0].to).toBe("Alpha");
       expect(result.transfers[0].amount).toBe(5);
-      expect(result.transfers[1].to).toBe("Bob");
-      expect(result.transfers[2].to).toBe("Charlie");
+      expect(result.transfers[1].to).toBe("Beta");
+      expect(result.transfers[2].to).toBe("Gamma");
     }
   });
 
-  it("parses 'send 10 to Alice and Bob'", () => {
-    const result = parseIntent("send 10 to Alice and Bob");
+  it("parses 'send 10 to Alpha and Beta'", () => {
+    const result = parseIntent("send 10 to Alpha and Beta");
     expect(result?.action).toBe("batch_transfer");
     if (result?.action === "batch_transfer") {
       expect(result.transfers).toHaveLength(2);
@@ -112,15 +122,15 @@ describe("parseIntent", () => {
   });
 
   it("returns null for invalid amount", () => {
-    expect(parseIntent("Send xyz POT to Alice")).toBeNull();
+    expect(parseIntent("Send xyz POT to Alpha")).toBeNull();
   });
 
   it("returns null for batch transfer with unresolved recipient", () => {
-    expect(parseIntent("Airdrop 5 POT to Alice and Zack")).toBeNull();
+    expect(parseIntent("Airdrop 5 POT to Alpha and Zack")).toBeNull();
   });
 
   it("returns null for batch transfer with invalid amount string", () => {
-    expect(parseIntent("Airdrop xyz to Alice and Bob")).toBeNull();
+    expect(parseIntent("Airdrop xyz to Alpha and Beta")).toBeNull();
   });
 
   it("returns null for empty string", () => {
@@ -213,20 +223,20 @@ describe("parseIntent", () => {
     expect(result).toBeNull();
   });
 
-  it("parses 'Who is Alice?'", () => {
-    const result = parseIntent("Who is Alice?");
+  it("parses 'Who is Alpha?'", () => {
+    const result = parseIntent("Who is Alpha?");
     expect(result?.action).toBe("check_identity");
     if (result?.action === "check_identity") {
-      expect(result.name).toBe("Alice");
+      expect(result.name).toBe("Alpha");
       expect(result.address).toBe("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY");
     }
   });
 
-  it("parses 'identity of Bob'", () => {
-    const result = parseIntent("identity of Bob");
+  it("parses 'identity of Beta'", () => {
+    const result = parseIntent("identity of Beta");
     expect(result?.action).toBe("check_identity");
     if (result?.action === "check_identity") {
-      expect(result.name).toBe("Bob");
+      expect(result.name).toBe("Beta");
     }
   });
 
@@ -235,11 +245,11 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "check_identity" });
   });
 
-  it("parses 'lookup Dave'", () => {
-    const result = parseIntent("lookup Dave");
+  it("parses 'lookup Delta'", () => {
+    const result = parseIntent("lookup Delta");
     expect(result?.action).toBe("check_identity");
     if (result?.action === "check_identity") {
-      expect(result.name).toBe("Dave");
+      expect(result.name).toBe("Delta");
     }
   });
 
@@ -269,11 +279,11 @@ describe("parseIntent", () => {
   });
 
   // === Fee Estimation ===
-  it("parses 'How much gas for Send 10 POT to Alice?'", () => {
-    const result = parseIntent("How much gas for Send 10 POT to Alice?");
+  it("parses 'How much gas for Send 10 POT to Alpha?'", () => {
+    const result = parseIntent("How much gas for Send 10 POT to Alpha?");
     expect(result?.action).toBe("estimate_fee");
     if (result?.action === "estimate_fee") {
-      expect(result.command).toContain("Send 10 POT to Alice");
+      expect(result.command).toContain("Send 10 POT to Alpha");
     }
   });
 
@@ -282,8 +292,8 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "estimate_fee", command: "estimate fee" });
   });
 
-  it("parses 'estimate fee for transfer 50 to Bob'", () => {
-    const result = parseIntent("estimate fee for transfer 50 to Bob");
+  it("parses 'estimate fee for transfer 50 to Beta'", () => {
+    const result = parseIntent("estimate fee for transfer 50 to Beta");
     expect(result?.action).toBe("estimate_fee");
   });
 
@@ -319,11 +329,11 @@ describe("parseIntent", () => {
   });
 
   // === Slash Commands ===
-  it("parses '/send 10 POT to Alice'", () => {
-    const result = parseIntent("/send 10 POT to Alice");
+  it("parses '/send 10 POT to Alpha'", () => {
+    const result = parseIntent("/send 10 POT to Alpha");
     expect(result).toEqual({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: 10,
     });
@@ -334,8 +344,8 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "check_balance" });
   });
 
-  it("parses '/airdrop 5 POT to Alice, Bob, and Charlie'", () => {
-    const result = parseIntent("/airdrop 5 POT to Alice, Bob, and Charlie");
+  it("parses '/airdrop 5 POT to Alpha, Beta, and Gamma'", () => {
+    const result = parseIntent("/airdrop 5 POT to Alpha, Beta, and Gamma");
     expect(result?.action).toBe("batch_transfer");
     if (result?.action === "batch_transfer") {
       expect(result.transfers).toHaveLength(3);
@@ -367,11 +377,11 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "check_identity" });
   });
 
-  it("parses '/whois Alice'", () => {
-    const result = parseIntent("/whois Alice");
+  it("parses '/whois Alpha'", () => {
+    const result = parseIntent("/whois Alpha");
     expect(result?.action).toBe("check_identity");
     if (result?.action === "check_identity") {
-      expect(result.name).toBe("Alice");
+      expect(result.name).toBe("Alpha");
     }
   });
 
@@ -380,8 +390,8 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "check_vesting" });
   });
 
-  it("parses '/fee Send 10 POT to Alice'", () => {
-    const result = parseIntent("/fee Send 10 POT to Alice");
+  it("parses '/fee Send 10 POT to Alpha'", () => {
+    const result = parseIntent("/fee Send 10 POT to Alpha");
     expect(result?.action).toBe("estimate_fee");
   });
 
@@ -390,11 +400,11 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "check_chain_info" });
   });
 
-  it("parses '/sendall Alice'", () => {
-    const result = parseIntent("/sendall Alice");
+  it("parses '/sendall Alpha'", () => {
+    const result = parseIntent("/sendall Alpha");
     expect(result).toEqual({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: -1,
     });
@@ -414,7 +424,7 @@ describe("validateIntent", () => {
   it("validates a correct transfer intent", () => {
     const result = validateIntent({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: 10,
     });
@@ -424,7 +434,7 @@ describe("validateIntent", () => {
   it("rejects transfer with invalid address", () => {
     const result = validateIntent({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "invalid",
       amount: 10,
     });
@@ -435,7 +445,7 @@ describe("validateIntent", () => {
   it("rejects transfer with zero amount", () => {
     const result = validateIntent({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: 0,
     });
@@ -446,7 +456,7 @@ describe("validateIntent", () => {
   it("accepts amount -1 (max transfer)", () => {
     const result = validateIntent({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: -1,
     });
@@ -458,12 +468,12 @@ describe("validateIntent", () => {
       action: "batch_transfer",
       transfers: [
         {
-          to: "Alice",
+          to: "Alpha",
           toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
           amount: 5,
         },
         {
-          to: "Bob",
+          to: "Beta",
           toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
           amount: 5,
         },
@@ -495,7 +505,7 @@ describe("validateIntent", () => {
   it("rejects batch with invalid address", () => {
     const result = validateIntent({
       action: "batch_transfer",
-      transfers: [{ to: "Alice", toAddress: "bad", amount: 5 }],
+      transfers: [{ to: "Alpha", toAddress: "bad", amount: 5 }],
     });
     expect(result.valid).toBe(false);
     expect(result.error).toContain("Invalid address");
@@ -506,7 +516,7 @@ describe("validateIntent", () => {
       action: "batch_transfer",
       transfers: [
         {
-          to: "Alice",
+          to: "Alpha",
           toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
           amount: 0,
         },
@@ -524,7 +534,7 @@ describe("validateIntent", () => {
   it("rejects transfer with negative amount other than -1", () => {
     const result = validateIntent({
       action: "transfer",
-      to: "Alice",
+      to: "Alpha",
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: -5,
     });
@@ -537,7 +547,7 @@ describe("validateIntent", () => {
       action: "batch_transfer",
       transfers: [
         {
-          to: "Alice",
+          to: "Alpha",
           toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
           amount: -2,
         },

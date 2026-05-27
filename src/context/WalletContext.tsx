@@ -1,6 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { AnimatePresence } from "framer-motion";
+import { ConnectWalletModal } from "@/components/ConnectWalletModal";
+import { PORTALDOT_RPC } from "@/lib/constants";
 import { potToPlanck, planckToPot } from "@/lib/format";
 import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
 
@@ -24,7 +27,14 @@ interface WalletContextType {
   proxyType: string;
   agentAddress: string | null;
   checkingProxy: boolean;
+  chainName: string;
+  targetChainName: string;
+  rpcEndpoint: string;
+  showConnectModal: boolean;
+  setShowConnectModal: (show: boolean) => void;
   connect: (useDemo?: boolean) => Promise<void>;
+  connectExtension: () => Promise<void>;
+  connectDemo: () => Promise<void>;
   disconnect: () => void;
   selectAccount: (address: string) => Promise<void>;
   checkProxyStatus: () => Promise<void>;
@@ -76,11 +86,37 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [isDemoMode, setIsDemoMode] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
+  const [chainName, setChainName] = useState<string>("Demo Network");
+  const [targetChainName, setTargetChainName] = useState<string>("Portaldot Network");
+  const [rpcEndpoint, setRpcEndpoint] = useState<string>(PORTALDOT_RPC);
+  const [showConnectModal, setShowConnectModal] = useState(false);
   
   const [isProxyActive, setIsProxyActive] = useState(false);
   const [proxyType, setProxyType] = useState("Any");
   const [agentAddress, setAgentAddress] = useState<string | null>(null);
   const [checkingProxy, setCheckingProxy] = useState(false);
+
+
+
+  const [mockBalances, setMockBalances] = useState<Record<string, bigint>>({
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": 100000000000000000n, // Alice: 1000 POT
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": 50000000000000000n,  // Bob: 500 POT
+    "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y": 1500000000000000n,   // Charlie: 150 POT
+    "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew": 7500000000000000n,    // Dave: 75 POT
+  });
+
+  const [mockStaking, setMockStaking] = useState<Record<string, { bonded: bigint; active: bigint; unlocking: bigint }>>({
+    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY": {
+      bonded: 50000000000000000n,
+      active: 45000000000000000n,
+      unlocking: 5000000000000000n,
+    },
+    "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty": {
+      bonded: 20000000000000000n,
+      active: 20000000000000000n,
+      unlocking: 0n,
+    },
+  });
 
   // Check if extension is installed (mocked/simulated)
   const extensionInstalled = typeof window !== "undefined" && !!(window as unknown as { injectedWeb3?: unknown }).injectedWeb3;
@@ -126,30 +162,19 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Simulated balance lookup based on address book
-    if (addr === "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY") {
-      setBalance(100000000000000000n); // 1000 POT
-    } else if (addr === "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty") {
-      setBalance(50000000000000000n); // 500 POT
-    } else if (addr === "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y") {
-      setBalance(15000000000000000n); // 150 POT
-    } else if (addr === "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew") {
-      setBalance(7500000000000000n); // 75 POT
-    } else {
-      setBalance(10000000000000000n); // 100 POT fallback
-    }
+    setBalance(mockBalances[addr] || 10000000000000000n);
   };
 
-  const connect = async (useDemo = false) => {
+  const connectExtension = async () => {
+    if (connected) return;
     setConnecting(true);
     try {
       /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-      if (!useDemo && typeof window !== "undefined" && (window as any).injectedWeb3) {
+      if (typeof window !== "undefined" && (window as any).injectedWeb3) {
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const injectedWeb3 = (window as any).injectedWeb3;
         const extensionNames = Object.keys(injectedWeb3);
         if (extensionNames.length > 0) {
-          // Auto-connect to the first extension (Talisman, SubWallet, or polkadot-js)
           const extName = extensionNames[0];
           const extension = injectedWeb3[extName];
           const enabledExtension = await extension.enable("Potdo");
@@ -167,45 +192,60 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
             setIsDemoMode(false);
             setConnected(true);
             setConnecting(false);
+            setShowConnectModal(false);
             await refreshBalance(formattedAccounts[0].address);
             await checkProxyStatus(formattedAccounts[0].address);
             return;
           }
         }
       }
+      throw new Error("No Substrate extension accounts found");
     } catch (err) {
       console.warn("Substrate extension connection failed, falling back to demo mode:", err);
+      await connectDemo();
     }
+  };
 
-    // Demo Mode Fallback
+  const connectDemo = async () => {
+    setConnecting(true);
     await new Promise((r) => setTimeout(r, 600));
 
     const formattedAccounts: InjectedAccount[] = [
       {
         address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-        meta: { name: "Alice", source: "portaldotjs" },
+        meta: { name: "Alpha", source: "portaldotjs" },
       },
       {
         address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
-        meta: { name: "Bob", source: "portaldotjs" },
+        meta: { name: "Beta", source: "portaldotjs" },
       },
       {
         address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
-        meta: { name: "Charlie", source: "portaldotjs" },
+        meta: { name: "Gamma", source: "portaldotjs" },
       },
       {
         address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew",
-        meta: { name: "Dave", source: "portaldotjs" },
+        meta: { name: "Delta", source: "portaldotjs" },
       },
     ];
 
     setAccounts(formattedAccounts);
     setAddress(formattedAccounts[0].address);
-    setBalance(100000000000000000n); // 1000 POT
+    setBalance(mockBalances[formattedAccounts[0].address] || 100000000000000000n);
     setIsDemoMode(true);
     setConnected(true);
     setConnecting(false);
+    setShowConnectModal(false);
     await checkProxyStatus(formattedAccounts[0].address);
+  };
+
+  const connect = async (useDemo = false) => {
+    if (connected || connecting) return;
+    if (useDemo) {
+      await connectDemo();
+    } else {
+      setShowConnectModal(true);
+    }
   };
 
   const disconnect = () => {
@@ -435,7 +475,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/transfer`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ to_address: toAddress, amount_pot: amountPot })
+          body: JSON.stringify({
+            to_address: toAddress,
+            amount_pot: amountPot,
+            real_address: address || undefined
+          })
         });
         if (res.ok) {
           const data = await res.json();
@@ -460,10 +504,21 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const mockBlock = Math.floor(100000 + Math.random() * 900000);
     onStatusChange("finalized", "0xdemo_tx_hash_finalized", mockBlock);
 
-    setBalance((prev) => {
-      const cost = potToPlanck(amountPot) + potToPlanck(0.0012);
-      return prev >= cost ? prev - cost : 0n;
-    });
+    const amtPlanck = potToPlanck(amountPot);
+    const gasPlanck = potToPlanck(0.0012);
+    const totalCost = amtPlanck + gasPlanck;
+
+    if (address) {
+      setMockBalances((prev) => ({
+        ...prev,
+        [address]: prev[address] >= totalCost ? prev[address] - totalCost : 0n,
+        ...(prev[toAddress] !== undefined ? {
+          [toAddress]: prev[toAddress] + amtPlanck
+        } : {})
+      }));
+    }
+
+    setBalance((prev) => (prev >= totalCost ? prev - totalCost : 0n));
   };
 
   const executeBatch = async (
@@ -519,7 +574,8 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount }))
+            transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })),
+            real_address: address || undefined
           })
         });
         if (res.ok) {
@@ -545,10 +601,24 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const mockBlock = Math.floor(100000 + Math.random() * 900000);
     onStatusChange("finalized", "0xdemo_batch_hash_finalized", mockBlock);
 
-    setBalance((prev) => {
-      const cost = potToPlanck(totalAmount) + potToPlanck(0.0036);
-      return prev >= cost ? prev - cost : 0n;
-    });
+    const totalAmtPlanck = potToPlanck(totalAmount);
+    const gasPlanck = potToPlanck(0.0036);
+    const totalCost = totalAmtPlanck + gasPlanck;
+
+    if (address) {
+      setMockBalances((prev) => {
+        const nextBalances = { ...prev };
+        nextBalances[address] = nextBalances[address] >= totalCost ? nextBalances[address] - totalCost : 0n;
+        for (const t of transfers) {
+          if (nextBalances[t.toAddress] !== undefined) {
+            nextBalances[t.toAddress] += potToPlanck(t.amount);
+          }
+        }
+        return nextBalances;
+      });
+    }
+
+    setBalance((prev) => (prev >= totalCost ? prev - totalCost : 0n));
   };
 
   const executeStake = async (
@@ -604,7 +674,11 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/stake`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount_pot: amountPot, validator })
+          body: JSON.stringify({
+            amount_pot: amountPot,
+            validator,
+            real_address: address || undefined
+          })
         });
         if (res.ok) {
           const data = await res.json();
@@ -628,10 +702,29 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     const mockBlock = Math.floor(100000 + Math.random() * 900000);
     onStatusChange("finalized", "0xdemo_stake_finalized", mockBlock);
 
-    setBalance((prev) => {
-      const cost = potToPlanck(amountPot) + potToPlanck(0.0012);
-      return prev >= cost ? prev - cost : 0n;
-    });
+    const stakePlanck = potToPlanck(amountPot);
+    const gasPlanck = potToPlanck(0.0012);
+    const totalCost = stakePlanck + gasPlanck;
+
+    if (address) {
+      setMockBalances((prev) => ({
+        ...prev,
+        [address]: prev[address] >= totalCost ? prev[address] - totalCost : 0n
+      }));
+      setMockStaking((prev) => {
+        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n };
+        return {
+          ...prev,
+          [address]: {
+            bonded: current.bonded + stakePlanck,
+            active: current.active + stakePlanck,
+            unlocking: current.unlocking
+          }
+        };
+      });
+    }
+
+    setBalance((prev) => (prev >= totalCost ? prev - totalCost : 0n));
   };
 
   const executeUnstake = async (
@@ -685,7 +778,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/unstake`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount_pot: amountPot })
+          body: JSON.stringify({
+            amount_pot: amountPot,
+            real_address: address || undefined
+          })
         });
         if (res.ok) {
           const data = await res.json();
@@ -708,6 +804,30 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     await new Promise((r) => setTimeout(r, 1200));
     const mockBlock = Math.floor(100000 + Math.random() * 900000);
     onStatusChange("finalized", "0xdemo_unstake_finalized", mockBlock);
+
+    const unstakePlanck = potToPlanck(amountPot);
+    const gasPlanck = potToPlanck(0.0012);
+
+    if (address) {
+      setMockBalances((prev) => ({
+        ...prev,
+        [address]: prev[address] >= gasPlanck ? prev[address] - gasPlanck : 0n
+      }));
+      setMockStaking((prev) => {
+        const current = prev[address] || { bonded: 0n, active: 0n, unlocking: 0n };
+        const toUnstake = current.active >= unstakePlanck ? unstakePlanck : current.active;
+        return {
+          ...prev,
+          [address]: {
+            bonded: current.bonded,
+            active: current.active - toUnstake,
+            unlocking: current.unlocking + toUnstake
+          }
+        };
+      });
+    }
+
+    setBalance((prev) => (prev >= gasPlanck ? prev - gasPlanck : 0n));
   };
 
   const executeSetIdentity = async (
@@ -761,7 +881,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         const res = await fetch(`${BACKEND_URL}/set-identity`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ display_name: displayName })
+          body: JSON.stringify({
+            display_name: displayName,
+            real_address: address || undefined
+          })
         });
         if (res.ok) {
           const data = await res.json();
@@ -796,10 +919,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    const current = mockStaking[address || ""] || { bonded: 0n, active: 0n, unlocking: 0n };
+
     return {
-      bonded: planckToPot(50000000000000000n),
-      active: planckToPot(45000000000000000n),
-      unlocking: planckToPot(5000000000000000n),
+      bonded: planckToPot(current.bonded),
+      active: planckToPot(current.active),
+      unlocking: planckToPot(current.unlocking),
       nominations: [
         "5GNJqTPyNqANBkUVMN1LPPrxXnFouWA2MR5A4H7vz6NM4Jk",
         "5HpG9w8EBLe5XCrbczpwq5TSXvedjrBGCwqxK1iQ7qUsSWFc",
@@ -828,7 +953,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
 
     return {
-      display: target === address ? "Potdo User" : "Alice",
+      display: target === address ? "Potdo User" : "Alpha",
       web: "https://portaldot.io",
       email: "user@portaldot.io",
       isVerified: true,
@@ -896,6 +1021,56 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
+  React.useEffect(() => {
+    let active = true;
+    const updateChain = async () => {
+      if (connected && !isDemoMode) {
+        try {
+          const info = await queryChainInfo();
+          if (active) setChainName(info.chainName);
+        } catch {
+          if (active) setChainName("Portaldot Network");
+        }
+      } else {
+        if (active) setChainName("Demo Network");
+      }
+    };
+    updateChain();
+    return () => {
+      active = false;
+    };
+  }, [connected, isDemoMode]);
+
+  React.useEffect(() => {
+    let active = true;
+    const fetchTarget = async () => {
+      try {
+        const info = await queryChainInfo();
+        if (active) setTargetChainName(info.chainName);
+      } catch {
+        if (active) setTargetChainName("Portaldot Network");
+      }
+      
+      if (BACKEND_URL) {
+        try {
+          const res = await fetch(`${BACKEND_URL}/health`);
+          if (res.ok && active) {
+            const data = await res.json();
+            if (data.rpc_endpoint) {
+              setRpcEndpoint(data.rpc_endpoint);
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to fetch backend health/RPC:", err);
+        }
+      }
+    };
+    fetchTarget();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <WalletContext.Provider
       value={{
@@ -910,7 +1085,14 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         proxyType,
         agentAddress,
         checkingProxy,
+        chainName,
+        targetChainName,
+        rpcEndpoint,
+        showConnectModal,
+        setShowConnectModal,
         connect,
+        connectExtension,
+        connectDemo,
         disconnect,
         selectAccount,
         checkProxyStatus,
@@ -929,6 +1111,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+      <AnimatePresence>
+        {showConnectModal && <ConnectWalletModal />}
+      </AnimatePresence>
     </WalletContext.Provider>
   );
 }

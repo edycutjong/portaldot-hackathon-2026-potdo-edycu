@@ -87,10 +87,10 @@ describe("ChatInterface", () => {
 
   it("supports suggested commands on button click", () => {
     render(<ChatInterface />);
-    const suggestBtn = screen.getByText("Send 10 POT to Alice");
+    const suggestBtn = screen.getByText("Send 10 POT to Alpha");
     fireEvent.click(suggestBtn);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
-    expect(input).toHaveValue("Send 10 POT to Alice");
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    expect(input).toHaveValue("Send 10 POT to Alpha");
   });
 
   it("handles external input and consumes it correctly", () => {
@@ -100,7 +100,7 @@ describe("ChatInterface", () => {
         onExternalInputConsumed={mockOnExternalInputConsumed}
       />
     );
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     expect(input).toHaveValue("external command");
     expect(mockOnExternalInputConsumed).toHaveBeenCalledTimes(1);
 
@@ -124,7 +124,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
 
     fireEvent.change(input, { target: { value: "check my balance" } });
@@ -141,8 +141,8 @@ describe("ChatInterface", () => {
       message: "Please confirm your transfer:",
       intent: {
         action: "transfer",
-        to: "Alice",
-        toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        to: "Beta",
+        toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
         amount: 10,
       },
     };
@@ -155,10 +155,10 @@ describe("ChatInterface", () => {
     currentWallet.address = "";
 
     const { rerender } = render(<ChatInterface onCommandExecuted={mockOnCommandExecuted} />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
 
-    fireEvent.change(input, { target: { value: "Send 10 POT to Alice" } });
+    fireEvent.change(input, { target: { value: "Send 10 POT to Alpha" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -210,7 +210,7 @@ describe("ChatInterface", () => {
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "my staking info" } });
     fireEvent.submit(form);
@@ -230,14 +230,14 @@ describe("ChatInterface", () => {
     });
     mockQueryIdentity.mockResolvedValueOnce({
       address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-      display: "Alice Dev",
+      display: "Alpha Dev",
       isVerified: true,
     });
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input2, { target: { value: "who is Alice?" } });
+    fireEvent.change(input2, { target: { value: "who is Alpha?" } });
     fireEvent.submit(form2);
 
     await waitFor(() => {
@@ -263,7 +263,7 @@ describe("ChatInterface", () => {
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "vesting" } });
     fireEvent.submit(form);
@@ -278,7 +278,7 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Fee estimate:",
-        intent: { action: "estimate_fee", command: "send 10 POT to Alice" },
+        intent: { action: "estimate_fee", command: "send 10 POT to Alpha" },
       }),
     });
     mockEstimateFee.mockResolvedValueOnce({
@@ -288,7 +288,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input2, { target: { value: "gas for sending" } });
     fireEvent.submit(form2);
@@ -317,7 +317,7 @@ describe("ChatInterface", () => {
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "network status" } });
     fireEvent.submit(form);
@@ -338,7 +338,7 @@ describe("ChatInterface", () => {
     mockQueryChainInfo.mockRejectedValueOnce(new Error("RPC Error"));
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input2, { target: { value: "network status" } });
     fireEvent.submit(form2);
@@ -354,7 +354,7 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("API Error"));
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
 
     fireEvent.change(input, { target: { value: "error please" } });
@@ -371,8 +371,8 @@ describe("ChatInterface", () => {
       intent: {
         action: "batch_transfer",
         transfers: [
-          { to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 5 },
-          { to: "Bob", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 5 },
+          { to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 },
+          { to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 5 },
         ],
       },
     };
@@ -381,10 +381,10 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
 
-    fireEvent.change(input, { target: { value: "Send 5 to Alice and Bob" } });
+    fireEvent.change(input, { target: { value: "Send 5 to Alpha and Beta" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -415,7 +415,7 @@ describe("ChatInterface", () => {
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Stake 50 POT to ValidatorX" } });
     fireEvent.submit(form);
@@ -443,7 +443,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input2, { target: { value: "Set my name to Edy" } });
     fireEvent.submit(form2);
@@ -469,8 +469,8 @@ describe("ChatInterface", () => {
         intent: {
           action: "batch_transfer",
           transfers: [
-            { to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 5 },
-            { to: "Bob", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 5 },
+            { to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 },
+            { to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 5 },
           ],
         },
       }),
@@ -480,9 +480,9 @@ describe("ChatInterface", () => {
     currentWallet.address = "";
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input, { target: { value: "Airdrop 5 POT to Alice and Bob" } });
+    fireEvent.change(input, { target: { value: "Airdrop 5 POT to Alpha and Beta" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -503,7 +503,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Unstake 25 POT" } });
     fireEvent.submit(form);
@@ -530,7 +530,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Gibberish" } });
     fireEvent.submit(form);
@@ -544,15 +544,15 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Your transaction failed:",
-        intent: { action: "transfer", to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 10 },
+        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
         txResult: { status: "failed", error: "Insufficient Balance" },
       }),
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input, { target: { value: "Send 10 POT to Alice" } });
+    fireEvent.change(input, { target: { value: "Send 10 POT to Alpha" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -570,7 +570,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Stake 100 POT" } });
     fireEvent.submit(form);
@@ -600,14 +600,14 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Please confirm:",
-        intent: { action: "transfer", to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 10 },
+        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
       }),
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input, { target: { value: "Send 10 POT to Alice" } });
+    fireEvent.change(input, { target: { value: "Send 10 POT to Alpha" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -631,15 +631,15 @@ describe("ChatInterface", () => {
         message: "Confirm batch:",
         intent: {
           action: "batch_transfer",
-          transfers: [{ to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 5 }],
+          transfers: [{ to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 }],
         },
       }),
     });
 
     const { unmount: unmount2 } = render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input2, { target: { value: "Airdrop 5 POT to Alice" } });
+    fireEvent.change(input2, { target: { value: "Airdrop 5 POT to Alpha" } });
     fireEvent.submit(form2);
 
     await waitFor(() => {
@@ -666,7 +666,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input3 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input3 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form3 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input3, { target: { value: "Set my name to Edy" } });
     fireEvent.submit(form3);
@@ -697,7 +697,7 @@ describe("ChatInterface", () => {
     mockQueryStaking.mockRejectedValueOnce(new Error("Staking Error"));
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "staking" } });
     fireEvent.submit(form);
@@ -717,9 +717,9 @@ describe("ChatInterface", () => {
     mockQueryIdentity.mockRejectedValueOnce(new Error("Identity Error"));
 
     const { unmount: unmount2 } = render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input2, { target: { value: "Who is Alice?" } });
+    fireEvent.change(input2, { target: { value: "Who is Alpha?" } });
     fireEvent.submit(form2);
 
     await waitFor(() => {
@@ -737,7 +737,7 @@ describe("ChatInterface", () => {
     mockQueryVesting.mockRejectedValueOnce(new Error("Vesting Error"));
 
     const { unmount: unmount3 } = render(<ChatInterface />);
-    const input3 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input3 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form3 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input3, { target: { value: "vesting" } });
     fireEvent.submit(form3);
@@ -757,7 +757,7 @@ describe("ChatInterface", () => {
     mockEstimateFee.mockRejectedValueOnce(new Error("Fee Error"));
 
     render(<ChatInterface />);
-    const input4 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input4 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form4 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input4, { target: { value: "gas for sending" } });
     fireEvent.submit(form4);
@@ -777,7 +777,7 @@ describe("ChatInterface", () => {
     mockQueryChainInfo.mockRejectedValueOnce(new Error("Chain Info Error"));
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "chain info" } });
     fireEvent.submit(form);
@@ -795,7 +795,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Hello" } });
     fireEvent.submit(form);
@@ -813,7 +813,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     
     // 1. Submit empty input
@@ -845,7 +845,7 @@ describe("ChatInterface", () => {
     currentWallet.address = "";
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Stake 100 POT" } });
     fireEvent.submit(form);
@@ -868,7 +868,7 @@ describe("ChatInterface", () => {
     });
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input2, { target: { value: "Set my name to Edy" } });
     fireEvent.submit(form2);
@@ -886,14 +886,14 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Please confirm:",
-        intent: { action: "transfer", to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 10 },
+        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
       }),
     });
 
     const { unmount } = render(<ChatInterface />);
-    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input, { target: { value: "Send 10 POT to Alice" } });
+    fireEvent.change(input, { target: { value: "Send 10 POT to Alpha" } });
     fireEvent.submit(form);
 
     await waitFor(() => {
@@ -922,15 +922,15 @@ describe("ChatInterface", () => {
         message: "Confirm batch:",
         intent: {
           action: "batch_transfer",
-          transfers: [{ to: "Alice", toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", amount: 5 }],
+          transfers: [{ to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 }],
         },
       }),
     });
 
     render(<ChatInterface />);
-    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alice"/);
+    const input2 = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form2 = screen.getByRole("textbox").closest("form")!;
-    fireEvent.change(input2, { target: { value: "Airdrop 5 POT to Alice" } });
+    fireEvent.change(input2, { target: { value: "Airdrop 5 POT to Alpha" } });
     fireEvent.submit(form2);
 
     await waitFor(() => {
@@ -956,18 +956,18 @@ describe("ChatInterface", () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
     
-    // Mock guest and Alice messages in localStorage
+    // Mock guest and Alpha messages in localStorage
     const mockGuestMessages = [
       { id: "msg-1", role: "user" as const, content: "hello guest query" },
       { id: "msg-2", role: "assistant" as const, content: "hello guest reply" }
     ];
-    const mockAliceMessages = [
-      { id: "msg-3", role: "user" as const, content: "hello alice query" },
-      { id: "msg-4", role: "assistant" as const, content: "hello alice reply" }
+    const mockAlphaMessages = [
+      { id: "msg-3", role: "user" as const, content: "hello alpha query" },
+      { id: "msg-4", role: "assistant" as const, content: "hello alpha reply" }
     ];
     
-    localStorage.setItem("potdo_chat_history_guest", JSON.stringify(mockGuestMessages));
-    localStorage.setItem("potdo_chat_history_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", JSON.stringify(mockAliceMessages));
+    localStorage.setItem("potdo_chat_history_demo_network_guest", JSON.stringify(mockGuestMessages));
+    localStorage.setItem("potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", JSON.stringify(mockAlphaMessages));
     
     // 1. Render as Guest / disconnected wallet
     currentWallet.address = "";
@@ -978,16 +978,16 @@ describe("ChatInterface", () => {
     await waitFor(() => {
       expect(screen.getByText("hello guest query")).toBeInTheDocument();
     });
-    expect(screen.queryByText("hello alice query")).not.toBeInTheDocument();
+    expect(screen.queryByText("hello alpha query")).not.toBeInTheDocument();
     
-    // 2. Switch to Alice wallet
+    // 2. Switch to Alpha wallet
     currentWallet.address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
     currentWallet.connected = true;
     
     rerender(<ChatInterface />);
     
     await waitFor(() => {
-      expect(screen.getByText("hello alice query")).toBeInTheDocument();
+      expect(screen.getByText("hello alpha query")).toBeInTheDocument();
     });
     expect(screen.queryByText("hello guest query")).not.toBeInTheDocument();
 

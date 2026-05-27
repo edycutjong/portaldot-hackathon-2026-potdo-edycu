@@ -34,8 +34,8 @@
 **Potdo** eliminates blind signing on Portaldot by letting users describe transactions in plain English. The AI intent parser converts natural language into structured transaction previews — interactive React cards that show sender, receiver, amount, gas, and balance diff — all before you sign.
 
 **Key Features:**
-- ⚡ **Natural Language Transactions** — Type "Send 10 POT to Alice" and get an interactive transfer preview card
-- 📦 **Batch Airdrops** — "Airdrop 5 POT to Alice, Bob, and Charlie" processes multiple recipients in one command
+- ⚡ **Natural Language Transactions** — Type "Send 10 POT to Alpha" and get an interactive transfer preview card
+- 📦 **Batch Airdrops** — "Airdrop 5 POT to Alpha, Beta, and Gamma" processes multiple recipients in one command
 - 💰 **Live Balance Checks** — "What's my balance?" renders a real-time balance widget with free/reserved/frozen breakdown
 - 🔴 **Smart Error Translation** — Substrate errors decoded into plain English with actionable suggestions
 - 🎉 **Celebration UX** — Canvas confetti burst on successful transactions
@@ -168,7 +168,7 @@ sequenceDiagram
     participant RPC as Portaldot RPC
     participant Wallet as Portaldot Wallet
 
-    User->>UI: "Send 10 POT to Alice"
+    User->>UI: "Send 10 POT to Alpha"
     UI->>RSC: Stream request
     RSC->>API: Fetch sender balance & proxy status
     API->>RPC: Query state
@@ -248,26 +248,26 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ### Named Accounts (Address Book)
 | Name | Purpose | Pre-funded POT | Address |
 |---|---|---|---|
-| **Demo Wallet** | The sender (connected via Portaldot Wallet) | 500 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
+| **Demo Wallet** | The sender (connected via Portaldot Wallet) | 1000 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
 | **Alice** | Primary recipient for single transfers | 10 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` |
 | **Bob** | Batch transfer recipient #2 | 5 POT | `5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty` |
 | **Charlie** | Batch transfer recipient #3 | 0 POT | `5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y` |
 | **Dave** | Error validation demonstration target | 0 POT | `5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew` |
 
 ### Core Demo Scenarios
-1. **Single Transfer Flow**: *"Send 10 POT to Alice"*
-   * Checks sender balance (500 POT) -> streams `<TransferCard>` showing post-transaction balance simulation (490 POT) -> click **Execute** to sign and finalize.
-2. **Batch Airdrop Flow**: *"Airdrop 5 POT to Alice, Bob, and Charlie"*
+1. **Single Transfer Flow**: *"Send 10 POT to Alpha"*
+   * Checks sender balance (1000 POT) -> streams `<TransferCard>` showing post-transaction balance simulation (990 POT) -> click **Execute** to sign and finalize.
+2. **Batch Airdrop Flow**: *"Airdrop 5 POT to Alpha, Beta, and Gamma"*
    * Parses multiple recipients -> streams `<BatchCard>` showing a table of transfers -> click **Execute Batch** to sign and submit a single `utility.batch` extrinsic.
-3. **Error Protection**: *"Send 5000 POT to Dave"*
-   * Checks sender balance (475 POT) -> streams `<TransferCard>` with a **red warning** of insufficient funds -> blocks wallet popup to prevent gas waste.
+3. **Error Protection**: *"Send 5000 POT to Delta"*
+   * Checks sender balance (1000 POT) -> streams `<TransferCard>` with a **red warning** of insufficient funds -> blocks wallet popup to prevent gas waste.
 
 ## 🧪 Testing & CI
 
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 254 tests
+npm run test          # Run 282 tests
 npm run test:coverage # Coverage report (99.8%)
 npm run ci            # Full CI pipeline
 ```
@@ -307,7 +307,7 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 24 test suites, 254 tests
+│   └── __tests__/             # 24 test suites, 282 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions

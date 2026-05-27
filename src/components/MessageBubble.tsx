@@ -1,12 +1,15 @@
 "use client";
 
 import type { ChatMessage } from "@/lib/types";
+import { truncateAddress } from "@/lib/format";
 
 interface MessageBubbleProps {
   message: ChatMessage;
+  senderAddress?: string;
+  senderName?: string;
 }
 
-export function MessageBubble({ message }: MessageBubbleProps) {
+export function MessageBubble({ message, senderAddress, senderName }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -19,8 +22,15 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         }`}
       >
         {isUser && (
-          <div className="flex items-center gap-2 mb-1 text-xs text-cyan-400/60">
-            <span>You</span>
+          <div className="flex items-center gap-2 mb-1 text-xs text-cyan-400/60 font-semibold">
+            <span>
+              You
+              {senderAddress && (
+                <span className="text-slate-500/80 ml-1 font-normal">
+                  ({senderName || "Guest"} - {truncateAddress(senderAddress)})
+                </span>
+              )}
+            </span>
           </div>
         )}
         {!isUser && (

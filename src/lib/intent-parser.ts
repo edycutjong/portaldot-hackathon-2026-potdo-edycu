@@ -1,16 +1,12 @@
-/**
- * Core intent parsing logic — shared between server-only ai-tools.ts and tests.
- * Does NOT import "server-only" so it can be tested in Jest.
- */
-
-import { ADDRESS_BOOK } from "./constants";
+import { DEMO_ADDRESS_BOOK, TESTNET_ADDRESS_BOOK } from "./constants";
 import { isValidSS58Address, resolveRecipient, parseAmount } from "./format";
 import type { ParsedIntent } from "./types";
 
 /**
  * Parse a natural language command into a structured intent.
  */
-export function parseIntent(command: string): ParsedIntent | null {
+export function parseIntent(command: string, isDemo = true): ParsedIntent | null {
+  const addressBook = isDemo ? DEMO_ADDRESS_BOOK : TESTNET_ADDRESS_BOOK;
   let original = command.trim();
 
   // Preprocess slash commands to map them to natural language formats
@@ -96,7 +92,7 @@ export function parseIntent(command: string): ParsedIntent | null {
     const target = (checkIdentityMatch[1] || checkIdentityMatch[2] || checkIdentityMatch[3])
       .replace(/[.!?"']+$/, "")
       .trim();
-    const resolved = resolveRecipient(target, ADDRESS_BOOK);
+    const resolved = resolveRecipient(target, addressBook);
     return {
       action: "check_identity",
       address: resolved?.address,
@@ -171,7 +167,7 @@ export function parseIntent(command: string): ParsedIntent | null {
       if (!amount) return null;
 
       const transfers = recipientNames.map((name) => {
-        const resolved = resolveRecipient(name, ADDRESS_BOOK);
+        const resolved = resolveRecipient(name, addressBook);
         return {
           to: resolved?.name || name,
           toAddress: resolved?.address || "",
@@ -194,7 +190,7 @@ export function parseIntent(command: string): ParsedIntent | null {
   );
   if (maxMatch) {
     const recipientName = maxMatch[1].replace(/[.!?]+$/, "").trim();
-    const resolved = resolveRecipient(recipientName, ADDRESS_BOOK);
+    const resolved = resolveRecipient(recipientName, addressBook);
     if (!resolved) return null;
 
     return {
@@ -216,7 +212,7 @@ export function parseIntent(command: string): ParsedIntent | null {
     const amount = parseAmount(amountStr);
     if (!amount) return null;
 
-    const resolved = resolveRecipient(recipientName, ADDRESS_BOOK);
+    const resolved = resolveRecipient(recipientName, addressBook);
     if (!resolved) return null;
 
     return {
