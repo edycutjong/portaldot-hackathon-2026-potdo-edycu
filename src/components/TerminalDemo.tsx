@@ -7,8 +7,10 @@ import { useState, useEffect } from "react";
  * 1. Types "Send 10 POT to Alice" character by character
  * 2. Shows "Parsing intent..." with typing dots
  * 3. Renders a mini TransferCard preview
- * 4. Shows "✅ Transaction Confirmed!"
+ * 4. Shows "✓ Transaction Confirmed!"
  * 5. Loops with a pause between cycles
+ *
+ * Uses a fixed min-height to prevent layout shift between phases.
  */
 
 const COMMAND = "Send 10 POT to Alice";
@@ -17,6 +19,23 @@ const PHASE_PAUSE = 900; // ms between phases
 const RESET_PAUSE = 3500; // ms before restarting
 
 type Phase = "typing" | "parsing" | "preview" | "confirmed";
+
+function CheckCircleIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+function BoltIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  );
+}
 
 export function TerminalDemo() {
   const [phase, setPhase] = useState<Phase>("typing");
@@ -53,7 +72,7 @@ export function TerminalDemo() {
   }, [phase]);
 
   return (
-    <div className="glass-card-glow p-5 max-w-lg mx-auto text-left animate-float">
+    <div className="glass-card-glow p-5 max-w-lg mx-auto text-left animate-float" style={{ minHeight: "220px" }}>
       {/* Terminal header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="flex gap-1.5">
@@ -91,7 +110,10 @@ export function TerminalDemo() {
           <div className="bg-white/5 border border-cyan-500/20 rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500 uppercase tracking-wider">Transfer Preview</span>
-              <span className="text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">⚡ Portaldot</span>
+              <span className="inline-flex items-center gap-1 text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
+                <BoltIcon className="w-3 h-3" />
+                Portaldot
+              </span>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
@@ -113,7 +135,7 @@ export function TerminalDemo() {
         {/* Confirmed */}
         {phase === "confirmed" && (
           <div className="flex items-center gap-2 text-green-400 text-sm">
-            <span>✅</span>
+            <CheckCircleIcon className="w-5 h-5 shrink-0" />
             <span className="font-semibold">Transaction Confirmed!</span>
             <span className="text-slate-500 text-xs">Block #142,857</span>
           </div>
