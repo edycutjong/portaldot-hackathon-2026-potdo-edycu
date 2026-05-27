@@ -33,8 +33,14 @@ export default function DashboardPage() {
   useEffect(() => {
     let active = true;
     const loadHistory = async () => {
+      if (!address) {
+        if (active) {
+          setHistory([]);
+        }
+        return;
+      }
       try {
-        const data = await fetchHistory(address || undefined);
+        const data = await fetchHistory(address);
         const formatted = (
           data as Array<{
             id: number | string;
