@@ -7,7 +7,7 @@
   <br/>
 
   [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
-  [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](https://youtu.be/your-video)
+  [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](#)
   [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
 
   <br/>
@@ -49,7 +49,7 @@
 | **Chain SDK** | `@polkadot/api` + `@polkadot/extension-dapp` |
 | **Database** | Supabase (PostgreSQL) — transaction logging |
 | **Animation** | Framer Motion + Canvas API (confetti) |
-| **Testing** | Jest + React Testing Library (97%+ coverage) |
+| **Testing** | Jest + React Testing Library (100% coverage) |
 
 ```
 User Input → Intent Parser → Structured Intent → Generative UI Card → Execute on Chain
@@ -229,7 +229,7 @@ For a seamless demonstration, the application is pre-configured with canonical S
 ```bash
 npm run lint          # ESLint
 npm run typecheck     # TypeScript check
-npm run test          # Run 136 tests
+npm run test          # Run 144 tests
 npm run test:coverage # Coverage report (100%)
 npm run ci            # Full CI pipeline
 ```
@@ -269,7 +269,7 @@ potdo/
 │   │   ├── intent-parser.ts   # Core NLP intent parser
 │   │   ├── ai-tools.ts        # Server-only re-export
 │   │   └── supabase.ts        # Supabase client with demo fallback
-│   └── __tests__/             # 14 test suites, 136 tests
+│   └── __tests__/             # 14 test suites, 144 tests
 ├── .env.example         # Environment template
 ├── .github/             # CI, CodeQL, Dependabot
 ├── AGENTS.md            # Agent instructions
