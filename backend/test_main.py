@@ -1425,3 +1425,309 @@ def test_execute_remove_proxy_failure(mock_substrate):
         "seed": "//Alice"
     })
     assert response.status_code == 400
+
+
+# --- Coverage gap tests: lines 38, 41-42, 307, 316-317, 337-338, 374-375, ---
+# --- 529-532, 552-553, 556-558, 566, 569-570, 677, 775, 1336, 1489-1490, 1537-1538 ---
+
+import tempfile
+import shutil
+
+def test_load_env_with_quoted_values():
+    """Cover line 38: quote-stripping branch in load_env."""
+    from main import load_env
+    # Create a temp .env file with quoted values in the project root
+    project_root = os.path.dirname(os.path.dirname(__file__))
+    env_path = os.path.join(project_root, '.env.test_cov_tmp')
+    # We must rename it to .env.local or .env so load_env can discover it
+    target_env = os.path.join(project_root, '.env.test_local_cov')
+    try:
+        with open(env_path, 'w') as f:
+            f.write('POTDO_TEST_DOUBLE="double_val"\n')
+            f.write("POTDO_TEST_SINGLE='single_val'\n")
+            f.write("# comment line\n")
+            f.write("\n")
+            f.write("NO_EQUALS_LINE\n")
+        # Temporarily rename to .env.local for load_env to find it
+        shutil.move(env_path, os.path.join(project_root, '.env.local.bak_cov'))
+        # Backup existing .env.local if present
+        real_env = os.path.join(project_root, '.env.local')
+        real_backup = os.path.join(project_root, '.env.local.bak_orig')
+        had_real = os.path.exists(real_env)
+        if had_real:
+            shutil.move(real_env, real_backup)
+        shutil.move(os.path.join(project_root, '.env.local.bak_cov'), real_env)
+
+        # Remove keys from os.environ so load_env sets them
+        for k in ['POTDO_TEST_DOUBLE', 'POTDO_TEST_SINGLE']:
+            os.environ.pop(k, None)
+
+        load_env()
+        assert os.environ.get('POTDO_TEST_DOUBLE') == 'double_val'
+        assert os.environ.get('POTDO_TEST_SINGLE') == 'single_val'
+    finally:
+        # Restore original .env.local
+        if os.path.exists(real_env):
+            os.unlink(real_env)
+        if had_real:
+            shutil.move(real_backup, real_env)
+        # Clean up env vars
+        os.environ.pop('POTDO_TEST_DOUBLE', None)
+        os.environ.pop('POTDO_TEST_SINGLE', None)
+        # Clean up temp files
+        for p in [env_path, os.path.join(project_root, '.env.local.bak_cov')]:
+            if os.path.exists(p):
+                os.unlink(p)
+
+
+def test_load_env_exception_handling():
+    """Cover lines 41-42: exception branch in load_env."""
+    from main import load_env
+    # Patch os.path.exists to return True and open to raise an exception
+    with patch('builtins.open', side_effect=PermissionError("Permission denied")):
+        with patch('os.path.exists', return_value=True):
+            # Should not raise — exception is caught silently
+            load_env()
+
+
+@patch('main.SubstrateInterface')
+def test_balance_zero_fallback_mock(mock_substrate):
+    """Cover line 307: planck_balance == 0 and not MNEMONIC → use mock_balances."""
+    mock_instance = MagicMock()
+    mock_query_res = MagicMock()
+    mock_query_res.value = {'data': {'free': 0}}
+    mock_instance.query.return_value = mock_query_res
+    mock_substrate.return_value = mock_instance
+
+    with patch('main.MNEMONIC', ''):
+        response = client.get("/balance/5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+        assert response.status_code == 200
+        data = response.json()
+        # Should use mock_balances fallback value instead of 0
+        assert int(data["balancePlanck"]) > 0
+
+
+@patch('main.SubstrateInterface')
+def test_balance_exception_fallback_no_mnemonic(mock_substrate):
+    """Cover lines 316-317: balance query exception with no MNEMONIC → mock fallback."""
+    mock_instance = MagicMock()
+    mock_instance.query.side_effect = Exception("RPC error")
+    mock_substrate.return_value = mock_instance
+
+    with patch('main.MNEMONIC', ''):
+        response = client.get("/balance/5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+        assert response.status_code == 200
+        data = response.json()
+        assert int(data["balancePlanck"]) > 0
+
+
+@patch('main.SubstrateInterface')
+def test_staking_mock_path_no_mnemonic(mock_substrate):
+    """Cover lines 337-338: staking for known address with no MNEMONIC → returns mock_staking data."""
+    mock_instance = MagicMock()
+    mock_substrate.return_value = mock_instance
+
+    with patch('main.MNEMONIC', ''):
+        # Use Bob's address which has stable mock staking data
+        response = client.get("/staking/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["bonded"] == "200.0"
+        assert data["active"] == "200.0"
+
+
+@patch('main.SubstrateInterface')
+def test_staking_bonded_empty_fallback(mock_substrate):
+    """Cover lines 374-375: bonded_opt has no value → fallback mock data."""
+    mock_instance = MagicMock()
+    mock_bonded = MagicMock()
+    mock_bonded.value = None  # No bonded value
+    mock_instance.query.return_value = mock_bonded
+    mock_substrate.return_value = mock_instance
+
+    with patch('main.MNEMONIC', 'real_mnemonic'):
+        response = client.get("/staking/5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew")
+        assert response.status_code == 200
+        data = response.json()
+        # Should return fallback mock values
+        assert "bonded" in data
+        assert "nominations" in data
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_get_dev_keypair_success(mock_keypair_class, mock_substrate):
+    """Cover lines 529-532: get_dev_keypair_for_address returns a valid keypair."""
+    from main import get_dev_keypair_for_address
+
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+
+    result = get_dev_keypair_for_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+    assert result == mock_keypair
+    mock_keypair_class.create_from_uri.assert_called_with("//Alice")
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_get_dev_keypair_exception(mock_keypair_class, mock_substrate):
+    """Cover line 532: get_dev_keypair_for_address handles Keypair creation exception."""
+    from main import get_dev_keypair_for_address
+
+    mock_keypair_class.create_from_uri.side_effect = Exception("Keypair error")
+
+    result = get_dev_keypair_for_address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+    assert result is None
+
+
+def test_safe_receipt_data_block_number_exception():
+    """Cover lines 552-553: receipt.block_number raises exception."""
+    from main import safe_receipt_data
+
+    mock_receipt = MagicMock()
+    mock_receipt.extrinsic_hash = "0xtest"
+    mock_receipt.block_hash = "0xblockhash"
+    type(mock_receipt).block_number = property(lambda self: (_ for _ in ()).throw(NotImplementedError("no block_number")))
+    mock_receipt.is_success = True
+
+    result = safe_receipt_data(mock_receipt)
+    assert result["block_number"] is None
+    assert result["success"] is True
+    assert result["tx_hash"] == "0xtest"
+
+
+def test_safe_receipt_data_is_success_exception():
+    """Cover lines 556-558: receipt.is_success raises → treat as success=True."""
+    from main import safe_receipt_data
+
+    mock_receipt = MagicMock()
+    mock_receipt.extrinsic_hash = "0xtest2"
+    mock_receipt.block_number = 42
+    type(mock_receipt).is_success = property(lambda self: (_ for _ in ()).throw(NotImplementedError("DigestItem decode error")))
+
+    result = safe_receipt_data(mock_receipt)
+    assert result["success"] is True
+    assert result["block_number"] == 42
+
+
+def test_safe_receipt_data_dict_error_message():
+    """Cover line 566: error_message is a dict."""
+    from main import safe_receipt_data
+
+    mock_receipt = MagicMock()
+    mock_receipt.extrinsic_hash = "0xfailed"
+    mock_receipt.block_number = 50
+    mock_receipt.is_success = False
+    mock_receipt.error_message = {"message": "InsufficientBalance", "data": None}
+
+    result = safe_receipt_data(mock_receipt)
+    assert result["success"] is False
+    assert result["error_message"] == "InsufficientBalance"
+
+
+def test_safe_receipt_data_error_message_exception():
+    """Cover lines 569-570: accessing error_message raises."""
+    from main import safe_receipt_data
+
+    mock_receipt = MagicMock()
+    mock_receipt.extrinsic_hash = "0xerr"
+    mock_receipt.block_number = 51
+    mock_receipt.is_success = False
+    type(mock_receipt).error_message = property(lambda self: (_ for _ in ()).throw(Exception("Cannot decode")))
+
+    result = safe_receipt_data(mock_receipt)
+    assert result["success"] is False
+    assert "Failed to retrieve error message" in result["error_message"]
+
+
+@patch('main.SubstrateInterface')
+def test_stake_simulated_new_sender(mock_substrate):
+    """Cover line 677: stake simulated creates new mock_staking entry for unknown sender."""
+    with patch('main.MNEMONIC', ''):
+        response = client.post("/stake", json={
+            "amount_pot": 10.0,
+            "real_address": "5UNKNOWN_ADDRESS_FOR_COVERAGE_TEST"
+        })
+        assert response.status_code == 200
+        assert response.json()["simulated"] is True
+
+
+@patch('main.SubstrateInterface')
+def test_unstake_simulated_new_sender(mock_substrate):
+    """Cover line 775: unstake simulated creates new mock_staking entry for unknown sender."""
+    with patch('main.MNEMONIC', ''):
+        response = client.post("/unstake", json={
+            "amount_pot": 5.0,
+            "real_address": "5UNKNOWN_ADDRESS_FOR_UNSTAKE_COVERAGE"
+        })
+        assert response.status_code == 200
+        assert response.json()["simulated"] is True
+
+
+@patch('main.get_signing_keypair')
+@patch('main.SubstrateInterface')
+def test_get_agent_address_fallback_bob(mock_substrate, mock_get_signing):
+    """Cover line 1336: get_agent_address returns Bob fallback when no keypair."""
+    mock_get_signing.return_value = None  # No keypair available
+
+    mock_instance = MagicMock()
+    mock_query = MagicMock()
+    mock_query.value = ([], 0)
+    mock_instance.query.return_value = mock_query
+    mock_substrate.return_value = mock_instance
+
+    response = client.get("/proxy-status/5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
+    assert response.status_code == 200
+    data = response.json()
+    # Fallback delegate is Bob's address
+    assert data["delegate"] == "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_execute_add_proxy_receipt_failure_with_message(mock_keypair_class, mock_substrate):
+    """Cover lines 1489-1490: add_proxy receipt failure with error_message."""
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = False
+    mock_receipt.error_message = "Proxy already exists"
+    mock_receipt.extrinsic_hash = "0xfailed_add"
+    mock_receipt.block_number = 200
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+
+    response = client.post("/add-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 400
+    assert "Add proxy failed" in response.json()["detail"]
+
+
+@patch('main.SubstrateInterface')
+@patch('main.Keypair')
+def test_execute_remove_proxy_receipt_failure_with_message(mock_keypair_class, mock_substrate):
+    """Cover lines 1537-1538: remove_proxy receipt failure with error_message."""
+    mock_instance = MagicMock()
+    mock_receipt = MagicMock()
+    mock_receipt.is_success = False
+    mock_receipt.error_message = "Proxy not found"
+    mock_receipt.extrinsic_hash = "0xfailed_remove"
+    mock_receipt.block_number = 201
+    mock_instance.submit_extrinsic.return_value = mock_receipt
+    mock_substrate.return_value = mock_instance
+
+    mock_keypair = MagicMock()
+    mock_keypair_class.create_from_uri.return_value = mock_keypair
+
+    response = client.post("/remove-proxy", json={
+        "sender_address": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        "delegate_address": "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        "seed": "//Alice"
+    })
+    assert response.status_code == 400
+    assert "Remove proxy failed" in response.json()["detail"]

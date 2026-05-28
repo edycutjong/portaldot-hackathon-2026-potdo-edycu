@@ -372,6 +372,22 @@ describe("parseIntent", () => {
     expect(result).toEqual({ action: "set_identity", displayName: "Edy" });
   });
 
+  it("parses '/identity Alpha' as check_identity because Alpha is a known name", () => {
+    const result = parseIntent("/identity Alpha");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.name).toBe("Alpha");
+    }
+  });
+
+  it("parses '/identity 5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm' as check_identity because it is a valid address", () => {
+    const result = parseIntent("/identity 5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm");
+    expect(result?.action).toBe("check_identity");
+    if (result?.action === "check_identity") {
+      expect(result.address).toBe("5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm");
+    }
+  });
+
   it("parses '/identity' without args as check_identity (self)", () => {
     const result = parseIntent("/identity");
     expect(result).toEqual({ action: "check_identity" });
@@ -393,6 +409,16 @@ describe("parseIntent", () => {
   it("parses '/fee Send 10 POT to Alpha'", () => {
     const result = parseIntent("/fee Send 10 POT to Alpha");
     expect(result?.action).toBe("estimate_fee");
+  });
+
+  it("parses '/balance Alpha'", () => {
+    const result = parseIntent("/balance Alpha");
+    expect(result).toEqual({ action: "check_balance" });
+  });
+
+  it("parses '/fee' without arguments", () => {
+    const result = parseIntent("/fee");
+    expect(result).toEqual({ action: "estimate_fee", command: "/fee" });
   });
 
   it("parses '/chain'", () => {
@@ -417,6 +443,11 @@ describe("parseIntent", () => {
     expect(parseIntent("/unstake")).toBeNull();
     expect(parseIntent("/whois")).toBeNull();
     expect(parseIntent("/sendall")).toBeNull();
+  });
+
+  it("handles unknown slash commands by parsing them as natural language", () => {
+    const result = parseIntent("/unknown check my balance");
+    expect(result).toEqual({ action: "check_balance" });
   });
 });
 

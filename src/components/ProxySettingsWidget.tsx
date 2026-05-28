@@ -22,7 +22,9 @@ export function ProxySettingsWidget() {
   } = wallet;
 
   const handleToggleProxy = async () => {
-    if (loading) return;
+    if (loading) {
+      return;
+    }
     setLoading(true);
     setStatusText(isProxyActive ? "Revoking delegation..." : "Authorizing agent...");
     try {
@@ -54,7 +56,7 @@ export function ProxySettingsWidget() {
         });
       }
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : "Failed";
+      const errMsg = err instanceof Error ? err.message : String(err);
       setStatusText(`Error: ${errMsg}`);
       setLoading(false);
     }

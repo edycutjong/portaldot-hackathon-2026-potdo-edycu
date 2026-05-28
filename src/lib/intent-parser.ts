@@ -30,7 +30,24 @@ export function parseIntent(command: string, isDemo = true): ParsedIntent | null
     } else if (slashCmd === "/staking") {
       original = "show my staking info";
     } else if (slashCmd === "/identity") {
-      original = args ? `set my name to ${args}` : "my identity";
+      if (args) {
+        const targetClean = args.trim();
+        const isKnownName =
+          Object.values(DEMO_ADDRESS_BOOK).some((n) => n.toLowerCase() === targetClean.toLowerCase()) ||
+          Object.values(TESTNET_ADDRESS_BOOK).some((n) => n.toLowerCase() === targetClean.toLowerCase());
+        const isKnownAddress =
+          Object.keys(DEMO_ADDRESS_BOOK).includes(targetClean) ||
+          Object.keys(TESTNET_ADDRESS_BOOK).includes(targetClean);
+        const isAddress = isValidSS58Address(targetClean);
+
+        if (isKnownName || isKnownAddress || isAddress) {
+          original = `who is ${targetClean}`;
+        } else {
+          original = `set my name to ${targetClean}`;
+        }
+      } else {
+        original = "my identity";
+      }
     } else if (slashCmd === "/whois") {
       original = args ? `who is ${args}` : "";
     } else if (slashCmd === "/vesting") {

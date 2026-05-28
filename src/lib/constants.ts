@@ -52,7 +52,7 @@ export const SLASH_COMMANDS = [
   { command: "/stake", description: "Stake POT tokens", example: "Stake 100 POT" },
   { command: "/unstake", description: "Unstake bonded POT", example: "Unstake 50 POT" },
   { command: "/staking", description: "View staking info", example: "Show my staking info" },
-  { command: "/identity", description: "Set your on-chain name", example: "Set my name to Edy" },
+  { command: "/identity", description: "Set name or look up identity", example: "/identity Edy or /identity Alpha" },
   { command: "/whois", description: "Look up an account identity", example: "Who is Alpha?" },
   { command: "/vesting", description: "View vesting schedule", example: "Show vesting schedule" },
   { command: "/fee", description: "Estimate gas fee", example: "How much gas for Send 10 POT to Alpha?" },

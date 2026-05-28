@@ -16,15 +16,13 @@ export function IdentityCard({ identity }: IdentityCardProps) {
     : "—";
 
   const handleCopyAddr = () => {
-    if (!identity.address) return;
     navigator.clipboard.writeText(identity.address);
     setCopiedAddr(true);
     setTimeout(() => setCopiedAddr(false), 1500);
   };
 
   const handleCopyEmail = () => {
-    if (!identity.email) return;
-    navigator.clipboard.writeText(identity.email);
+    navigator.clipboard.writeText(identity.email!);
     setCopiedEmail(true);
     setTimeout(() => setCopiedEmail(false), 1500);
   };

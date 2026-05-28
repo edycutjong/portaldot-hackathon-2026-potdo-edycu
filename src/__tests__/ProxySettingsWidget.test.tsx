@@ -276,4 +276,66 @@ describe("ProxySettingsWidget", () => {
 
     expect(screen.getByText("Error: Network disconnect")).toBeInTheDocument();
   });
+
+  it("does not call addProxyDelegate again if click handler is clicked while loading is true", async () => {
+    const addProxyDelegateMock = jest.fn().mockImplementation(() => {
+      return new Promise(() => {}); // never resolves to keep loading true
+    });
+
+    render(
+      <WalletContext.Provider
+        value={{
+          ...mockWalletBase,
+          connected: true,
+          isProxyActive: false,
+          addProxyDelegate: addProxyDelegateMock,
+        }}
+      >
+        <ProxySettingsWidget />
+      </WalletContext.Provider>
+    );
+
+    const button = screen.getByText("Enable Secure Delegation");
+    fireEvent.click(button);
+    expect(screen.getByText("Authorizing agent...")).toBeInTheDocument();
+    expect(addProxyDelegateMock).toHaveBeenCalledTimes(1);
+
+    // Retrieve the React props on the DOM element and invoke onClick directly
+    // to bypass React 19's synthetic event disabled block
+    const reactPropsKey = Object.keys(button).find((k) => k.startsWith("__reactProps"));
+    if (reactPropsKey) {
+      const elementWithProps = button as unknown as Record<string, { onClick?: (e: unknown) => void }>;
+      elementWithProps[reactPropsKey]?.onClick?.({ preventDefault: () => {} });
+    } else {
+      // Fallback just in case
+      button.removeAttribute("disabled");
+      (button as HTMLButtonElement).disabled = false;
+      fireEvent.click(button);
+    }
+    expect(addProxyDelegateMock).toHaveBeenCalledTimes(1); // should still be 1
+  });
+
+  it("handles non-Error object exception thrown in addProxyDelegate hook invocation", async () => {
+    const addProxyDelegateMock = jest.fn().mockRejectedValue("Plain string rejection");
+
+    render(
+      <WalletContext.Provider
+        value={{
+          ...mockWalletBase,
+          connected: true,
+          isProxyActive: false,
+          addProxyDelegate: addProxyDelegateMock,
+        }}
+      >
+        <ProxySettingsWidget />
+      </WalletContext.Provider>
+    );
+
+    const button = screen.getByText("Enable Secure Delegation");
+    await act(async () => {
+      fireEvent.click(button);
+    });
+
+    expect(screen.getByText("Error: Plain string rejection")).toBeInTheDocument();
+  });
 });

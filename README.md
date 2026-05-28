@@ -194,22 +194,74 @@ sequenceDiagram
     Note over UI: 🎉 Confetti animation + Explorer link
 ```
 
+### 🌐 System Environments & Deployment Tiers
+
+Potdo runs in three distinct environments designed for different phases of the lifecycle:
+
+1. **Demo Mode (In-Memory Simulation)**
+   * **Architecture**: **Frontend Only** (pure in-memory browser simulation).
+   * **Operation**: All actions (balances, transfers, staking, name updates) are simulated instantly inside React state and persisted to the browser's `localStorage`. No network request to the backend or external RPC is required.
+   * **Target Deployment**: Hosted on **Vercel** for instant, zero-setup public testing.
+
+2. **Testnet Mode (Local Dev/Judging)**
+   * **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Local Portaldot Dev Node**.
+   * **Operation**: Frontend forwards requests to the FastAPI backend. The backend uses the Portaldot Python SDK (`substrate-interface`) to construct, sign, and submit extrinsics directly to the local dev node running at `ws://127.0.0.1:9944`.
+   * **Target Deployment**: Run locally using the preconfigured `Makefile` or Docker compose. The backend can also be hosted on **Railway** pointed to a public VPS chain node.
+
+3. **Mainnet Mode (Production)**
+   * **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Portaldot Mainnet RPC**.
+   * **Operation**: Same as Testnet mode, but the backend connects directly to the live production mainnet nodes (e.g. `wss://mainnet.portaldot.io`).
+   * **Target Deployment**: Hosted on **Vercel** (Frontend) + **Railway** (Backend API).
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js ≥ 20
 - npm
+- Docker (optional, for containerized execution)
 
 ### Installation
 ```bash
 git clone https://github.com/edycutjong/potdo.git
 cd potdo
-npm install
-cp .env.example .env.local  # Add your API keys
-npm run dev
+make install
 ```
 
-> **For Judges:** No API keys needed! Demo mode works out of the box with deterministic intent parsing. Just `npm install && npm run dev`.
+### 🧑‍⚖️ Judging & Local Verification Guide
+
+To allow a thorough evaluation of all features (including local testnet execution with the Python SDK backend), you can run the entire system locally.
+
+#### Method A: Multi-Terminal Native Run (Recommended)
+Open three separate terminal windows/tabs:
+
+1. **Terminal 1: Start the Portaldot Dev Node**
+   ```bash
+   make testnet
+   ```
+   *(Launches the local Portaldot testnet node on `ws://127.0.0.1:9944` using the `./testnet/portaldot_dev` binary).*
+
+2. **Terminal 2: Start the FastAPI Python Backend**
+   ```bash
+   make dev-backend
+   ```
+   *(Starts the FastAPI server on `http://localhost:8000`, connected directly to the local testnet node).*
+
+3. **Terminal 3: Start the Next.js Web App**
+   ```bash
+   make dev-frontend
+   ```
+   *(Starts the UI dev server on `http://localhost:3000` with hot reloading).*
+
+#### Method B: One-Command Docker Compose Run
+If you have Docker installed, you can spin up all three services in containerized mode with a single command:
+```bash
+make docker-up
+```
+* **Verify status**: `make docker-logs` to watch live node block production and server requests.
+* **Stop services**: `make docker-down` to clean up.
+
 
 ### Supabase Setup (Optional for Persistence)
 

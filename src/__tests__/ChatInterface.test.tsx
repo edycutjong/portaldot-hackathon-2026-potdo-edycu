@@ -4,6 +4,8 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
 import type { ParsedIntent } from "@/lib/types";
+import { SUGGESTED_COMMANDS } from "@/lib/constants";
+
 
 // Mock framer-motion
 jest.mock("framer-motion", () => ({
@@ -56,6 +58,9 @@ describe("ChatInterface", () => {
     estimateFee: jest.Mock;
     queryChainInfo: jest.Mock;
     isBalanceLoading: boolean;
+    accounts?: Record<string, unknown>[];
+    isDemoMode?: boolean;
+    chainName?: string;
   };
 
   beforeEach(() => {
@@ -76,6 +81,14 @@ describe("ChatInterface", () => {
       estimateFee: mockEstimateFee,
       queryChainInfo: mockQueryChainInfo,
       isBalanceLoading: false,
+      isDemoMode: true,
+      chainName: "Demo Network",
+      accounts: [
+        {
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          meta: { name: "Alice" },
+        },
+      ],
     };
     (useWallet as jest.Mock).mockImplementation(() => currentWallet);
     global.fetch = jest.fn();
@@ -999,5 +1012,714 @@ describe("ChatInterface", () => {
   it("handles scrollRef being null gracefully", () => {
     // Mounting a component naturally starts with scrollRef.current as null
     expect(() => render(<ChatInterface />)).not.toThrow();
+  });
+
+  it("dynamically replaces active name in suggestions and placeholder to avoid self-sending and duplicates", () => {
+    localStorage.setItem("test_enable_dynamic_commands", "true");
+    
+    // 1. Connected as Alpha on Demo Mode
+    const walletAlphaDemo = {
+      ...currentWallet,
+      address: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
+      isDemoMode: true,
+      accounts: [
+        { address: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm", meta: { name: "Alpha" } },
+        { address: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o", meta: { name: "Beta" } },
+        { address: "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P", meta: { name: "Gamma" } },
+        { address: "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX", meta: { name: "Delta" } },
+      ],
+    };
+    (useWallet as jest.Mock).mockImplementation(() => walletAlphaDemo);
+    
+    const { unmount } = render(<ChatInterface />);
+    
+    // Check placeholder
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Beta"/);
+    expect(input).toBeInTheDocument();
+    
+    // Check multi-recipient button text (Alpha replaced by Delta, leaving Beta and Gamma)
+    expect(screen.getByText("Airdrop 5 POT to Delta, Beta, and Gamma")).toBeInTheDocument();
+    unmount();
+
+    // 2. Connected as Beta on Demo Mode
+    const walletBetaDemo = {
+      ...currentWallet,
+      address: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o",
+      isDemoMode: true,
+      accounts: [
+        { address: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm", meta: { name: "Alpha" } },
+        { address: "5FBjUb4p6yzvcWsCDHxoeeppJjJ7vZW675sPgrNFK3acMQ5o", meta: { name: "Beta" } },
+        { address: "5E1oSt5YAdzq6RdEHt1UyMFcLqQVQMq9TiF3TAfxDvsDjp3P", meta: { name: "Gamma" } },
+        { address: "5CfPKgVHzzi7thpNYf5kKRDQ676mVmsYtAQsTWaRqoaX4eQX", meta: { name: "Delta" } },
+      ],
+    };
+    (useWallet as jest.Mock).mockImplementation(() => walletBetaDemo);
+    
+    const { unmount: unmountBeta } = render(<ChatInterface />);
+    expect(screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/)).toBeInTheDocument();
+    expect(screen.getByText("Airdrop 5 POT to Alpha, Delta, and Gamma")).toBeInTheDocument();
+    unmountBeta();
+
+    // 3. Connected as Alice on Testnet mode (isDemoMode = false)
+    const walletAliceTestnet = {
+      ...currentWallet,
+      address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      isDemoMode: false,
+      accounts: [
+        { address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", meta: { name: "Alice" } },
+        { address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", meta: { name: "Bob" } },
+        { address: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", meta: { name: "Charlie" } },
+        { address: "5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew", meta: { name: "Dave" } },
+      ],
+    };
+    (useWallet as jest.Mock).mockImplementation(() => walletAliceTestnet);
+    
+    const { unmount: unmountAlice } = render(<ChatInterface />);
+    expect(screen.getByPlaceholderText(/Try: "Send 10 POT to Bob"/)).toBeInTheDocument();
+    expect(screen.getByText("Airdrop 5 POT to Dave, Bob, and Charlie")).toBeInTheDocument();
+    unmountAlice();
+    
+    // 4. Custom name connected as Edy (mentioned in custom command "Set my name to Edy")
+    const walletEdy = {
+      ...currentWallet,
+      address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      isDemoMode: true,
+      accounts: [
+        { address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", meta: { name: "Edy" } },
+      ],
+    };
+    (useWallet as jest.Mock).mockImplementation(() => walletEdy);
+    
+    const { unmount: unmountEdy } = render(<ChatInterface />);
+    expect(screen.getByText("Set my name to Alpha")).toBeInTheDocument();
+    unmountEdy();
+
+    localStorage.removeItem("test_enable_dynamic_commands");
+  });
+
+  it("handles localStorage load error gracefully", async () => {
+    localStorage.clear();
+    localStorage.setItem("test_enable_persistence", "true");
+    
+    const getItemSpy = jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("Local storage access blocked");
+    });
+    
+    try {
+      render(<ChatInterface />);
+      
+      // Flush setTimeout timers in catch block
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+      
+      // It should render welcome screen and handle error without crashing
+      expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
+    } finally {
+      getItemSpy.mockRestore();
+      localStorage.removeItem("test_enable_persistence");
+    }
+  });
+
+  it("handles localStorage save error gracefully", async () => {
+    localStorage.clear();
+    localStorage.setItem("test_enable_persistence", "true");
+    
+    const setItemSpy = jest.spyOn(Storage.prototype, "setItem").mockImplementation((key) => {
+      if (key.startsWith("potdo_chat_history")) {
+        throw new Error("Quota exceeded");
+      }
+    });
+    
+    let unmountFn: (() => void) | undefined;
+    try {
+      const { unmount } = render(<ChatInterface />);
+      unmountFn = unmount;
+      const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+      const form = screen.getByRole("textbox").closest("form")!;
+      fireEvent.change(input, { target: { value: "Airdrop 5 POT to Alpha" } });
+      fireEvent.submit(form);
+      
+      // It should not crash on save failure
+      await waitFor(() => {
+        expect(screen.getByText("Airdrop 5 POT to Alpha")).toBeInTheDocument();
+      });
+    } finally {
+      setItemSpy.mockRestore();
+      localStorage.removeItem("test_enable_persistence");
+      if (unmountFn) unmountFn();
+    }
+  });
+
+  it("skips saving chat history if the key changes before history is loaded", async () => {
+    localStorage.clear();
+    localStorage.setItem("test_enable_persistence", "true");
+    
+    const { rerender, unmount } = render(<ChatInterface />);
+    
+    // Allow mount effects to run first
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    
+    // Switch address immediately by updating mock and reference
+    currentWallet = { ...currentWallet, address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" };
+    (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+    rerender(<ChatInterface />);
+    
+    // Allow update effects to run
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    
+    localStorage.removeItem("test_enable_persistence");
+    unmount();
+  });
+
+  it("handles localStorage remove error gracefully on mount", () => {
+    localStorage.setItem("test_enable_persistence", "true");
+    const removeItemSpy = jest.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
+      throw new Error("Remove item blocked");
+    });
+    
+    try {
+      render(<ChatInterface />);
+    } finally {
+      removeItemSpy.mockRestore();
+      localStorage.removeItem("test_enable_persistence");
+    }
+  });
+
+  it("resolves max transfer (-1) to the actual balance minus the gas fee", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValueOnce({
+        message: "Send max:",
+        intent: {
+          action: "transfer",
+          to: "Alpha",
+          toAddress: "5DRcc5Jf3rvuLQHEbuvDZtXMfmS9WS3NETFP2h1W8r2j1KUm",
+          amount: -1,
+        },
+      }),
+    });
+
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    const form = screen.getByRole("textbox").closest("form")!;
+    fireEvent.change(input, { target: { value: "Send everything to Alpha" } });
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Execute Transfer/)).toBeInTheDocument();
+    });
+
+    // Mock findLast temporarily to return undefined
+    const originalFindLast = Array.prototype.findLast;
+    Array.prototype.findLast = jest.fn().mockReturnValue(undefined);
+
+    fireEvent.click(screen.getByRole("button", { name: "✅ Execute Transfer" }));
+
+    // Restore findLast
+    Array.prototype.findLast = originalFindLast;
+
+    expect(mockExecuteTransfer).toHaveBeenCalled();
+    const resolvedAmount = mockExecuteTransfer.mock.calls[0][1];
+    expect(resolvedAmount).toBe(499.9988);
+  });
+
+  it("supports selecting slash commands from autocomplete dropdown on click", async () => {
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    fireEvent.change(input, { target: { value: "/send" } });
+    
+    // Check dropdown shows /send command
+    await waitFor(() => {
+      expect(screen.getByText("Transfer POT tokens")).toBeInTheDocument();
+    });
+    
+    // Click on the button for /send command
+    const slashBtn = screen.getByRole("button", { name: /^\/send\b/ });
+    fireEvent.click(slashBtn);
+    
+    // Input should be updated with the example
+    expect(input).toHaveValue("Send 10 POT to Alpha");
+  });
+
+  it("supports arrow, enter, tab, and escape key navigation for slash menu", async () => {
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    fireEvent.change(input, { target: { value: "/" } });
+    
+    await waitFor(() => {
+      expect(screen.getByText("Transfer POT tokens")).toBeInTheDocument();
+    });
+
+    // Arrow down
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    // Arrow up
+    fireEvent.keyDown(input, { key: "ArrowUp" });
+    // Escape to clear
+    fireEvent.keyDown(input, { key: "Escape" });
+    expect(input).toHaveValue("");
+
+    // Show again
+    fireEvent.change(input, { target: { value: "/" } });
+    await waitFor(() => {
+      expect(screen.getByText("Transfer POT tokens")).toBeInTheDocument();
+    });
+
+    // Press Enter to select first item
+    fireEvent.keyDown(input, { key: "Enter" });
+    expect(input).toHaveValue("Send 10 POT to Alpha");
+  });
+
+  it("returns null in renderIntentCard when optional check data is missing", () => {
+    const msgStaking = {
+      id: "staking-1",
+      role: "assistant" as const,
+      content: "Staking check",
+      intent: { action: "check_staking" },
+    };
+    const msgIdentity = {
+      id: "identity-1",
+      role: "assistant" as const,
+      content: "Identity check",
+      intent: { action: "check_identity" },
+    };
+    const msgVesting = {
+      id: "vesting-1",
+      role: "assistant" as const,
+      content: "Vesting check",
+      intent: { action: "check_vesting" },
+    };
+    const msgFee = {
+      id: "fee-1",
+      role: "assistant" as const,
+      content: "Fee check",
+      intent: { action: "estimate_fee" },
+    };
+    const msgChain = {
+      id: "chain-1",
+      role: "assistant" as const,
+      content: "Chain check",
+      intent: { action: "check_chain_info" },
+    };
+
+    localStorage.setItem("potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", JSON.stringify([
+      msgStaking, msgIdentity, msgVesting, msgFee, msgChain
+    ]));
+    localStorage.setItem("test_enable_persistence", "true");
+
+    render(<ChatInterface />);
+
+    // Since info is missing, no cards should be rendered
+    expect(screen.queryByText("Active Staked")).not.toBeInTheDocument();
+    expect(screen.queryByText("On-Chain Identity")).not.toBeInTheDocument();
+    expect(screen.queryByText("Vesting Schedule")).not.toBeInTheDocument();
+    expect(screen.queryByText("Fee Estimate")).not.toBeInTheDocument();
+    expect(screen.queryByText("Chain Details")).not.toBeInTheDocument();
+
+    localStorage.removeItem("test_enable_persistence");
+  });
+
+  it("handles malformed JSON in localStorage load gracefully", async () => {
+    localStorage.clear();
+    localStorage.setItem("test_enable_persistence", "true");
+    
+    const key = "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    localStorage.setItem(key, "{malformed_json}");
+    
+    render(<ChatInterface />);
+    
+    // Flush setTimeout timers in catch block
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    
+    // It should render welcome screen and handle parse error without crashing
+    expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
+    
+    localStorage.removeItem("test_enable_persistence");
+    localStorage.removeItem(key);
+  });
+
+  it("renders messages with account name when account exists in wallet", async () => {
+    currentWallet = {
+      ...currentWallet,
+      accounts: [
+        {
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          meta: { name: "Alice" },
+        },
+      ],
+    };
+    (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+    
+    render(<ChatInterface />);
+    
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    const form = screen.getByRole("textbox").closest("form")!;
+    fireEvent.change(input, { target: { value: "Hello" } });
+    fireEvent.submit(form);
+    
+    await waitFor(() => {
+      expect(screen.getByText(/Alice/)).toBeInTheDocument();
+    });
+  });
+
+  it("skips saving chat history if load effect is skipped but save effect runs", () => {
+    localStorage.clear();
+    
+    let callCount = 0;
+    const getItemSpy = jest.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
+      if (key === "test_enable_persistence") {
+        callCount++;
+        return callCount === 1 ? null : "true";
+      }
+      return null;
+    });
+    
+    try {
+      render(<ChatInterface />);
+    } finally {
+      getItemSpy.mockRestore();
+    }
+  });
+
+  it("handles accounts being undefined or missing meta/name in mapping", async () => {
+    localStorage.setItem("test_enable_dynamic_commands", "true");
+    try {
+      // accounts is undefined
+      currentWallet = {
+        ...currentWallet,
+        accounts: undefined,
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+      const { unmount } = render(<ChatInterface />);
+      unmount();
+
+      // accounts is empty array
+      currentWallet = {
+        ...currentWallet,
+        accounts: [],
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+      const { unmount: unmount2 } = render(<ChatInterface />);
+      unmount2();
+
+      // account exists but has no meta or name
+      currentWallet = {
+        ...currentWallet,
+        accounts: [
+          {
+            address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+          },
+        ],
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+      const { unmount: unmount3 } = render(<ChatInterface />);
+      unmount3();
+    } finally {
+      localStorage.removeItem("test_enable_dynamic_commands");
+    }
+  });
+
+  it("covers all getDynamicCommand branches via suggestion rendering", () => {
+    localStorage.setItem("test_enable_dynamic_commands", "true");
+    const originalSuggestions = [...SUGGESTED_COMMANDS];
+    
+    try {
+      const cases = [
+        {
+          isDemoMode: true,
+          activeName: "Alpha",
+          input: "Send 5 POT to Alpha, Beta, Gamma, and Delta",
+          expected: "Send 5 POT to Beta, Beta, Gamma, and Delta",
+        },
+        {
+          isDemoMode: true,
+          activeName: "Delta",
+          input: "Send 5 POT to Alpha, Beta, Gamma, and Delta",
+          expected: "Send 5 POT to Alpha, Beta, Gamma, and Alpha",
+        },
+        {
+          isDemoMode: false,
+          activeName: "Alice",
+          input: "Send 5 POT to Alice, Bob, Charlie, and Dave",
+          expected: "Send 5 POT to Bob, Bob, Charlie, and Dave",
+        },
+        {
+          isDemoMode: false,
+          activeName: "Dave",
+          input: "Send 5 POT to Alice, Bob, Charlie, and Dave",
+          expected: "Send 5 POT to Alice, Bob, Charlie, and Alice",
+        },
+        {
+          isDemoMode: true,
+          activeName: "Edy",
+          input: "Send 10 POT to Edy",
+          expected: "Send 10 POT to Alpha",
+        },
+        {
+          isDemoMode: false,
+          activeName: "Edy",
+          input: "Send 10 POT to Edy",
+          expected: "Send 10 POT to Alice",
+        },
+        {
+          isDemoMode: false,
+          activeName: "Alice",
+          input: "Send 10 POT to Alice",
+          expected: "Send 10 POT to Bob",
+        },
+        {
+          isDemoMode: false,
+          activeName: "Bob",
+          input: "Send 10 POT to Bob",
+          expected: "Send 10 POT to Alice",
+        },
+      ];
+
+      for (const tc of cases) {
+        currentWallet = {
+          ...currentWallet,
+          isDemoMode: tc.isDemoMode,
+          accounts: [
+            {
+              address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+              meta: { name: tc.activeName },
+            },
+          ],
+        };
+        (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+        
+        SUGGESTED_COMMANDS[0] = tc.input;
+        
+        const { unmount } = render(<ChatInterface />);
+        expect(screen.getByText(tc.expected)).toBeInTheDocument();
+        unmount();
+      }
+    } finally {
+      localStorage.removeItem("test_enable_dynamic_commands");
+      // Restore original suggestions
+      SUGGESTED_COMMANDS.length = 0;
+      SUGGESTED_COMMANDS.push(...originalSuggestions);
+    }
+  });
+
+  it("resolves max transfer with balance less than or equal to gas fee", async () => {
+    currentWallet = {
+      ...currentWallet,
+      balance: 1000n, // less than gas fee of 120000000n (0.0012 POT)
+    };
+    (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+    const mockResponse = {
+      message: "Sending maximum balance to Beta",
+      intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUqt2J6me856mQ6QN944C3BtEZBm5i7gS5", amount: -1 },
+    };
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      json: jest.fn().mockResolvedValueOnce(mockResponse),
+    });
+
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    
+    // trigger sendall Beta (which has intent amount = -1)
+    fireEvent.change(input, { target: { value: "/sendall Beta" } });
+    const form = screen.getByRole("textbox").closest("form")!;
+    fireEvent.submit(form);
+
+    // wait for execution card to be rendered and click execute
+    const executeButton = await screen.findByRole("button", { name: /Execute/i });
+    fireEvent.click(executeButton);
+
+    expect(currentWallet.executeTransfer).toHaveBeenCalledWith(expect.any(String), 0, expect.any(Function));
+  });
+
+  it("handles scrollRef.current or inputRef.current being null", async () => {
+    let refCount = 0;
+    const fakeRef = {};
+    Object.defineProperty(fakeRef, "current", {
+      get: () => null,
+      set: () => {},
+    });
+    
+    const useRefSpy = jest.spyOn(React, "useRef").mockImplementation((init) => {
+      refCount++;
+      if (refCount === 1 || refCount === 2) { // scrollRef is 1, inputRef is 2
+        return fakeRef as unknown as React.RefObject<HTMLDivElement>;
+      }
+      return { current: init };
+    });
+    
+    try {
+      currentWallet = {
+        ...currentWallet,
+        accounts: [],
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+      render(<ChatInterface />);
+      
+      const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+      // Type "/" to open slash menu
+      fireEvent.change(input, { target: { value: "/" } });
+      
+      // Press Enter to select command - this triggers selectSlashCommand
+      fireEvent.keyDown(input, { key: "Enter" });
+      
+      // Verification: it did not throw/crash even when refs are null
+    } finally {
+      useRefSpy.mockRestore();
+    }
+  });
+
+  it("handles key events when showSlashMenu is false", () => {
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    
+    // Type a regular command (menu closed) and press ArrowDown
+    fireEvent.change(input, { target: { value: "Hello" } });
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    
+    expect(input).toHaveValue("Hello");
+  });
+
+  it("handles selectSlashCommand when cmd is undefined", async () => {
+    const { rerender } = render(<ChatInterface externalInput="" />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    
+    // 1. Open slash menu with '/send'
+    fireEvent.change(input, { target: { value: "/send" } });
+    
+    // 2. Press ArrowDown to set slashIndex to 1 (which would be "/sendall")
+    fireEvent.keyDown(input, { key: "ArrowDown" });
+    
+    // 3. Change input to "/sendall" via externalInput to avoid resetting slashIndex
+    rerender(<ChatInterface externalInput="/sendall" />);
+    
+    // 4. Press Enter (selectSlashCommand(1) will get undefined cmd)
+    fireEvent.keyDown(input, { key: "Enter" });
+    
+    // Verification: it did not crash, input stays "/sendall"
+    expect(input).toHaveValue("/sendall");
+  });
+
+  it("sets input to empty on Escape key press", () => {
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    
+    // Open menu
+    fireEvent.change(input, { target: { value: "/" } });
+    
+    // Press Escape
+    fireEvent.keyDown(input, { key: "Escape" });
+    
+    expect(input).toHaveValue("");
+  });
+
+  it("renders loading text for check_balance when balance is loading", async () => {
+    currentWallet = {
+      ...currentWallet,
+      isBalanceLoading: true,
+    };
+    (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+    localStorage.clear();
+    const key = "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
+    localStorage.setItem(key, JSON.stringify([
+      {
+        id: "1",
+        role: "assistant",
+        content: "Balance check",
+        timestamp: new Date().toISOString(),
+        intent: {
+          action: "check_balance",
+        },
+      }
+    ]));
+    localStorage.setItem("test_enable_persistence", "true");
+
+    try {
+      render(<ChatInterface />);
+      await screen.findByText("...");
+    } finally {
+      localStorage.removeItem("test_enable_persistence");
+      localStorage.removeItem(key);
+    }
+  });
+
+  it("handles chainName being falsy to cover storage key fallback", () => {
+    localStorage.setItem("test_enable_persistence", "true");
+    try {
+      currentWallet = {
+        ...currentWallet,
+        chainName: undefined,
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+      render(<ChatInterface />);
+      expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
+    } finally {
+      localStorage.removeItem("test_enable_persistence");
+    }
+  });
+
+  it("handles non-string activeName in mapping", () => {
+    localStorage.setItem("test_enable_dynamic_commands", "true");
+    try {
+      currentWallet = {
+        ...currentWallet,
+        accounts: [
+          {
+            address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+            meta: { name: 123 } as unknown as Record<string, unknown>,
+          },
+        ],
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+      render(<ChatInterface />);
+      expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
+    } finally {
+      localStorage.removeItem("test_enable_dynamic_commands");
+    }
+  });
+
+  it("handles keypress when showSlashMenu is true but key is not Escape or arrow/enter/tab", () => {
+    render(<ChatInterface />);
+    const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
+    
+    // Open menu
+    fireEvent.change(input, { target: { value: "/" } });
+    
+    // Press key "a"
+    fireEvent.keyDown(input, { key: "a" });
+    
+    expect(input).toHaveValue("/");
+  });
+
+  it("handles active address missing from non-empty accounts array", () => {
+    localStorage.setItem("test_enable_dynamic_commands", "true");
+    try {
+      currentWallet = {
+        ...currentWallet,
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        accounts: [
+          {
+            address: "5FHneW46xGXgs5mUqt2J6me856mQ6QN944C3BtEZBm5i7gS5", // different address (Beta)
+            meta: { name: "Beta" },
+          },
+        ],
+      };
+      (useWallet as jest.Mock).mockImplementation(() => currentWallet);
+
+      render(<ChatInterface />);
+      expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
+    } finally {
+      localStorage.removeItem("test_enable_dynamic_commands");
+    }
   });
 });

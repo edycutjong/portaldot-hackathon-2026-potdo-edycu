@@ -45,4 +45,21 @@ describe("MessageBubble", () => {
     expect(screen.getByText("Potdo")).toBeInTheDocument();
     expect(screen.getByText("I'll prepare the transfer.")).toBeInTheDocument();
   });
+
+  it("renders user message with fallback name 'Guest' if senderName is not provided", () => {
+    const msg: ChatMessage = {
+      id: "1",
+      role: "user",
+      content: "Send 10 POT to Alpha",
+      timestamp: new Date(),
+    };
+    render(
+      <MessageBubble
+        message={msg}
+        senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+      />
+    );
+    expect(screen.getByText(/You/)).toBeInTheDocument();
+    expect(screen.getByText(/\(Guest - 5Grwva.*GKutQY\)/)).toBeInTheDocument();
+  });
 });

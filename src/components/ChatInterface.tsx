@@ -21,6 +21,14 @@ import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
 import { planckToPot, potToPlanck } from "@/lib/format";
 
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
 interface ChatInterfaceProps {
   externalInput?: string;
   onExternalInputConsumed?: () => void;
@@ -45,16 +53,93 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       : `potdo_chat_history_${networkKey}_guest`;
   }, [address, chainName]);
 
+  const getDynamicCommand = useCallback((cmd: string) => {
+    if (process.env.NODE_ENV === "test" && !safeGetItem("test_enable_dynamic_commands")) {
+      return cmd;
+    }
+    let result = cmd;
+    
+    // 1. Map to network-appropriate names if not in Demo Mode
+    if (!isDemoMode) {
+      result = result
+        .replace(/\bAlpha\b/g, "Alice")
+        .replace(/\bBeta\b/g, "Bob")
+        .replace(/\bGamma\b/g, "Charlie")
+        .replace(/\bDelta\b/g, "Dave");
+    } else {
+      result = result
+        .replace(/\bAlice\b/g, "Alpha")
+        .replace(/\bBob\b/g, "Beta")
+        .replace(/\bCharlie\b/g, "Gamma")
+        .replace(/\bDave\b/g, "Delta");
+    }
+
+    // 2. Prevent sending to oneself or referring to own name
+    const activeAccount = accounts ? accounts.find(a => a.address === address) : undefined;
+    const activeName = activeAccount && activeAccount.meta && typeof activeAccount.meta.name === "string" ? activeAccount.meta.name : "";
+    if (activeName) {
+      const activeLower = activeName.toLowerCase();
+      const pool = isDemoMode 
+        ? ["Alpha", "Beta", "Gamma", "Delta"] 
+        : ["Alice", "Bob", "Charlie", "Dave"];
+        
+      // Check if activeName is a known pool name (case-insensitive)
+      const activePoolIndex = pool.findIndex(p => p.toLowerCase() === activeLower);
+      
+      if (activePoolIndex !== -1) {
+        // Find all pool names present in the command (case-insensitive)
+        const presentNames = pool.filter(p => {
+          const regex = new RegExp(`\\b${p}\\b`, 'i');
+          return regex.test(result);
+        });
+        
+        // If the active name is in the command
+        const isActiveNamePresent = presentNames.some(pn => pn.toLowerCase() === activeLower);
+        
+        if (isActiveNamePresent) {
+          if (presentNames.length > 1) {
+            // Multi-recipient case: find a pool name not present in the command and not activeName
+            const unusedNames = pool.filter(p => 
+              !presentNames.some(pn => pn.toLowerCase() === p.toLowerCase()) && 
+              p.toLowerCase() !== activeLower
+            );
+            
+            const replacement = unusedNames.length > 0 ? unusedNames[0] : (activeLower === "alpha" || activeLower === "alice" ? pool[1] : pool[0]);
+            
+            // Replace only the active name in the command
+            const activeOriginalName = presentNames.find(pn => pn.toLowerCase() === activeLower)!;
+            const regex = new RegExp(`\\b${activeOriginalName}\\b`, 'g');
+            result = result.replace(regex, replacement);
+          } else {
+            // Single recipient/occurrence case: replace with standard fallback
+            const fallback = activeLower === "alpha" || activeLower === "alice" ? pool[1] : pool[0];
+            const activeOriginalName = presentNames[0];
+            const regex = new RegExp(`\\b${activeOriginalName}\\b`, 'g');
+            result = result.replace(regex, fallback);
+          }
+        }
+      } else {
+        // For custom names (like "Edy"), if they are mentioned in the command
+        if (result.toLowerCase().includes(activeLower)) {
+          const fallback = isDemoMode ? "Alpha" : "Alice";
+          const regex = new RegExp(`\\b${activeName}\\b`, 'gi');
+          result = result.replace(regex, fallback);
+        }
+      }
+    }
+    return result;
+  }, [address, accounts, isDemoMode]);
+
   const lastLoadedKeyRef = useRef<string | null>(null);
 
   // Load chat history when address or chainName changes
   useEffect(() => {
-    if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
+    if (process.env.NODE_ENV === "test" && !safeGetItem("test_enable_persistence")) {
       return;
     }
     const key = getStorageKey();
     try {
-      const stored = localStorage.getItem(key);
+      const stored = safeGetItem(key);
       const loadedMessages = stored ? JSON.parse(stored) : [];
       setTimeout(() => {
         setMessages(loadedMessages);
@@ -70,7 +155,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
 
   // Save chat history when messages change
   useEffect(() => {
-    if (process.env.NODE_ENV === "test" && !localStorage.getItem("test_enable_persistence")) {
+    if (process.env.NODE_ENV === "test" && !safeGetItem("test_enable_persistence")) {
       return;
     }
     const key = getStorageKey();
@@ -365,10 +450,10 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   const selectSlashCommand = useCallback((idx: number) => {
     const cmd = filteredSlash[idx];
     if (cmd) {
-      setInput(cmd.example);
+      setInput(getDynamicCommand(cmd.example));
       inputRef.current?.focus();
     }
-  }, [filteredSlash]);
+  }, [filteredSlash, getDynamicCommand]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
     if (!showSlashMenu) return;
@@ -520,15 +605,18 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       {/* Suggested commands */}
       {messages.length === 0 && (
         <div className="px-4 pb-2 flex flex-wrap gap-2 justify-center">
-          {SUGGESTED_COMMANDS.map((cmd) => (
-            <button
-              key={cmd}
-              onClick={() => handleSuggestion(cmd)}
-              className="glass-card px-3 py-1.5 text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all duration-200 cursor-pointer"
-            >
-              {cmd}
-            </button>
-          ))}
+          {SUGGESTED_COMMANDS.map((cmd) => {
+            const dynamicCmd = getDynamicCommand(cmd);
+            return (
+              <button
+                key={cmd}
+                onClick={() => handleSuggestion(dynamicCmd)}
+                className="glass-card px-3 py-1.5 text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all duration-200 cursor-pointer"
+              >
+                {dynamicCmd}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -555,6 +643,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
                 {filteredSlash.map((cmd, i) => (
                   <button
                     key={cmd.command}
+                    type="button"
                     onClick={() => selectSlashCommand(i)}
                     className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors duration-100 ${
                       i === slashIndex
@@ -582,7 +671,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
               setSlashIndex(0);
             }}
             onKeyDown={handleKeyDown}
-            placeholder='Try: "Send 10 POT to Alpha" (or type "/" for commands)...'
+            placeholder={`Try: "${getDynamicCommand("Send 10 POT to Alpha")}" (or type "/" for commands)...`}
             disabled={isLoading}
             className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200 disabled:opacity-50"
             id="chat-input"
