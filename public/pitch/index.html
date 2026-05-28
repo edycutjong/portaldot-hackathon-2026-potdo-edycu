@@ -1,0 +1,1130 @@
+<!--
+  POTDO ⚡ — Pitch Deck
+  DoraHacks Portaldot Online S1 Hackathon 2026
+
+  NAVIGATION:
+    ← →  or  PageUp/PageDown  = Navigate slides
+    Space                      = Next slide
+    ESC                        = Slide overview grid
+    P                          = Toggle presenter mode (speaker notes)
+    C                          = Toggle contrast debug mode
+
+  PRINT TO PDF:
+    Cmd+P / Ctrl+P → Save as PDF → Landscape → Clean 10-page deck
+
+  SWAP PLACEHOLDERS:
+    Search for "SWAP:" comments above img tags to replace with real screenshots
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Potdo — Pitch Deck | DoraHacks Portaldot Online S1 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       CSS VARIABLES — Full rebrand in 30 seconds
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --color-bg: #0a0a0f;
+      --color-bg-card: #111118;
+      --color-bg-elevated: #16161f;
+      --color-primary: #06b6d4;
+      --color-accent: #a855f7;
+      --color-success: #22c55e;
+      --color-error: #ef4444;
+      --color-warning: #f59e0b;
+      --color-text: #f0f0f5;
+      --color-text-muted: #6b7280;
+      --color-text-dim: #3f3f50;
+      --color-border: #1e1e2e;
+      --font-display: "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--color-bg);
+      color: var(--color-text);
+      font-family: var(--font-body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       STAGE — Fixed 1920×1080, scale to fit
+       ═══════════════════════════════════════════════════════════ */
+    #stage {
+      width: 1920px; height: 1080px;
+      position: absolute;
+      top: 50%; left: 50%;
+      transform-origin: center center;
+      background: var(--color-bg);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SLIDES
+       ═══════════════════════════════════════════════════════════ */
+    .slide {
+      position: absolute;
+      top: 0; left: 0;
+      width: 1920px; height: 1080px;
+      padding: 80px 120px;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .slide.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* Slide label */
+    .slide-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: 24px;
+    }
+
+    /* Typography */
+    h1 { font-family: var(--font-display); font-size: 84px; font-weight: 900; letter-spacing: -3px; line-height: 0.95; }
+    h2 { font-family: var(--font-display); font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1.1; }
+    h3 { font-family: var(--font-display); font-size: 36px; font-weight: 700; letter-spacing: -1px; line-height: 1.2; }
+    .body-text { font-size: 20px; line-height: 1.6; color: var(--color-text-muted); max-width: 700px; }
+    .stat-big { font-family: var(--font-display); font-size: 120px; font-weight: 900; letter-spacing: -4px; }
+    .mono { font-family: var(--font-mono); }
+    .accent { color: var(--color-accent); }
+    .primary { color: var(--color-primary); }
+    .success { color: var(--color-success); }
+    .error { color: var(--color-error); }
+    .warning { color: var(--color-warning); }
+    .dim { color: var(--color-text-dim); }
+
+    /* Layout helpers */
+    .row { display: flex; align-items: center; gap: 60px; }
+    .col { display: flex; flex-direction: column; }
+    .flex-1 { flex: 1; }
+    .gap-16 { gap: 16px; }
+    .gap-24 { gap: 24px; }
+    .gap-40 { gap: 40px; }
+    .mt-auto { margin-top: auto; }
+    .mb-24 { margin-bottom: 24px; }
+    .mb-40 { margin-bottom: 40px; }
+
+    /* Cards */
+    .card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(6,182,212,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .card-error { border-color: rgba(239,68,68,0.4); }
+    .card-error::before { background: linear-gradient(135deg, rgba(239,68,68,0.06) 0%, transparent 60%); }
+
+    /* Browser frame mockup */
+    .browser-frame {
+      background: var(--color-bg-elevated);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+      border: 1px solid var(--color-border);
+    }
+    .browser-chrome {
+      height: 36px;
+      background: #1a1a28;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #ff5f57; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #28c840; }
+    .browser-url {
+      flex: 1;
+      margin-left: 12px;
+      background: #0f0f1a;
+      border-radius: 4px;
+      padding: 4px 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-text-dim);
+    }
+    .browser-body {
+      padding: 0;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .browser-body img {
+      width: 100%;
+      display: block;
+    }
+
+    /* Callout circles */
+    .callout {
+      position: absolute;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: var(--color-bg);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(6,182,212,0.4);
+    }
+
+    /* Feature blocks */
+    .feature {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .feature-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    /* Architecture flow */
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .arch-node {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      text-align: center;
+      min-width: 180px;
+    }
+    .arch-arrow {
+      font-family: var(--font-mono);
+      font-size: 24px;
+      color: var(--color-primary);
+      padding: 0 8px;
+    }
+
+    /* Table */
+    .deck-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    .deck-table th, .deck-table td {
+      text-align: left;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 16px;
+    }
+    .deck-table th {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--color-text-dim);
+    }
+    .deck-table td { color: var(--color-text-muted); }
+    .checkmark { color: var(--color-success); font-weight: 700; }
+    .crossmark { color: var(--color-text-dim); }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border: 1px solid;
+    }
+    .badge-cyan { color: var(--color-primary); border-color: rgba(6,182,212,0.3); background: rgba(6,182,212,0.08); }
+    .badge-purple { color: var(--color-accent); border-color: rgba(168,85,247,0.3); background: rgba(168,85,247,0.08); }
+
+    /* Timeline */
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      position: relative;
+      padding-left: 32px;
+      margin-bottom: 24px;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 10px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: var(--color-primary);
+    }
+    .timeline-item:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 13px;
+      top: 26px;
+      width: 2px;
+      height: calc(100% + 4px);
+      background: var(--color-border);
+    }
+    .timeline-item.done::before { background: var(--color-success); }
+
+    /* ═══════════════════════════════════════════════════════════
+       COVER ANIMATION
+       ═══════════════════════════════════════════════════════════ */
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(6,182,212,0.2); }
+      50% { box-shadow: 0 0 40px rgba(6,182,212,0.5); }
+    }
+    .pulse-ring {
+      animation: pulse-glow 3s ease-in-out infinite;
+      border-radius: 50%;
+    }
+
+    @keyframes typing-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+    .cursor-blink {
+      display: inline-block;
+      width: 2px;
+      height: 22px;
+      background: var(--color-primary);
+      animation: typing-cursor 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fade-up 0.8s ease-out forwards; }
+    .fade-up-d1 { animation-delay: 0.2s; opacity: 0; }
+    .fade-up-d2 { animation-delay: 0.4s; opacity: 0; }
+    .fade-up-d3 { animation-delay: 0.6s; opacity: 0; }
+
+    /* ═══════════════════════════════════════════════════════════
+       NAVIGATION COUNTER
+       ═══════════════════════════════════════════════════════════ */
+    #slide-counter {
+      position: fixed;
+      bottom: 24px; right: 40px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-text-dim);
+      z-index: 100;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SPEAKER NOTES (hidden by default)
+       ═══════════════════════════════════════════════════════════ */
+    aside.speaker-notes {
+      display: none;
+    }
+
+    /* Presenter mode */
+    body.presenter-mode #stage {
+      height: 864px !important;
+    }
+    body.presenter-mode #notes-panel {
+      display: flex;
+    }
+    #notes-panel {
+      display: none;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: 216px;
+      background: #111118;
+      border-top: 2px solid var(--color-primary);
+      padding: 20px 40px;
+      z-index: 200;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    #notes-panel .notes-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--color-primary);
+      margin-bottom: 8px;
+    }
+    #notes-panel .notes-content {
+      font-size: 18px;
+      line-height: 1.6;
+      color: var(--color-text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       OVERVIEW GRID (ESC)
+       ═══════════════════════════════════════════════════════════ */
+    #overview {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,15,0.95);
+      z-index: 500;
+      padding: 40px;
+      overflow-y: auto;
+    }
+    #overview.active { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; align-content: start; }
+    .overview-thumb {
+      aspect-ratio: 16/9;
+      background: var(--color-bg-card);
+      border: 2px solid var(--color-border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--color-text-dim);
+    }
+    .overview-thumb:hover { border-color: var(--color-primary); transform: scale(1.02); }
+    .overview-thumb.current { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(6,182,212,0.2); }
+
+    /* ═══════════════════════════════════════════════════════════
+       CONTRAST DEBUG — Press C to toggle
+       ═══════════════════════════════════════════════════════════ */
+    body.debug-contrast .contrast-check,
+    body.debug-contrast h1,
+    body.debug-contrast h2,
+    body.debug-contrast h3,
+    body.debug-contrast p,
+    body.debug-contrast span,
+    body.debug-contrast td,
+    body.debug-contrast th {
+      outline: 1px solid rgba(255,0,255,0.3);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       PRINT TO PDF
+       ═══════════════════════════════════════════════════════════ */
+    @page {
+      size: 16in 9in landscape;
+      margin: 0;
+    }
+    @media print {
+      html, body {
+        width: 1920px !important;
+        height: auto !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        background: var(--color-bg) !important;
+      }
+      #stage {
+        position: static !important;
+        transform: none !important;
+        width: 1920px !important;
+        height: auto !important;
+      }
+      .slide {
+        position: static !important;
+        display: flex !important;
+        opacity: 1 !important;
+        width: 1920px !important;
+        height: 1080px !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        page-break-after: always;
+        break-after: page;
+      }
+      #slide-counter, #notes-panel, #overview { display: none !important; }
+      aside.speaker-notes { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 1: COVER
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide active" data-slide="1">
+    <div class="row" style="height: 100%;">
+      <div class="col flex-1" style="justify-content: center;">
+        <span class="slide-label">Potdo ⚡ Pitch Deck</span>
+        <h1 class="fade-up" style="margin-bottom: 24px;">
+          POTDO <span class="primary">⚡</span>
+        </h1>
+        <p class="body-text fade-up fade-up-d1" style="font-size: 24px; color: var(--color-text-muted); margin-bottom: 40px;">
+          AI copilot for Portaldot — see the state change before you sign.
+        </p>
+        <div class="fade-up fade-up-d2" style="display: flex; gap: 12px;">
+          <span class="badge badge-cyan">DoraHacks Portaldot S1</span>
+          <span class="badge badge-purple">AI-Powered Workflows</span>
+        </div>
+      </div>
+      <div class="flex-1 fade-up fade-up-d3" style="display: flex; justify-content: center;">
+        <div class="card" style="width: 420px; padding: 32px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px;">
+            <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--color-accent);"></div>
+            <span class="mono" style="font-size: 12px; color: var(--color-accent);">AI Parsing Intent...</span>
+          </div>
+          <div style="background: var(--color-bg); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <span class="mono" style="font-size: 14px; color: var(--color-text-muted);">» Send 10 POT to Alpha</span><span class="cursor-blink"></span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--color-text-dim);">Amount</span>
+            <span class="mono" style="font-size: 13px; color: var(--color-primary);">10.0000 POT</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 13px; color: var(--color-text-dim);">To</span>
+            <span class="mono" style="font-size: 13px;">Alpha</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 13px; color: var(--color-text-dim);">After</span>
+            <span class="mono" style="font-size: 13px; color: var(--color-success);">990.0000 POT</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      What if you could type 'Send 10 POT to Alpha' and see exactly what will happen — balance diff, gas, recipient — all in an interactive card before you touch your wallet? That's Potdo. Built for the Portaldot Online S1 Hackathon.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 2: HOOK — Big Stat
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="2">
+    <span class="slide-label">02 // The Hook</span>
+    <div class="stat-big error" style="margin-bottom: 16px;">$680M</div>
+    <h2 style="color: var(--color-text-muted); font-weight: 600; font-size: 40px; margin-bottom: 24px;">
+      lost to blind signing in 2024.
+    </h2>
+    <p class="body-text" style="max-width: 600px;">
+      99% of Substrate users can't read raw extrinsics. When your wallet shows <span class="mono primary">0x060003d43...</span>, you're flying blind.
+    </p>
+    <aside class="speaker-notes">
+      Six hundred and eighty million dollars lost — not because users were careless, but because the tools made it impossible to understand what they were signing. The gap between 'I want to send tokens' and 'I understand this transaction' is the biggest UX barrier in Web3.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 3: PROBLEM
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="3">
+    <span class="slide-label">03 // The Problem</span>
+    <h2 style="margin-bottom: 40px;">Wallets Show Hex.<br/>Users See Nothing.</h2>
+    <div class="row" style="gap: 40px; align-items: stretch;">
+      <div class="card" style="flex: 1;">
+        <h3 style="font-size: 18px; color: var(--color-text-dim); margin-bottom: 16px;">What your wallet shows</h3>
+        <div style="background: var(--color-bg); border-radius: 8px; padding: 20px; font-family: var(--font-mono); font-size: 14px; color: var(--color-error); line-height: 1.8; word-break: break-all;">
+          0x060003d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0700e8764817
+        </div>
+        <p style="margin-top: 16px; font-size: 14px; color: var(--color-text-dim);">
+          ↑ This is a 10 POT transfer. Can you tell?
+        </p>
+      </div>
+      <div class="card" style="flex: 1; border-color: rgba(6,182,212,0.3);">
+        <h3 style="font-size: 18px; color: var(--color-primary); margin-bottom: 16px;">What Potdo shows</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 15px; color: var(--color-text-dim);">From</span>
+            <span class="mono" style="font-size: 14px;">Demo Wallet</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 15px; color: var(--color-text-dim);">To</span>
+            <span class="mono" style="font-size: 14px;">Alpha</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 15px; color: var(--color-text-dim);">Amount</span>
+            <span class="mono" style="font-size: 14px; color: var(--color-primary);">10.0000 POT</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 15px; color: var(--color-text-dim);">Balance After</span>
+            <span class="mono" style="font-size: 14px; color: var(--color-success);">990.0000 POT</span>
+          </div>
+        </div>
+        <p style="margin-top: 16px; font-size: 14px; color: var(--color-primary);">
+          ↑ Clear. Visual. Secure.
+        </p>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      On the left — what every Substrate wallet shows today. Raw hex. On the right — Potdo translates it into a clear, visual preview. Sender, recipient, amount, balance after. No guessing.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 4: SOLUTION + Hero Shot
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="4">
+    <span class="slide-label">04 // The Solution</span>
+    <div class="row" style="height: 100%; align-items: center;">
+      <div class="col flex-1" style="justify-content: center;">
+        <h2 style="margin-bottom: 24px;">Type. Preview. Sign.</h2>
+        <p class="body-text" style="margin-bottom: 32px;">
+          Plain English in → interactive transaction card out. See the exact state change before you ever touch your wallet.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 6px; background: rgba(6,182,212,0.15); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 14px;">⚡</span>
+            <span style="font-size: 16px;">Natural language → signed extrinsic</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 6px; background: rgba(34,197,94,0.15); color: var(--color-success); display: flex; align-items: center; justify-content: center; font-size: 14px;">🛡️</span>
+            <span style="font-size: 16px;">Pre-flight balance protection</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 28px; height: 28px; border-radius: 6px; background: rgba(168,85,247,0.15); color: var(--color-accent); display: flex; align-items: center; justify-content: center; font-size: 14px;">🤖</span>
+            <span style="font-size: 16px;">Generative UI streams React cards</span>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1">
+        <div class="browser-frame" style="max-width: 680px;">
+          <div class="browser-chrome">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+            <span class="browser-url">potdo.edycu.dev/dashboard</span>
+          </div>
+          <div class="browser-body" style="background: var(--color-bg); padding: 24px;">
+            <!-- SWAP: replace with dashboard-hero.png -->
+            <img src="https://placehold.co/640x380/0a0a0f/06b6d4?text=Chat+Interface+with+TransferCard" alt="Potdo Dashboard" style="border-radius: 8px;">
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      Three words: Type, Preview, Sign. Type 'Send 10 POT to Alpha'. An interactive TransferCard streams into the chat showing everything. Click Execute. Done. Confetti.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 5: ARCHITECTURE — SVG Flow
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="5">
+    <span class="slide-label">05 // How It Works</span>
+    <h2 style="margin-bottom: 48px;">Architecture</h2>
+    <div class="arch-flow" style="justify-content: center; margin-bottom: 40px;">
+      <div class="arch-node">
+        <div style="font-size: 28px; margin-bottom: 8px;">💬</div>
+        <div class="mono" style="font-size: 13px; color: var(--color-primary); margin-bottom: 4px;">USER INPUT</div>
+        <div style="font-size: 13px; color: var(--color-text-dim);">"Send 10 POT<br/>to Alpha"</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div style="font-size: 28px; margin-bottom: 8px;">🧠</div>
+        <div class="mono" style="font-size: 13px; color: var(--color-accent); margin-bottom: 4px;">INTENT PARSER</div>
+        <div style="font-size: 13px; color: var(--color-text-dim);">NLP + Regex<br/>→ Structured Intent</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div style="font-size: 28px; margin-bottom: 8px;">⚡</div>
+        <div class="mono" style="font-size: 13px; color: var(--color-success); margin-bottom: 4px;">GENERATIVE UI</div>
+        <div style="font-size: 13px; color: var(--color-text-dim);">TransferCard<br/>BatchCard<br/>BalanceWidget</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
+        <div class="mono" style="font-size: 13px; color: var(--color-warning); margin-bottom: 4px;">PORTALDOT SDK</div>
+        <div style="font-size: 13px; color: var(--color-text-dim);">Sign + Broadcast<br/>→ Finalized 🎉</div>
+      </div>
+    </div>
+    <div class="row" style="gap: 24px; justify-content: center;">
+      <div class="card" style="padding: 20px 28px; text-align: center; flex: 0 0 auto;">
+        <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">Frontend</div>
+        <div style="font-size: 14px;">Next.js 16 + React 19</div>
+      </div>
+      <div class="card" style="padding: 20px 28px; text-align: center; flex: 0 0 auto;">
+        <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">Backend</div>
+        <div style="font-size: 14px;">FastAPI + Python SDK</div>
+      </div>
+      <div class="card" style="padding: 20px 28px; text-align: center; flex: 0 0 auto;">
+        <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">Chain</div>
+        <div style="font-size: 14px;">Portaldot (14 decimals)</div>
+      </div>
+      <div class="card" style="padding: 20px 28px; text-align: center; flex: 0 0 auto;">
+        <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">Database</div>
+        <div style="font-size: 14px;">Supabase</div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      The pipeline: natural language goes through a deterministic intent parser — no LLM latency. It generates a structured intent, which streams a Generative UI React card. The user reviews and clicks Execute. Portaldot SDK signs and broadcasts. Sub-millisecond parsing.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 6: LIVE DEMO — Screenshots + Callouts
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="6">
+    <span class="slide-label">06 // Live Demo</span>
+    <h2 style="margin-bottom: 40px;">Three Commands. Full Coverage.</h2>
+    <div class="row" style="gap: 24px; align-items: stretch;">
+      <div style="flex: 1; position: relative;">
+        <div class="browser-frame">
+          <div class="browser-chrome">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="browser-url">potdo.edycu.dev</span>
+          </div>
+          <div class="browser-body" style="background: var(--color-bg); min-height: 240px;">
+            <!-- SWAP: replace with 02-transfer-card.png -->
+            <img src="https://placehold.co/520x240/0a0a0f/06b6d4?text=TransferCard+Preview" alt="Transfer Card">
+          </div>
+        </div>
+        <div class="callout" style="top: 20px; right: -16px;">1</div>
+        <div style="margin-top: 12px; text-align: center;">
+          <span class="mono" style="font-size: 13px; color: var(--color-primary);">Send 10 POT to Alpha</span>
+          <div style="font-size: 12px; color: var(--color-text-dim); margin-top: 4px;">Single transfer + balance diff</div>
+        </div>
+      </div>
+      <div style="flex: 1; position: relative;">
+        <div class="browser-frame">
+          <div class="browser-chrome">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="browser-url">potdo.edycu.dev</span>
+          </div>
+          <div class="browser-body" style="background: var(--color-bg); min-height: 240px;">
+            <!-- SWAP: replace with batch-card.png -->
+            <img src="https://placehold.co/520x240/0a0a0f/a855f7?text=BatchCard+Airdrop+Table" alt="Batch Card">
+          </div>
+        </div>
+        <div class="callout" style="top: 20px; right: -16px; background: var(--color-accent);">2</div>
+        <div style="margin-top: 12px; text-align: center;">
+          <span class="mono" style="font-size: 13px; color: var(--color-accent);">Airdrop 5 POT to Alpha, Beta, Gamma</span>
+          <div style="font-size: 12px; color: var(--color-text-dim); margin-top: 4px;">Batch via utility.batch</div>
+        </div>
+      </div>
+      <div style="flex: 1; position: relative;">
+        <div class="browser-frame" style="border-color: rgba(239,68,68,0.3);">
+          <div class="browser-chrome">
+            <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+            <span class="browser-url">potdo.edycu.dev</span>
+          </div>
+          <div class="browser-body" style="background: var(--color-bg); min-height: 240px;">
+            <!-- SWAP: replace with error-card.png -->
+            <img src="https://placehold.co/520x240/0a0a0f/ef4444?text=Error+Protection+Card" alt="Error Protection">
+          </div>
+        </div>
+        <div class="callout" style="top: 20px; right: -16px; background: var(--color-error);">3</div>
+        <div style="margin-top: 12px; text-align: center;">
+          <span class="mono" style="font-size: 13px; color: var(--color-error);">Send 5000 POT to Delta</span>
+          <div style="font-size: 12px; color: var(--color-text-dim); margin-top: 4px;">Blocked — insufficient balance</div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      Three commands cover the full product surface. First: single transfer with balance simulation. Second: batch airdrop — three recipients, one extrinsic. Third: error protection — the card goes red, execute is disabled, no gas wasted.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 7: KEY FEATURES — Asymmetric layout
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="7">
+    <span class="slide-label">07 // Key Features</span>
+    <div class="row" style="height: 100%; align-items: center;">
+      <div class="col flex-1 gap-40" style="justify-content: center;">
+        <h2 style="margin-bottom: 8px;">Not Just a Wallet.<br/>A Copilot.</h2>
+        <div class="feature">
+          <div class="feature-icon" style="background: rgba(6,182,212,0.12);">⚡</div>
+          <div>
+            <h3 style="font-size: 20px; margin-bottom: 4px;">Natural Language Tx</h3>
+            <p style="font-size: 15px; color: var(--color-text-dim);">Type plain English. Get a structured, visual transaction preview. No hex, no confusion.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" style="background: rgba(168,85,247,0.12);">📦</div>
+          <div>
+            <h3 style="font-size: 20px; margin-bottom: 4px;">Batch Airdrops</h3>
+            <p style="font-size: 15px; color: var(--color-text-dim);">One command, multiple recipients. Wraps into a single utility.batch extrinsic for gas efficiency.</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon" style="background: rgba(239,68,68,0.12);">🛡️</div>
+          <div>
+            <h3 style="font-size: 20px; margin-bottom: 4px;">Pre-Flight Protection</h3>
+            <p style="font-size: 15px; color: var(--color-text-dim);">Insufficient balance? Card goes red, Execute disabled. No wasted gas. No surprises.</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1" style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end;">
+        <div class="card" style="width: 380px; padding: 24px;">
+          <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 12px;">GUARDED AI PROXY</div>
+          <p style="font-size: 14px; color: var(--color-text-muted); line-height: 1.6;">
+            Delegate restricted execution authority to the AI agent. Send transactions without wallet popups — fully guarded by Substrate's <span class="mono primary">proxy</span> pallet.
+          </p>
+        </div>
+        <div class="card" style="width: 380px; padding: 24px;">
+          <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 12px;">ERROR TRANSLATION</div>
+          <p style="font-size: 14px; color: var(--color-text-muted); line-height: 1.6;">
+            Substrate error code <span class="mono error">1010</span> → <span style="color: var(--color-text);">"Insufficient balance — you need 10 POT but have 8.5"</span>. Actionable suggestions included.
+          </p>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      Five differentiated features. Natural language transactions, batch airdrops, pre-flight protection, guarded AI proxy for popup-free execution, and smart error translation. Existing wallets show what you're sending. Potdo shows what will change.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 8: WHY NOW / MOAT
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="8">
+    <span class="slide-label">08 // Why Now</span>
+    <h2 style="margin-bottom: 40px;">The Moat Is Portaldot.</h2>
+    <div class="row" style="gap: 40px; align-items: flex-start;">
+      <div class="col flex-1 gap-24">
+        <p class="body-text" style="margin-bottom: 16px;">
+          Potdo uses <span class="mono primary">12 Portaldot API methods</span> — from balance queries to proxy delegation. Remove Portaldot and the entire app ceases to function.
+        </p>
+        <div class="card" style="padding: 24px;">
+          <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 16px;">PORTALDOT INTEGRATION DEPTH</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">system.account()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">balances.transferKeepAlive()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">utility.batch()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">tx.signAndSend()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">proxy.addProxy()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">proxy.removeProxy()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">proxy.proxy()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">proxy.proxies()</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">WS RPC subscription</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">SS58 address format</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">14-decimal POT token</span>
+            <span class="mono" style="font-size: 12px; color: var(--color-text-muted);">Wallet SDK</span>
+          </div>
+        </div>
+      </div>
+      <div class="col flex-1 gap-16">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 32px;">🏗️</span>
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 2px;">Architecturally Inseparable</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">Not a wrapper. Portaldot-native from ground up.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 32px;">🎯</span>
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 2px;">Zero-to-One Category</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">No AI transaction copilot exists for Portaldot today.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 32px;">🧪</span>
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 2px;">282 Tests, 99.8% Coverage</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">Production-grade engineering, not a prototype.</p>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 32px;">🚀</span>
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 2px;">3-Tier Deployment</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">Demo → Testnet → Mainnet. Zero-setup judging.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      Twelve Portaldot API methods integrated. Not a wrapper — architecturally inseparable. Take Portaldot out and you'd need three separate systems and a bridge layer. Plus: no competitor exists in this space. Zero-to-one category.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 9: TRACTION — Shipped in X hours
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="9">
+    <span class="slide-label">09 // Traction</span>
+    <h2 style="margin-bottom: 48px;">Shipped End-to-End.</h2>
+    <div class="row" style="gap: 60px; align-items: flex-start;">
+      <div class="col flex-1">
+        <div class="timeline-item done">
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 4px; color: var(--color-success);">✓ 16 React Components</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">TransferCard, BatchCard, BalanceWidget, TxConfirmation, TxError, Header, CommandHistory, MessageBubble...</p>
+          </div>
+        </div>
+        <div class="timeline-item done">
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 4px; color: var(--color-success);">✓ 282 Tests · 99.8% Coverage</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">Full CI/CD pipeline — lint, typecheck, coverage gates.</p>
+          </div>
+        </div>
+        <div class="timeline-item done">
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 4px; color: var(--color-success);">✓ FastAPI Python Backend</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">substrate-interface SDK, Docker compose, 100% test coverage.</p>
+          </div>
+        </div>
+        <div class="timeline-item done">
+          <div>
+            <h3 style="font-size: 18px; margin-bottom: 4px; color: var(--color-success);">✓ 3-Tier Architecture</h3>
+            <p style="font-size: 14px; color: var(--color-text-dim);">Demo (in-memory) → Testnet (local node) → Mainnet (live RPC).</p>
+          </div>
+        </div>
+      </div>
+      <div class="flex-1">
+        <div class="card" style="text-align: center; padding: 48px;">
+          <div class="stat-big primary" style="font-size: 72px; margin-bottom: 8px;">282</div>
+          <div style="font-size: 18px; color: var(--color-text-muted); margin-bottom: 24px;">tests passing</div>
+          <div style="display: flex; justify-content: center; gap: 40px;">
+            <div>
+              <div class="mono" style="font-size: 28px; font-weight: 700; color: var(--color-success);">99.8%</div>
+              <div style="font-size: 12px; color: var(--color-text-dim);">Statement</div>
+            </div>
+            <div>
+              <div class="mono" style="font-size: 28px; font-weight: 700; color: var(--color-success);">100%</div>
+              <div style="font-size: 12px; color: var(--color-text-dim);">Line</div>
+            </div>
+            <div>
+              <div class="mono" style="font-size: 28px; font-weight: 700; color: var(--color-success);">100%</div>
+              <div style="font-size: 12px; color: var(--color-text-dim);">Function</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      This isn't a prototype. Sixteen production React components. Two hundred eighty-two tests at ninety-nine point eight percent coverage. Full CI pipeline. FastAPI Python backend with Docker compose. Three deployment tiers. This is production-grade engineering.
+    </aside>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SLIDE 10: THE ASK
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="slide" data-slide="10">
+    <span class="slide-label">10 // The Ask</span>
+    <div class="row" style="height: 100%; align-items: center;">
+      <div class="col flex-1" style="justify-content: center;">
+        <h2 style="font-size: 52px; margin-bottom: 24px;">
+          Potdo makes Portaldot<br/>
+          <span class="primary">accessible to everyone.</span>
+        </h2>
+        <p class="body-text" style="font-size: 22px; margin-bottom: 40px;">
+          No more hex. No more blind signing.<br/>
+          Just type what you want, see what will happen,<br/>
+          and sign with confidence.
+        </p>
+        <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 32px;">
+          <div class="card" style="padding: 16px 24px;">
+            <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">TRY IT NOW</div>
+            <div class="mono" style="font-size: 14px; color: var(--color-primary);">potdo.edycu.dev</div>
+          </div>
+          <div class="card" style="padding: 16px 24px;">
+            <div class="mono" style="font-size: 11px; color: var(--color-text-dim); margin-bottom: 4px;">GITHUB</div>
+            <div class="mono" style="font-size: 14px;">edycutjong/potdo</div>
+          </div>
+        </div>
+        <p class="mono" style="font-size: 14px; color: var(--color-text-dim);">
+          "Send 10 POT to Alpha." — That's all it takes.
+        </p>
+      </div>
+      <div class="flex-1" style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
+        <!-- SWAP: replace with team-photo.png -->
+        <img src="https://placehold.co/280x280/111118/06b6d4?text=Edy+Cu" alt="Team Photo" style="border-radius: 16px; border: 1px solid var(--color-border);">
+        <div style="text-align: center;">
+          <h3 style="font-size: 22px; margin-bottom: 4px;">Edy Cu</h3>
+          <p style="font-size: 14px; color: var(--color-text-dim);">Solo Developer</p>
+        </div>
+        <!-- SWAP: replace with qr-code.png -->
+        <img src="https://placehold.co/120x120/111118/06b6d4?text=QR" alt="QR Code" style="border-radius: 8px; border: 1px solid var(--color-border);">
+      </div>
+    </div>
+    <aside class="speaker-notes">
+      Potdo isn't just a hackathon project. It's the transaction UX that Portaldot deserves. No more hex. No more blind signing. Type what you want, see what will change, sign with confidence. Thank you.
+    </aside>
+  </div>
+
+</div><!-- /stage -->
+
+<!-- Slide Counter -->
+<div id="slide-counter">01 / 10</div>
+
+<!-- Presenter Notes Panel -->
+<div id="notes-panel">
+  <div class="notes-label">Speaker Notes</div>
+  <div class="notes-content" id="notes-content"></div>
+</div>
+
+<!-- Overview Grid -->
+<div id="overview"></div>
+
+<script>
+  // ═══════════════════════════════════════════════════════════
+  // NAVIGATION ENGINE
+  // ═══════════════════════════════════════════════════════════
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('slide-counter');
+  const notesContent = document.getElementById('notes-content');
+  const overview = document.getElementById('overview');
+  let current = 0;
+  let overviewOpen = false;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function goTo(index) {
+    if (index < 0 || index >= slides.length) return;
+    slides[current].classList.remove('active');
+    current = index;
+    slides[current].classList.add('active');
+    counter.textContent = `${pad(current + 1)} / ${pad(slides.length)}`;
+    updateNotes();
+    updateOverviewHighlight();
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function updateNotes() {
+    const notes = slides[current].querySelector('.speaker-notes');
+    notesContent.textContent = notes ? notes.textContent.trim() : '(No notes for this slide)';
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // OVERVIEW GRID
+  // ═══════════════════════════════════════════════════════════
+  function buildOverview() {
+    overview.innerHTML = '';
+    slides.forEach((s, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'overview-thumb' + (i === current ? ' current' : '');
+      const label = s.querySelector('.slide-label');
+      thumb.textContent = label ? label.textContent : `Slide ${i + 1}`;
+      thumb.addEventListener('click', () => {
+        goTo(i);
+        closeOverview();
+      });
+      overview.appendChild(thumb);
+    });
+  }
+
+  function toggleOverview() {
+    overviewOpen = !overviewOpen;
+    if (overviewOpen) {
+      buildOverview();
+      overview.classList.add('active');
+    } else {
+      closeOverview();
+    }
+  }
+
+  function closeOverview() {
+    overviewOpen = false;
+    overview.classList.remove('active');
+  }
+
+  function updateOverviewHighlight() {
+    overview.querySelectorAll('.overview-thumb').forEach((t, i) => {
+      t.classList.toggle('current', i === current);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PRESENTER MODE (P) & CONTRAST DEBUG (C)
+  // ═══════════════════════════════════════════════════════════
+  let presenterMode = false;
+  let cursorTimer;
+
+  function togglePresenter() {
+    presenterMode = !presenterMode;
+    document.body.classList.toggle('presenter-mode', presenterMode);
+    updateNotes();
+    scaleStage();
+  }
+
+  function toggleContrast() {
+    document.body.classList.toggle('debug-contrast');
+  }
+
+  // Hide cursor in presenter mode after 2s idle
+  document.addEventListener('mousemove', () => {
+    document.body.style.cursor = '';
+    clearTimeout(cursorTimer);
+    if (presenterMode) {
+      cursorTimer = setTimeout(() => {
+        document.body.style.cursor = 'none';
+      }, 2000);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // KEYBOARD NAVIGATION
+  // ═══════════════════════════════════════════════════════════
+  document.addEventListener('keydown', (e) => {
+    if (overviewOpen && e.key !== 'Escape') return;
+
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp':
+        e.preventDefault(); prev(); break;
+      case 'Escape':
+        e.preventDefault(); toggleOverview(); break;
+      case 'p': case 'P':
+        togglePresenter(); break;
+      case 'c': case 'C':
+        /* Press C to toggle contrast debug mode */
+        toggleContrast(); break;
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════
+  // RESPONSIVE SCALING — transform: scale() to fit viewport
+  // ═══════════════════════════════════════════════════════════
+  const stage = document.getElementById('stage');
+
+  function scaleStage() {
+    const stageH = presenterMode ? 864 : 1080;
+    const scaleX = window.innerWidth / 1920;
+    const scaleY = window.innerHeight / stageH;
+    const scale = Math.min(scaleX, scaleY);
+    stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+  }
+
+  window.addEventListener('resize', scaleStage);
+  scaleStage();
+  updateNotes();
+</script>
+
+</body>
+</html>
