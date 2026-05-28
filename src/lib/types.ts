@@ -145,12 +145,7 @@ export interface ChainInfo {
 }
 
 /** Transaction status lifecycle */
-export type TxStatus =
-  | "pending"
-  | "submitted"
-  | "in_block"
-  | "finalized"
-  | "failed";
+export type TxStatus = "pending" | "submitted" | "in_block" | "finalized" | "failed";
 
 /** Transaction result */
 export interface TxResult {

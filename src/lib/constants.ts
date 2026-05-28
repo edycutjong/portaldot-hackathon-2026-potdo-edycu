@@ -1,7 +1,6 @@
 // Portaldot chain configuration and types
 
-export const PORTALDOT_RPC =
-  process.env.NEXT_PUBLIC_PORTALDOT_RPC || "wss://mainnet.portaldot.io";
+export const PORTALDOT_RPC = process.env.NEXT_PUBLIC_PORTALDOT_RPC || "wss://mainnet.portaldot.io";
 
 export const TOKEN_SYMBOL = "POT";
 export const TOKEN_DECIMALS = 14;
@@ -48,14 +47,26 @@ export const SUGGESTED_COMMANDS = [
 export const SLASH_COMMANDS = [
   { command: "/send", description: "Transfer POT tokens", example: "Send 10 POT to Alpha" },
   { command: "/balance", description: "Check your balance", example: "Check my balance" },
-  { command: "/airdrop", description: "Batch send to multiple recipients", example: "Airdrop 5 POT to Alpha, Beta, and Gamma" },
+  {
+    command: "/airdrop",
+    description: "Batch send to multiple recipients",
+    example: "Airdrop 5 POT to Alpha, Beta, and Gamma",
+  },
   { command: "/stake", description: "Stake POT tokens", example: "Stake 100 POT" },
   { command: "/unstake", description: "Unstake bonded POT", example: "Unstake 50 POT" },
   { command: "/staking", description: "View staking info", example: "Show my staking info" },
-  { command: "/identity", description: "Set name or look up identity", example: "/identity Edy or /identity Alpha" },
+  {
+    command: "/identity",
+    description: "Set name or look up identity",
+    example: "/identity Edy or /identity Alpha",
+  },
   { command: "/whois", description: "Look up an account identity", example: "Who is Alpha?" },
   { command: "/vesting", description: "View vesting schedule", example: "Show vesting schedule" },
-  { command: "/fee", description: "Estimate gas fee", example: "How much gas for Send 10 POT to Alpha?" },
+  {
+    command: "/fee",
+    description: "Estimate gas fee",
+    example: "How much gas for Send 10 POT to Alpha?",
+  },
   { command: "/chain", description: "View chain info & block height", example: "Chain info" },
   { command: "/sendall", description: "Send entire balance", example: "Send everything to Alpha" },
 ];

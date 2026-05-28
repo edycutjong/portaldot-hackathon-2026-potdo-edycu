@@ -82,13 +82,10 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", damping: 15 }}
-      className="glass-card p-5 mt-3 max-w-md border-green-500/30 glow-green relative overflow-hidden"
+      className="glass-card glow-green relative mt-3 max-w-md overflow-hidden border-green-500/30 p-5"
     >
       {/* Confetti canvas */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full pointer-events-none"
-      />
+      <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
 
       <div className="relative z-10 text-center">
         {/* Green checkmark */}
@@ -96,7 +93,7 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ delay: 0.2, type: "spring", damping: 10 }}
-          className="w-16 h-16 rounded-full bg-green-500/20 border-2 border-green-400 flex items-center justify-center mx-auto mb-3"
+          className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full border-2 border-green-400 bg-green-500/20"
         >
           <svg
             width="32"
@@ -112,19 +109,17 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
           </svg>
         </motion.div>
 
-        <h3 className="text-lg font-bold text-green-400 mb-1">
-          Transaction Confirmed!
-        </h3>
+        <h3 className="mb-1 text-lg font-bold text-green-400">Transaction Confirmed!</h3>
 
         {txResult.blockNumber && (
-          <p className="text-sm text-slate-400 font-(family-name:--font-jetbrains)">
+          <p className="font-(family-name:--font-jetbrains) text-sm text-slate-400">
             Block #{txResult.blockNumber.toLocaleString()}
           </p>
         )}
 
-        {txResult.txHash && (
-          txResult.txHash.startsWith("0xdemo") ? (
-            <span className="inline-flex items-center gap-1 mt-3 text-sm text-amber-400">
+        {txResult.txHash &&
+          (txResult.txHash.startsWith("0xdemo") ? (
+            <span className="mt-3 inline-flex items-center gap-1 text-sm text-amber-400">
               Demo Transaction ✨
             </span>
           ) : (
@@ -132,12 +127,11 @@ export function TxConfirmation({ txResult }: TxConfirmationProps) {
               href={txResult.explorerUrl || `#tx-${txResult.txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 mt-3 text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="mt-3 inline-flex items-center gap-1 text-sm text-cyan-400 transition-colors hover:text-cyan-300"
             >
               View on Explorer →
             </a>
-          )
-        )}
+          ))}
       </div>
     </motion.div>
   );

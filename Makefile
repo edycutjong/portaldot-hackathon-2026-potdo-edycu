@@ -1,4 +1,4 @@
-.PHONY: help install dev dev-frontend dev-backend build lint typecheck test test-coverage ci docker-up docker-down docker-clean docker-build docker-logs setup-testnet setup-testnet-docker testnet
+.PHONY: help install dev dev-frontend dev-backend build lint typecheck test test-coverage ci format e2e lighthouse security-scan docker-up docker-down docker-clean docker-build docker-logs setup-testnet setup-testnet-docker testnet
 
 # Colors for help output
 CYAN := \033[36m
@@ -16,6 +16,9 @@ help:
 	@echo "  ${CYAN}make test${RESET}          Run Jest test suite"
 	@echo "  ${CYAN}make test-coverage${RESET} Run Jest tests with coverage report"
 	@echo "  ${CYAN}make ci${RESET}             Run all checks and tests for continuous integration (Frontend & Backend)"
+	@echo "  ${CYAN}make e2e${RESET}           Run Playwright E2E tests (demo mode)"
+	@echo "  ${CYAN}make lighthouse${RESET}    Run Lighthouse CI performance audit"
+	@echo "  ${CYAN}make security-scan${RESET} Run dependency audits (npm + pip)"
 	@echo "  ${CYAN}make docker-up${RESET}     Start all services (testnet + backend + frontend) with Docker"
 	@echo "  ${CYAN}make docker-down${RESET}   Stop containers"
 	@echo "  ${CYAN}make docker-clean${RESET}  Stop containers + remove images and volumes"
@@ -65,6 +68,35 @@ ci:
 		python3 -m pytest backend/test_main.py -v --cov=backend || \
 		echo "⚠️  Skipping backend tests (substrate-interface not installed). Run 'make install' to enable."
 
+format:
+	@echo "✨ Formatting code with Prettier..."
+	npm run format
+
+format-check:
+	@echo "🔍 Checking code formatting..."
+	npm run format:check
+
+# ── Advanced Testing & Security ─────────────────────────────
+e2e:
+	@echo "🎭 Running Playwright E2E tests (demo mode)..."
+	npx playwright test
+
+lighthouse:
+	@echo "🔦 Running Lighthouse CI audit..."
+	npx lhci autorun
+
+security-scan:
+	@echo "=== NPM AUDIT ==="
+	npm audit --audit-level=high || true
+	@echo ""
+	@echo "=== LICENSE CHECK ==="
+	npx license-checker --production --failOn "GPL-3.0;AGPL-3.0" --summary || true
+	@echo ""
+	@echo "=== PIP AUDIT ==="
+	@python3 -m pip install pip-audit 2>/dev/null && \
+		python3 -m pip_audit -r backend/requirements.txt || \
+		echo "⚠️  pip-audit not available. Run 'pip install pip-audit' to enable."
+
 docker-up:
 	@echo "🚀 Starting all services (testnet + backend + frontend)..."
 	docker compose up --build -d
@@ -108,4 +140,5 @@ testnet:
 	@echo "   Press Ctrl+C to stop"
 	@echo ""
 	./testnet/portaldot_dev --dev --tmp
+
 

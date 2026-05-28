@@ -51,10 +51,10 @@ describe("CommandHistory", () => {
       { id: "1", command: "cmd1", status: "finalized", timestamp: new Date() },
     ];
     render(<CommandHistory entries={entries} onSelect={onSelect} />);
-    
+
     const button = screen.getByRole("button");
     button.click();
-    
+
     expect(onSelect).toHaveBeenCalledTimes(1);
     expect(onSelect).toHaveBeenCalledWith(entries[0]);
   });
@@ -64,14 +64,19 @@ describe("CommandHistory", () => {
       { id: "1", command: "cmd1", status: "finalized", timestamp: new Date() },
     ];
     render(<CommandHistory entries={entries} />);
-    
+
     const button = screen.getByRole("button");
     expect(() => button.click()).not.toThrow();
   });
 
   it("renders default status icon when status is unknown", () => {
     const entries: HistoryEntry[] = [
-      { id: "1", command: "cmd1", status: "unknown" as unknown as HistoryEntry["status"], timestamp: new Date() },
+      {
+        id: "1",
+        command: "cmd1",
+        status: "unknown" as unknown as HistoryEntry["status"],
+        timestamp: new Date(),
+      },
     ];
     render(<CommandHistory entries={entries} />);
     expect(screen.getByText("⚪")).toBeInTheDocument();

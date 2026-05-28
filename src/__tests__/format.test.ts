@@ -77,15 +77,11 @@ describe("formatPot", () => {
 
 describe("isValidSS58Address", () => {
   it("validates correct Alpha address", () => {
-    expect(
-      isValidSS58Address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-    ).toBe(true);
+    expect(isValidSS58Address("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")).toBe(true);
   });
 
   it("validates correct Beta address", () => {
-    expect(
-      isValidSS58Address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")
-    ).toBe(true);
+    expect(isValidSS58Address("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty")).toBe(true);
   });
 
   it("rejects empty string", () => {

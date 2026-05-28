@@ -38,7 +38,7 @@ describe("IdentityCard", () => {
   it("handles copy-to-clipboard for address", async () => {
     render(<IdentityCard identity={fullIdentity} />);
     const copyableAddress = screen.getByTitle("Click to copy full address");
-    
+
     fireEvent.click(copyableAddress);
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(fullIdentity.address);
     expect(screen.getByText("Copied!")).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe("IdentityCard", () => {
   it("handles copy-to-clipboard for email", async () => {
     render(<IdentityCard identity={fullIdentity} />);
     const copyableEmail = screen.getByTitle("Click to copy email address");
-    
+
     fireEvent.click(copyableEmail);
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(fullIdentity.email);
     expect(screen.getByText("Copied!")).toBeInTheDocument();
@@ -97,7 +97,7 @@ describe("IdentityCard", () => {
       />
     );
     expect(screen.queryByText("Verified")).not.toBeInTheDocument();
-    
+
     const dashElements = screen.getAllByText("—");
     expect(dashElements.length).toBe(2);
 

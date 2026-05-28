@@ -9,10 +9,10 @@ interface StakingInfoWidgetProps {
 
 export function StakingInfoWidget({ info }: StakingInfoWidgetProps) {
   return (
-    <div className="glass-card p-4 mt-2 max-w-md" id="staking-info-widget">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="w-2 h-2 rounded-full bg-indigo-400" />
-        <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
+    <div className="glass-card mt-2 max-w-md p-4" id="staking-info-widget">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-indigo-400" />
+        <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
           Staking Overview
         </span>
       </div>
@@ -20,19 +20,19 @@ export function StakingInfoWidget({ info }: StakingInfoWidgetProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Bonded</span>
-          <span className="text-indigo-400 font-semibold font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) font-semibold text-indigo-400">
             {info.bonded} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Active Stake</span>
-          <span className="text-green-400 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-green-400">
             {info.active} {TOKEN_SYMBOL}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Unlocking</span>
-          <span className="text-amber-400 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-amber-400">
             {info.unlocking} {TOKEN_SYMBOL}
           </span>
         </div>
@@ -43,13 +43,15 @@ export function StakingInfoWidget({ info }: StakingInfoWidgetProps) {
       </div>
 
       {info.nominations.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-white/5">
-          <p className="text-xs text-slate-500 mb-2">Nominated Validators ({info.nominations.length})</p>
+        <div className="mt-3 border-t border-white/5 pt-3">
+          <p className="mb-2 text-xs text-slate-500">
+            Nominated Validators ({info.nominations.length})
+          </p>
           <div className="space-y-1">
             {info.nominations.map((addr, i) => (
               <p
                 key={addr}
-                className="text-xs text-slate-400 font-(family-name:--font-jetbrains) truncate"
+                className="truncate font-(family-name:--font-jetbrains) text-xs text-slate-400"
               >
                 {i + 1}. {addr.slice(0, 8)}...{addr.slice(-6)}
               </p>

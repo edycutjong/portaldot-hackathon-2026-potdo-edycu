@@ -40,7 +40,8 @@ function translateError(error?: string): {
   if (lower.includes("signature") || lower.includes("sign")) {
     return {
       message: "Transaction signature was rejected.",
-      suggestion: "You may have cancelled the signing in your wallet. Try again and approve the signature.",
+      suggestion:
+        "You may have cancelled the signing in your wallet. Try again and approve the signature.",
     };
   }
 
@@ -65,23 +66,21 @@ export function TxError({ txResult, onRetry }: TxErrorProps) {
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", damping: 20 }}
-      className="glass-card p-5 mt-3 max-w-md border-red-500/30 pulse-red-border"
+      className="glass-card pulse-red-border mt-3 max-w-md border-red-500/30 p-5"
     >
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center">
-          <span className="text-red-400 text-lg">✕</span>
+      <div className="mb-3 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-500/20">
+          <span className="text-lg text-red-400">✕</span>
         </div>
-        <h3 className="text-sm font-semibold text-red-400">
-          Transaction Failed
-        </h3>
+        <h3 className="text-sm font-semibold text-red-400">Transaction Failed</h3>
       </div>
 
-      <p className="text-sm text-slate-300 mb-2">{message}</p>
+      <p className="mb-2 text-sm text-slate-300">{message}</p>
       <p className="text-xs text-slate-500">💡 {suggestion}</p>
 
       {txResult.error && (
-        <div className="mt-3 p-2 rounded-md bg-white/5 border border-white/5">
-          <p className="text-xs text-slate-600 font-(family-name:--font-jetbrains) break-all">
+        <div className="mt-3 rounded-md border border-white/5 bg-white/5 p-2">
+          <p className="font-(family-name:--font-jetbrains) text-xs break-all text-slate-600">
             {txResult.error}
           </p>
         </div>
@@ -90,7 +89,7 @@ export function TxError({ txResult, onRetry }: TxErrorProps) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="mt-3 w-full py-2 rounded-lg text-sm font-semibold text-red-400 border border-red-500/30 hover:bg-red-500/10 hover:border-red-500/50 transition-all duration-200 cursor-pointer"
+          className="mt-3 w-full cursor-pointer rounded-lg border border-red-500/30 py-2 text-sm font-semibold text-red-400 transition-all duration-200 hover:border-red-500/50 hover:bg-red-500/10"
         >
           🔄 Try Again
         </button>

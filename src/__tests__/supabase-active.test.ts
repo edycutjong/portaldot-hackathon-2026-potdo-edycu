@@ -71,7 +71,9 @@ describe("supabase (active mode — with config)", () => {
   });
 
   it("logTransaction handles thrown exception", async () => {
-    mockInsert.mockImplementationOnce(() => { throw new Error("network"); });
+    mockInsert.mockImplementationOnce(() => {
+      throw new Error("network");
+    });
     const result = await logTransaction({
       sender: "test",
       command: "test",
@@ -115,7 +117,9 @@ describe("supabase (active mode — with config)", () => {
   });
 
   it("fetchHistory handles thrown exception", async () => {
-    mockFrom.mockImplementationOnce(() => { throw new Error("network"); });
+    mockFrom.mockImplementationOnce(() => {
+      throw new Error("network");
+    });
     const result = await fetchHistory();
     expect(result).toEqual([]);
   });

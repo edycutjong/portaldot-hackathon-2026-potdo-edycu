@@ -6,7 +6,6 @@ import { logTransaction } from "@/lib/supabase";
 import type { ParsedIntent } from "@/lib/types";
 import { SUGGESTED_COMMANDS } from "@/lib/constants";
 
-
 // Mock framer-motion
 jest.mock("framer-motion", () => ({
   motion: {
@@ -240,7 +239,10 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Identity info:",
-        intent: { action: "check_identity", address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" },
+        intent: {
+          action: "check_identity",
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        },
       }),
     });
     mockQueryIdentity.mockResolvedValueOnce({
@@ -376,7 +378,9 @@ describe("ChatInterface", () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(screen.getByText("Sorry, something went wrong. Please try again.")).toBeInTheDocument();
+      expect(
+        screen.getByText("Sorry, something went wrong. Please try again.")
+      ).toBeInTheDocument();
     });
   });
 
@@ -484,8 +488,16 @@ describe("ChatInterface", () => {
         intent: {
           action: "batch_transfer",
           transfers: [
-            { to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 },
-            { to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 5 },
+            {
+              to: "Gamma",
+              toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+              amount: 5,
+            },
+            {
+              to: "Beta",
+              toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+              amount: 5,
+            },
           ],
         },
       }),
@@ -559,7 +571,12 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Your transaction failed:",
-        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
+        intent: {
+          action: "transfer",
+          to: "Beta",
+          toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+          amount: 10,
+        },
         txResult: { status: "failed", error: "Insufficient Balance" },
       }),
     });
@@ -615,7 +632,12 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Please confirm:",
-        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
+        intent: {
+          action: "transfer",
+          to: "Beta",
+          toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+          amount: 10,
+        },
       }),
     });
 
@@ -646,7 +668,13 @@ describe("ChatInterface", () => {
         message: "Confirm batch:",
         intent: {
           action: "batch_transfer",
-          transfers: [{ to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 }],
+          transfers: [
+            {
+              to: "Gamma",
+              toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+              amount: 5,
+            },
+          ],
         },
       }),
     });
@@ -726,7 +754,10 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Identity check:",
-        intent: { action: "check_identity", address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" },
+        intent: {
+          action: "check_identity",
+          address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        },
       }),
     });
     mockQueryIdentity.mockRejectedValueOnce(new Error("Identity Error"));
@@ -830,14 +861,14 @@ describe("ChatInterface", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
-    
+
     // 1. Submit empty input
     fireEvent.submit(form);
 
     // 2. Submit while loading
     fireEvent.change(input, { target: { value: "Hello" } });
     fireEvent.submit(form);
-    
+
     // Submit again immediately while loading is true
     fireEvent.change(input, { target: { value: "Hello again" } });
     fireEvent.submit(form);
@@ -901,7 +932,12 @@ describe("ChatInterface", () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce({
         message: "Please confirm:",
-        intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", amount: 10 },
+        intent: {
+          action: "transfer",
+          to: "Beta",
+          toAddress: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+          amount: 10,
+        },
       }),
     });
 
@@ -920,7 +956,7 @@ describe("ChatInterface", () => {
     Array.prototype.findLast = jest.fn().mockReturnValue(undefined);
 
     fireEvent.click(screen.getByRole("button", { name: "✅ Execute Transfer" }));
-    
+
     // Restore findLast
     Array.prototype.findLast = originalFindLast;
 
@@ -937,7 +973,13 @@ describe("ChatInterface", () => {
         message: "Confirm batch:",
         intent: {
           action: "batch_transfer",
-          transfers: [{ to: "Gamma", toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y", amount: 5 }],
+          transfers: [
+            {
+              to: "Gamma",
+              toAddress: "5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y",
+              amount: 5,
+            },
+          ],
         },
       }),
     });
@@ -956,7 +998,7 @@ describe("ChatInterface", () => {
     Array.prototype.findLast = jest.fn().mockReturnValue(undefined);
 
     fireEvent.click(screen.getByRole("button", { name: "📦 Execute Batch" }));
-    
+
     // Restore findLast
     Array.prototype.findLast = originalFindLast;
 
@@ -970,37 +1012,43 @@ describe("ChatInterface", () => {
   it("persists chat history in localStorage per wallet address", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
-    
+
     // Mock guest and Alpha messages in localStorage
     const mockGuestMessages = [
       { id: "msg-1", role: "user" as const, content: "hello guest query" },
-      { id: "msg-2", role: "assistant" as const, content: "hello guest reply" }
+      { id: "msg-2", role: "assistant" as const, content: "hello guest reply" },
     ];
     const mockAlphaMessages = [
       { id: "msg-3", role: "user" as const, content: "hello alpha query" },
-      { id: "msg-4", role: "assistant" as const, content: "hello alpha reply" }
+      { id: "msg-4", role: "assistant" as const, content: "hello alpha reply" },
     ];
-    
-    localStorage.setItem("potdo_chat_history_demo_network_guest", JSON.stringify(mockGuestMessages));
-    localStorage.setItem("potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", JSON.stringify(mockAlphaMessages));
-    
+
+    localStorage.setItem(
+      "potdo_chat_history_demo_network_guest",
+      JSON.stringify(mockGuestMessages)
+    );
+    localStorage.setItem(
+      "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      JSON.stringify(mockAlphaMessages)
+    );
+
     // 1. Render as Guest / disconnected wallet
     currentWallet.address = "";
     currentWallet.connected = false;
-    
+
     const { rerender } = render(<ChatInterface />);
-    
+
     await waitFor(() => {
       expect(screen.getByText("hello guest query")).toBeInTheDocument();
     });
     expect(screen.queryByText("hello alpha query")).not.toBeInTheDocument();
-    
+
     // 2. Switch to Alpha wallet
     currentWallet.address = "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
     currentWallet.connected = true;
-    
+
     rerender(<ChatInterface />);
-    
+
     await waitFor(() => {
       expect(screen.getByText("hello alpha query")).toBeInTheDocument();
     });
@@ -1016,7 +1064,7 @@ describe("ChatInterface", () => {
 
   it("dynamically replaces active name in suggestions and placeholder to avoid self-sending and duplicates", () => {
     localStorage.setItem("test_enable_dynamic_commands", "true");
-    
+
     // 1. Connected as Alpha on Demo Mode
     const walletAlphaDemo = {
       ...currentWallet,
@@ -1030,13 +1078,13 @@ describe("ChatInterface", () => {
       ],
     };
     (useWallet as jest.Mock).mockImplementation(() => walletAlphaDemo);
-    
+
     const { unmount } = render(<ChatInterface />);
-    
+
     // Check placeholder
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Beta"/);
     expect(input).toBeInTheDocument();
-    
+
     // Check multi-recipient button text (Alpha replaced by Delta, leaving Beta and Gamma)
     expect(screen.getByText("Airdrop 5 POT to Delta, Beta, and Gamma")).toBeInTheDocument();
     unmount();
@@ -1054,7 +1102,7 @@ describe("ChatInterface", () => {
       ],
     };
     (useWallet as jest.Mock).mockImplementation(() => walletBetaDemo);
-    
+
     const { unmount: unmountBeta } = render(<ChatInterface />);
     expect(screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/)).toBeInTheDocument();
     expect(screen.getByText("Airdrop 5 POT to Alpha, Delta, and Gamma")).toBeInTheDocument();
@@ -1073,12 +1121,12 @@ describe("ChatInterface", () => {
       ],
     };
     (useWallet as jest.Mock).mockImplementation(() => walletAliceTestnet);
-    
+
     const { unmount: unmountAlice } = render(<ChatInterface />);
     expect(screen.getByPlaceholderText(/Try: "Send 10 POT to Bob"/)).toBeInTheDocument();
     expect(screen.getByText("Airdrop 5 POT to Dave, Bob, and Charlie")).toBeInTheDocument();
     unmountAlice();
-    
+
     // 4. Custom name connected as Edy (mentioned in custom command "Set my name to Edy")
     const walletEdy = {
       ...currentWallet,
@@ -1089,7 +1137,7 @@ describe("ChatInterface", () => {
       ],
     };
     (useWallet as jest.Mock).mockImplementation(() => walletEdy);
-    
+
     const { unmount: unmountEdy } = render(<ChatInterface />);
     expect(screen.getByText("Set my name to Alpha")).toBeInTheDocument();
     unmountEdy();
@@ -1100,19 +1148,19 @@ describe("ChatInterface", () => {
   it("handles localStorage load error gracefully", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
-    
+
     const getItemSpy = jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("Local storage access blocked");
     });
-    
+
     try {
       render(<ChatInterface />);
-      
+
       // Flush setTimeout timers in catch block
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 0));
       });
-      
+
       // It should render welcome screen and handle error without crashing
       expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
     } finally {
@@ -1124,13 +1172,14 @@ describe("ChatInterface", () => {
   it("handles localStorage save error gracefully", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
-    
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
     const setItemSpy = jest.spyOn(Storage.prototype, "setItem").mockImplementation((key) => {
       if (key.startsWith("potdo_chat_history")) {
         throw new Error("Quota exceeded");
       }
     });
-    
+
     let unmountFn: (() => void) | undefined;
     try {
       const { unmount } = render(<ChatInterface />);
@@ -1139,13 +1188,14 @@ describe("ChatInterface", () => {
       const form = screen.getByRole("textbox").closest("form")!;
       fireEvent.change(input, { target: { value: "Airdrop 5 POT to Alpha" } });
       fireEvent.submit(form);
-      
+
       // It should not crash on save failure
       await waitFor(() => {
         expect(screen.getByText("Airdrop 5 POT to Alpha")).toBeInTheDocument();
       });
     } finally {
       setItemSpy.mockRestore();
+      consoleSpy.mockRestore();
       localStorage.removeItem("test_enable_persistence");
       if (unmountFn) unmountFn();
     }
@@ -1154,38 +1204,43 @@ describe("ChatInterface", () => {
   it("skips saving chat history if the key changes before history is loaded", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
-    
+
     const { rerender, unmount } = render(<ChatInterface />);
-    
+
     // Allow mount effects to run first
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    
+
     // Switch address immediately by updating mock and reference
-    currentWallet = { ...currentWallet, address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" };
+    currentWallet = {
+      ...currentWallet,
+      address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+    };
     (useWallet as jest.Mock).mockImplementation(() => currentWallet);
     rerender(<ChatInterface />);
-    
+
     // Allow update effects to run
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    
+
     localStorage.removeItem("test_enable_persistence");
     unmount();
   });
 
   it("handles localStorage remove error gracefully on mount", () => {
     localStorage.setItem("test_enable_persistence", "true");
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     const removeItemSpy = jest.spyOn(Storage.prototype, "removeItem").mockImplementation(() => {
       throw new Error("Remove item blocked");
     });
-    
+
     try {
       render(<ChatInterface />);
     } finally {
       removeItemSpy.mockRestore();
+      consoleSpy.mockRestore();
       localStorage.removeItem("test_enable_persistence");
     }
   });
@@ -1231,16 +1286,16 @@ describe("ChatInterface", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     fireEvent.change(input, { target: { value: "/send" } });
-    
+
     // Check dropdown shows /send command
     await waitFor(() => {
       expect(screen.getByText("Transfer POT tokens")).toBeInTheDocument();
     });
-    
+
     // Click on the button for /send command
     const slashBtn = screen.getByRole("button", { name: /^\/send\b/ });
     fireEvent.click(slashBtn);
-    
+
     // Input should be updated with the example
     expect(input).toHaveValue("Send 10 POT to Alpha");
   });
@@ -1249,7 +1304,7 @@ describe("ChatInterface", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     fireEvent.change(input, { target: { value: "/" } });
-    
+
     await waitFor(() => {
       expect(screen.getByText("Transfer POT tokens")).toBeInTheDocument();
     });
@@ -1305,9 +1360,10 @@ describe("ChatInterface", () => {
       intent: { action: "check_chain_info" },
     };
 
-    localStorage.setItem("potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", JSON.stringify([
-      msgStaking, msgIdentity, msgVesting, msgFee, msgChain
-    ]));
+    localStorage.setItem(
+      "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+      JSON.stringify([msgStaking, msgIdentity, msgVesting, msgFee, msgChain])
+    );
     localStorage.setItem("test_enable_persistence", "true");
 
     render(<ChatInterface />);
@@ -1325,20 +1381,22 @@ describe("ChatInterface", () => {
   it("handles malformed JSON in localStorage load gracefully", async () => {
     localStorage.clear();
     localStorage.setItem("test_enable_persistence", "true");
-    
+    const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+
     const key = "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
     localStorage.setItem(key, "{malformed_json}");
-    
+
     render(<ChatInterface />);
-    
+
     // Flush setTimeout timers in catch block
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     });
-    
+
     // It should render welcome screen and handle parse error without crashing
     expect(screen.getByText("Welcome to Potdo")).toBeInTheDocument();
-    
+
+    consoleSpy.mockRestore();
     localStorage.removeItem("test_enable_persistence");
     localStorage.removeItem(key);
   });
@@ -1354,14 +1412,14 @@ describe("ChatInterface", () => {
       ],
     };
     (useWallet as jest.Mock).mockImplementation(() => currentWallet);
-    
+
     render(<ChatInterface />);
-    
+
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
     const form = screen.getByRole("textbox").closest("form")!;
     fireEvent.change(input, { target: { value: "Hello" } });
     fireEvent.submit(form);
-    
+
     await waitFor(() => {
       expect(screen.getByText(/Alice/)).toBeInTheDocument();
     });
@@ -1369,7 +1427,7 @@ describe("ChatInterface", () => {
 
   it("skips saving chat history if load effect is skipped but save effect runs", () => {
     localStorage.clear();
-    
+
     let callCount = 0;
     const getItemSpy = jest.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
       if (key === "test_enable_persistence") {
@@ -1378,7 +1436,7 @@ describe("ChatInterface", () => {
       }
       return null;
     });
-    
+
     try {
       render(<ChatInterface />);
     } finally {
@@ -1428,7 +1486,7 @@ describe("ChatInterface", () => {
   it("covers all getDynamicCommand branches via suggestion rendering", () => {
     localStorage.setItem("test_enable_dynamic_commands", "true");
     const originalSuggestions = [...SUGGESTED_COMMANDS];
-    
+
     try {
       const cases = [
         {
@@ -1493,9 +1551,9 @@ describe("ChatInterface", () => {
           ],
         };
         (useWallet as jest.Mock).mockImplementation(() => currentWallet);
-        
+
         SUGGESTED_COMMANDS[0] = tc.input;
-        
+
         const { unmount } = render(<ChatInterface />);
         expect(screen.getByText(tc.expected)).toBeInTheDocument();
         unmount();
@@ -1517,7 +1575,12 @@ describe("ChatInterface", () => {
 
     const mockResponse = {
       message: "Sending maximum balance to Beta",
-      intent: { action: "transfer", to: "Beta", toAddress: "5FHneW46xGXgs5mUqt2J6me856mQ6QN944C3BtEZBm5i7gS5", amount: -1 },
+      intent: {
+        action: "transfer",
+        to: "Beta",
+        toAddress: "5FHneW46xGXgs5mUqt2J6me856mQ6QN944C3BtEZBm5i7gS5",
+        amount: -1,
+      },
     };
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       json: jest.fn().mockResolvedValueOnce(mockResponse),
@@ -1525,7 +1588,7 @@ describe("ChatInterface", () => {
 
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
-    
+
     // trigger sendall Beta (which has intent amount = -1)
     fireEvent.change(input, { target: { value: "/sendall Beta" } });
     const form = screen.getByRole("textbox").closest("form")!;
@@ -1535,7 +1598,11 @@ describe("ChatInterface", () => {
     const executeButton = await screen.findByRole("button", { name: /Execute/i });
     fireEvent.click(executeButton);
 
-    expect(currentWallet.executeTransfer).toHaveBeenCalledWith(expect.any(String), 0, expect.any(Function));
+    expect(currentWallet.executeTransfer).toHaveBeenCalledWith(
+      expect.any(String),
+      0,
+      expect.any(Function)
+    );
   });
 
   it("handles scrollRef.current or inputRef.current being null", async () => {
@@ -1545,15 +1612,16 @@ describe("ChatInterface", () => {
       get: () => null,
       set: () => {},
     });
-    
+
     const useRefSpy = jest.spyOn(React, "useRef").mockImplementation((init) => {
       refCount++;
-      if (refCount === 1 || refCount === 2) { // scrollRef is 1, inputRef is 2
+      if (refCount === 1 || refCount === 2) {
+        // scrollRef is 1, inputRef is 2
         return fakeRef as unknown as React.RefObject<HTMLDivElement>;
       }
       return { current: init };
     });
-    
+
     try {
       currentWallet = {
         ...currentWallet,
@@ -1562,14 +1630,14 @@ describe("ChatInterface", () => {
       (useWallet as jest.Mock).mockImplementation(() => currentWallet);
 
       render(<ChatInterface />);
-      
+
       const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
       // Type "/" to open slash menu
       fireEvent.change(input, { target: { value: "/" } });
-      
+
       // Press Enter to select command - this triggers selectSlashCommand
       fireEvent.keyDown(input, { key: "Enter" });
-      
+
       // Verification: it did not throw/crash even when refs are null
     } finally {
       useRefSpy.mockRestore();
@@ -1579,30 +1647,30 @@ describe("ChatInterface", () => {
   it("handles key events when showSlashMenu is false", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
-    
+
     // Type a regular command (menu closed) and press ArrowDown
     fireEvent.change(input, { target: { value: "Hello" } });
     fireEvent.keyDown(input, { key: "ArrowDown" });
-    
+
     expect(input).toHaveValue("Hello");
   });
 
   it("handles selectSlashCommand when cmd is undefined", async () => {
     const { rerender } = render(<ChatInterface externalInput="" />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
-    
+
     // 1. Open slash menu with '/send'
     fireEvent.change(input, { target: { value: "/send" } });
-    
+
     // 2. Press ArrowDown to set slashIndex to 1 (which would be "/sendall")
     fireEvent.keyDown(input, { key: "ArrowDown" });
-    
+
     // 3. Change input to "/sendall" via externalInput to avoid resetting slashIndex
     rerender(<ChatInterface externalInput="/sendall" />);
-    
+
     // 4. Press Enter (selectSlashCommand(1) will get undefined cmd)
     fireEvent.keyDown(input, { key: "Enter" });
-    
+
     // Verification: it did not crash, input stays "/sendall"
     expect(input).toHaveValue("/sendall");
   });
@@ -1610,13 +1678,13 @@ describe("ChatInterface", () => {
   it("sets input to empty on Escape key press", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
-    
+
     // Open menu
     fireEvent.change(input, { target: { value: "/" } });
-    
+
     // Press Escape
     fireEvent.keyDown(input, { key: "Escape" });
-    
+
     expect(input).toHaveValue("");
   });
 
@@ -1629,17 +1697,20 @@ describe("ChatInterface", () => {
 
     localStorage.clear();
     const key = "potdo_chat_history_demo_network_5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY";
-    localStorage.setItem(key, JSON.stringify([
-      {
-        id: "1",
-        role: "assistant",
-        content: "Balance check",
-        timestamp: new Date().toISOString(),
-        intent: {
-          action: "check_balance",
+    localStorage.setItem(
+      key,
+      JSON.stringify([
+        {
+          id: "1",
+          role: "assistant",
+          content: "Balance check",
+          timestamp: new Date().toISOString(),
+          intent: {
+            action: "check_balance",
+          },
         },
-      }
-    ]));
+      ])
+    );
     localStorage.setItem("test_enable_persistence", "true");
 
     try {
@@ -1691,13 +1762,13 @@ describe("ChatInterface", () => {
   it("handles keypress when showSlashMenu is true but key is not Escape or arrow/enter/tab", () => {
     render(<ChatInterface />);
     const input = screen.getByPlaceholderText(/Try: "Send 10 POT to Alpha"/);
-    
+
     // Open menu
     fireEvent.change(input, { target: { value: "/" } });
-    
+
     // Press key "a"
     fireEvent.keyDown(input, { key: "a" });
-    
+
     expect(input).toHaveValue("/");
   });
 

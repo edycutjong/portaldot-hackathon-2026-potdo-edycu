@@ -11,7 +11,13 @@ interface StakingCardProps {
   onExecute: () => void;
 }
 
-export function StakingCard({ intent, senderBalance, isConnected, status, onExecute }: StakingCardProps) {
+export function StakingCard({
+  intent,
+  senderBalance,
+  isConnected,
+  status,
+  onExecute,
+}: StakingCardProps) {
   const isStake = intent.action === "stake";
   const amount = intent.amount;
   const balancePot = Number(senderBalance) / 1e14;
@@ -19,10 +25,10 @@ export function StakingCard({ intent, senderBalance, isConnected, status, onExec
   const isPending = status === "pending" || status === "submitted";
 
   return (
-    <div className="glass-card p-4 mt-2 max-w-md" id={`${intent.action}-card`}>
-      <div className="flex items-center gap-2 mb-3">
-        <span className={`w-2 h-2 rounded-full ${isStake ? "bg-indigo-400" : "bg-amber-400"}`} />
-        <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
+    <div className="glass-card mt-2 max-w-md p-4" id={`${intent.action}-card`}>
+      <div className="mb-3 flex items-center gap-2">
+        <span className={`h-2 w-2 rounded-full ${isStake ? "bg-indigo-400" : "bg-amber-400"}`} />
+        <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
           {isStake ? "Stake" : "Unstake"} Preview
         </span>
       </div>
@@ -30,20 +36,22 @@ export function StakingCard({ intent, senderBalance, isConnected, status, onExec
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Action</span>
-          <span className={isStake ? "text-indigo-400 font-semibold" : "text-amber-400 font-semibold"}>
+          <span
+            className={isStake ? "font-semibold text-indigo-400" : "font-semibold text-amber-400"}
+          >
             {isStake ? "Bond & Nominate" : "Unbond"}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Amount</span>
-          <span className="text-slate-200 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-slate-200">
             {amount} {TOKEN_SYMBOL}
           </span>
         </div>
         {isStake && "validator" in intent && intent.validator && (
           <div className="flex justify-between">
             <span className="text-slate-500">Validator</span>
-            <span className="text-slate-200 font-(family-name:--font-jetbrains) text-xs truncate max-w-[200px]">
+            <span className="max-w-[200px] truncate font-(family-name:--font-jetbrains) text-xs text-slate-200">
               {intent.validator}
             </span>
           </div>
@@ -51,13 +59,13 @@ export function StakingCard({ intent, senderBalance, isConnected, status, onExec
         {!isStake && (
           <div className="flex justify-between">
             <span className="text-slate-500">Note</span>
-            <span className="text-amber-400 text-xs">~28 era unbonding period</span>
+            <span className="text-xs text-amber-400">~28 era unbonding period</span>
           </div>
         )}
       </div>
 
       {!hasEnough && (
-        <div className="mt-3 p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+        <div className="mt-3 rounded-lg border border-red-500/20 bg-red-500/10 p-2">
           <p className="text-xs text-red-400">
             Insufficient balance. You have {balancePot.toFixed(4)} {TOKEN_SYMBOL}.
           </p>
@@ -67,18 +75,24 @@ export function StakingCard({ intent, senderBalance, isConnected, status, onExec
       <button
         onClick={onExecute}
         disabled={(isConnected && !hasEnough) || isPending}
-        className={`mt-3 w-full py-2.5 rounded-lg font-semibold text-sm transition-all duration-200 ${
+        className={`mt-3 w-full rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
           isPending
-            ? "bg-slate-700 text-slate-400 cursor-wait"
+            ? "cursor-wait bg-slate-700 text-slate-400"
             : hasEnough
               ? isStake
                 ? "bg-indigo-500 text-white hover:bg-indigo-400"
                 : "bg-amber-500 text-slate-950 hover:bg-amber-400"
-              : "bg-slate-800 text-slate-600 cursor-not-allowed"
+              : "cursor-not-allowed bg-slate-800 text-slate-600"
         }`}
         id={`${intent.action}-execute`}
       >
-        {isPending ? "Processing..." : !isConnected ? "Connect Wallet" : isStake ? "Execute Stake" : "Execute Unstake"}
+        {isPending
+          ? "Processing..."
+          : !isConnected
+            ? "Connect Wallet"
+            : isStake
+              ? "Execute Stake"
+              : "Execute Unstake"}
       </button>
     </div>
   );

@@ -51,9 +51,7 @@ describe("TransferCard", () => {
   });
 
   it("shows balance info when provided", () => {
-    render(
-      <TransferCard intent={intent} senderBalance={2000000000000000n} />
-    );
+    render(<TransferCard intent={intent} senderBalance={2000000000000000n} />);
     expect(screen.getByText("20.0000 POT")).toBeInTheDocument();
   });
 
@@ -76,7 +74,9 @@ describe("TransferCard", () => {
       toAddress: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
       amount: -1,
     };
-    render(<TransferCard intent={maxIntent} senderBalance={100000000000000000n} isConnected={true} />);
+    render(
+      <TransferCard intent={maxIntent} senderBalance={100000000000000000n} isConnected={true} />
+    );
     expect(screen.getByText("Max (999.9988 POT)")).toBeInTheDocument();
     expect(screen.getAllByText(/1000\.0000 POT/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/0\.0000 POT/).length).toBeGreaterThan(0);
@@ -90,9 +90,13 @@ describe("TransferCard", () => {
         senderName="Alpha"
       />
     );
-    expect(screen.getByText((_content, element) => {
-      return element?.tagName === "SPAN" && (element?.textContent?.includes("You (Alpha - ") || false);
-    })).toBeInTheDocument();
+    expect(
+      screen.getByText((_content, element) => {
+        return (
+          element?.tagName === "SPAN" && (element?.textContent?.includes("You (Alpha - ") || false)
+        );
+      })
+    ).toBeInTheDocument();
   });
 
   it("renders From details with senderAddress but no senderName (Guest fallback)", () => {
@@ -102,9 +106,13 @@ describe("TransferCard", () => {
         senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       />
     );
-    expect(screen.getByText((_content, element) => {
-      return element?.tagName === "SPAN" && (element?.textContent?.includes("You (Guest - ") || false);
-    })).toBeInTheDocument();
+    expect(
+      screen.getByText((_content, element) => {
+        return (
+          element?.tagName === "SPAN" && (element?.textContent?.includes("You (Guest - ") || false)
+        );
+      })
+    ).toBeInTheDocument();
   });
 
   it("shows self-transfer warning when recipient is sender", () => {

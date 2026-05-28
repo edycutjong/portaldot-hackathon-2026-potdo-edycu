@@ -33,8 +33,12 @@ export function parseIntent(command: string, isDemo = true): ParsedIntent | null
       if (args) {
         const targetClean = args.trim();
         const isKnownName =
-          Object.values(DEMO_ADDRESS_BOOK).some((n) => n.toLowerCase() === targetClean.toLowerCase()) ||
-          Object.values(TESTNET_ADDRESS_BOOK).some((n) => n.toLowerCase() === targetClean.toLowerCase());
+          Object.values(DEMO_ADDRESS_BOOK).some(
+            (n) => n.toLowerCase() === targetClean.toLowerCase()
+          ) ||
+          Object.values(TESTNET_ADDRESS_BOOK).some(
+            (n) => n.toLowerCase() === targetClean.toLowerCase()
+          );
         const isKnownAddress =
           Object.keys(DEMO_ADDRESS_BOOK).includes(targetClean) ||
           Object.keys(TESTNET_ADDRESS_BOOK).includes(targetClean);
@@ -66,9 +70,7 @@ export function parseIntent(command: string, isDemo = true): ParsedIntent | null
   const normalized = original.toLowerCase();
 
   // ── Chain Info ──────────────────────────────────────────────
-  if (
-    /chain\s*info|network\s*status|block\s*height|chain\s*status/.test(normalized)
-  ) {
+  if (/chain\s*info|network\s*status|block\s*height|chain\s*status/.test(normalized)) {
     return { action: "check_chain_info" };
   }
 
@@ -84,9 +86,7 @@ export function parseIntent(command: string, isDemo = true): ParsedIntent | null
   }
 
   // ── Vesting ────────────────────────────────────────────────
-  if (
-    /vesting|vested\s*tokens?|vesting\s*schedule/.test(normalized)
-  ) {
+  if (/vesting|vested\s*tokens?|vesting\s*schedule/.test(normalized)) {
     return { action: "check_vesting" };
   }
 

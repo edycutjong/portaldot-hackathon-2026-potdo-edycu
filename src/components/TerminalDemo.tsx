@@ -23,7 +23,16 @@ type Phase = "typing" | "parsing" | "preview" | "confirmed";
 
 function CheckCircleIcon({ className }: { className: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <circle cx="12" cy="12" r="10" />
       <path d="m9 12 2 2 4-4" />
     </svg>
@@ -32,7 +41,16 @@ function CheckCircleIcon({ className }: { className: string }) {
 
 function BoltIcon({ className }: { className: string }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   );
@@ -77,67 +95,73 @@ export function TerminalDemo() {
   const showConfirmed = phase === "confirmed";
 
   return (
-    <div className="glass-card-glow p-5 max-w-lg mx-auto text-left animate-float">
+    <div className="glass-card-glow animate-float mx-auto max-w-lg p-5 text-left">
       {/* Terminal header */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <div className="flex gap-1.5">
-          <span className="w-3 h-3 rounded-full bg-red-500/70" />
-          <span className="w-3 h-3 rounded-full bg-amber-500/70" />
-          <span className="w-3 h-3 rounded-full bg-green-500/70" />
+          <span className="h-3 w-3 rounded-full bg-red-500/70" />
+          <span className="h-3 w-3 rounded-full bg-amber-500/70" />
+          <span className="h-3 w-3 rounded-full bg-green-500/70" />
         </div>
-        <span className="text-xs text-slate-500 font-(family-name:--font-jetbrains) ml-2">
+        <span className="ml-2 font-(family-name:--font-jetbrains) text-xs text-slate-500">
           potdo terminal
         </span>
       </div>
 
       {/* Command input line */}
-      <div className="font-(family-name:--font-jetbrains) text-sm space-y-3">
+      <div className="space-y-3 font-(family-name:--font-jetbrains) text-sm">
         <div className="flex items-center gap-2">
-          <span className="text-cyan-500 text-xs">❯</span>
-          <span className="text-slate-200">
-            {COMMAND.slice(0, typedChars)}
-          </span>
+          <span className="text-xs text-cyan-500">❯</span>
+          <span className="text-slate-200">{COMMAND.slice(0, typedChars)}</span>
           {phase === "typing" && (
-            <span className="w-2 h-4 bg-cyan-400 animate-blink inline-block" />
+            <span className="animate-blink inline-block h-4 w-2 bg-cyan-400" />
           )}
         </div>
 
         {/* Parsing — always in DOM, opacity-controlled */}
-        <div className={`flex items-center gap-2 text-purple-400 text-xs transition-opacity duration-300 ${showParsing ? "opacity-100" : "opacity-0"}`}>
-          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-pulse" />
+        <div
+          className={`flex items-center gap-2 text-xs text-purple-400 transition-opacity duration-300 ${showParsing ? "opacity-100" : "opacity-0"}`}
+        >
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-400" />
           Parsing intent...
         </div>
 
         {/* Preview card — always in DOM, opacity-controlled */}
-        <div className={`bg-white/5 border border-cyan-500/20 rounded-lg p-3 space-y-2 transition-opacity duration-300 ${showPreview ? "opacity-100" : "opacity-0"}`}>
+        <div
+          className={`space-y-2 rounded-lg border border-cyan-500/20 bg-white/5 p-3 transition-opacity duration-300 ${showPreview ? "opacity-100" : "opacity-0"}`}
+        >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-500 uppercase tracking-wider">Transfer Preview</span>
-            <span className="inline-flex items-center gap-1 text-xs text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full">
-              <BoltIcon className="w-3 h-3" />
+            <span className="text-xs tracking-wider text-slate-500 uppercase">
+              Transfer Preview
+            </span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 px-2 py-0.5 text-xs text-cyan-400">
+              <BoltIcon className="h-3 w-3" />
               Portaldot
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div>
               <span className="text-slate-500">To</span>
-              <p className="text-slate-200 font-semibold">Alice</p>
+              <p className="font-semibold text-slate-200">Alice</p>
             </div>
             <div>
               <span className="text-slate-500">Amount</span>
-              <p className="text-cyan-400 font-bold">10.0000 POT</p>
+              <p className="font-bold text-cyan-400">10.0000 POT</p>
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs border-t border-white/5 pt-2 mt-1">
+          <div className="mt-1 flex items-center justify-between border-t border-white/5 pt-2 text-xs">
             <span className="text-slate-500">Balance After</span>
             <span className="text-green-400">490.0000 POT</span>
           </div>
         </div>
 
         {/* Confirmed — always in DOM, opacity-controlled */}
-        <div className={`flex items-center gap-2 text-green-400 text-sm transition-opacity duration-300 ${showConfirmed ? "opacity-100" : "opacity-0"}`}>
-          <CheckCircleIcon className="w-5 h-5 shrink-0" />
+        <div
+          className={`flex items-center gap-2 text-sm text-green-400 transition-opacity duration-300 ${showConfirmed ? "opacity-100" : "opacity-0"}`}
+        >
+          <CheckCircleIcon className="h-5 w-5 shrink-0" />
           <span className="font-semibold">Transaction Confirmed!</span>
-          <span className="text-slate-500 text-xs">Block #142,857</span>
+          <span className="text-xs text-slate-500">Block #142,857</span>
         </div>
       </div>
     </div>

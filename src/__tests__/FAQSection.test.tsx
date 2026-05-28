@@ -5,7 +5,9 @@ describe("FAQSection", () => {
   it("renders all questions in the list", () => {
     render(<FAQSection />);
     expect(screen.getByText("Do I need an API key to try Potdo?")).toBeInTheDocument();
-    expect(screen.getByText("How does the AI understand my transaction intent?")).toBeInTheDocument();
+    expect(
+      screen.getByText("How does the AI understand my transaction intent?")
+    ).toBeInTheDocument();
     expect(screen.getByText("Is this safe to use with real tokens?")).toBeInTheDocument();
     expect(screen.getByText("What is Portaldot?")).toBeInTheDocument();
   });
@@ -30,7 +32,9 @@ describe("FAQSection", () => {
   it("closes previously open item when opening a new item", () => {
     render(<FAQSection />);
     const q1 = screen.getByText("Do I need an API key to try Potdo?").closest("button")!;
-    const q2 = screen.getByText("How does the AI understand my transaction intent?").closest("button")!;
+    const q2 = screen
+      .getByText("How does the AI understand my transaction intent?")
+      .closest("button")!;
 
     // Open first question
     fireEvent.click(q1);

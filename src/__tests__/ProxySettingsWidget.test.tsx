@@ -72,7 +72,9 @@ describe("ProxySettingsWidget", () => {
     expect(screen.getByText("Secure Delegation")).toBeInTheDocument();
     expect(screen.getByText("Inactive")).toBeInTheDocument();
     expect(screen.getByText("Enable Secure Delegation")).toBeInTheDocument();
-    expect(screen.getByText("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")).toBeInTheDocument();
+    expect(
+      screen.getByText("5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+    ).toBeInTheDocument();
   });
 
   it("renders status as Checking... when checkingProxy is true", () => {
@@ -109,7 +111,12 @@ describe("ProxySettingsWidget", () => {
   });
 
   it("calls addProxyDelegate and goes through status cycle when enabling", async () => {
-    let statusCallback: (status: string, txHash?: string, blockNumber?: number, error?: string) => void;
+    let statusCallback: (
+      status: string,
+      txHash?: string,
+      blockNumber?: number,
+      error?: string
+    ) => void;
     const addProxyDelegateMock = jest.fn().mockImplementation((type, cb) => {
       statusCallback = cb;
       return Promise.resolve();
@@ -153,7 +160,12 @@ describe("ProxySettingsWidget", () => {
   });
 
   it("shows error when addProxyDelegate fails status callback", async () => {
-    let statusCallback: (status: string, txHash?: string, blockNumber?: number, error?: string) => void;
+    let statusCallback: (
+      status: string,
+      txHash?: string,
+      blockNumber?: number,
+      error?: string
+    ) => void;
     const addProxyDelegateMock = jest.fn().mockImplementation((type, cb) => {
       statusCallback = cb;
       return Promise.resolve();
@@ -183,7 +195,12 @@ describe("ProxySettingsWidget", () => {
   });
 
   it("calls removeProxyDelegate and goes through status cycle when revoking", async () => {
-    let statusCallback: (status: string, txHash?: string, blockNumber?: number, error?: string) => void;
+    let statusCallback: (
+      status: string,
+      txHash?: string,
+      blockNumber?: number,
+      error?: string
+    ) => void;
     const removeProxyDelegateMock = jest.fn().mockImplementation((type, cb) => {
       statusCallback = cb;
       return Promise.resolve();
@@ -224,7 +241,12 @@ describe("ProxySettingsWidget", () => {
   });
 
   it("shows error when removeProxyDelegate fails status callback", async () => {
-    let statusCallback: (status: string, txHash?: string, blockNumber?: number, error?: string) => void;
+    let statusCallback: (
+      status: string,
+      txHash?: string,
+      blockNumber?: number,
+      error?: string
+    ) => void;
     const removeProxyDelegateMock = jest.fn().mockImplementation((type, cb) => {
       statusCallback = cb;
       return Promise.resolve();
@@ -304,7 +326,10 @@ describe("ProxySettingsWidget", () => {
     // to bypass React 19's synthetic event disabled block
     const reactPropsKey = Object.keys(button).find((k) => k.startsWith("__reactProps"));
     if (reactPropsKey) {
-      const elementWithProps = button as unknown as Record<string, { onClick?: (e: unknown) => void }>;
+      const elementWithProps = button as unknown as Record<
+        string,
+        { onClick?: (e: unknown) => void }
+      >;
       elementWithProps[reactPropsKey]?.onClick?.({ preventDefault: () => {} });
     } else {
       // Fallback just in case

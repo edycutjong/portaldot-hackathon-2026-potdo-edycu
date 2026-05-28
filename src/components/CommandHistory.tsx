@@ -30,7 +30,7 @@ function HistoryList({ entries, onSelect }: Pick<CommandHistoryProps, "entries" 
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
-            className="text-xs text-slate-600 italic py-2"
+            className="py-2 text-xs text-slate-600 italic"
           >
             No commands yet. Try typing something!
           </motion.p>
@@ -55,7 +55,7 @@ function HistoryList({ entries, onSelect }: Pick<CommandHistoryProps, "entries" 
               whileHover={{ scale: 1.02, x: 2, backgroundColor: "rgba(255, 255, 255, 0.08)" }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onSelect?.(entry)}
-              className="w-full text-left p-2.5 rounded-lg bg-white/5 border border-transparent hover:border-white/10 transition-colors duration-150 group cursor-pointer block"
+              className="group block w-full cursor-pointer rounded-lg border border-transparent bg-white/5 p-2.5 text-left transition-colors duration-150 hover:border-white/10"
             >
               <div className="flex items-center gap-2">
                 <motion.span
@@ -63,15 +63,15 @@ function HistoryList({ entries, onSelect }: Pick<CommandHistoryProps, "entries" 
                   initial={{ scale: 0.8, opacity: 0.5 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className="text-xs shrink-0"
+                  className="shrink-0 text-xs"
                 >
                   {statusIcon[entry.status] || "⚪"}
                 </motion.span>
-                <span className="text-xs text-slate-400 truncate flex-1 group-hover:text-slate-300">
+                <span className="flex-1 truncate text-xs text-slate-400 group-hover:text-slate-300">
                   {entry.command}
                 </span>
               </div>
-              <p className="text-[10px] text-slate-600 mt-1 pl-5">
+              <p className="mt-1 pl-5 text-[10px] text-slate-600">
                 {new Date(entry.timestamp).toLocaleTimeString()}
               </p>
             </motion.button>
@@ -86,7 +86,7 @@ export function CommandHistory({ entries, onSelect, isMobileDrawer }: CommandHis
   // Mobile drawer variant: no aside wrapper
   if (isMobileDrawer) {
     return (
-      <div className="p-4 overflow-y-auto flex-1">
+      <div className="flex-1 overflow-y-auto p-4">
         <ProxySettingsWidget />
         <HistoryList entries={entries} onSelect={onSelect} />
       </div>
@@ -99,11 +99,11 @@ export function CommandHistory({ entries, onSelect, isMobileDrawer }: CommandHis
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="w-[280px] border-r border-white/5 h-full overflow-y-auto hidden lg:block"
+      className="hidden h-full w-[280px] overflow-y-auto border-r border-white/5 lg:block"
     >
       <div className="p-4">
         <ProxySettingsWidget />
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 mt-4">
+        <h2 className="mt-4 mb-3 text-xs font-semibold tracking-wider text-slate-500 uppercase">
           Command History
         </h2>
         <HistoryList entries={entries} onSelect={onSelect} />

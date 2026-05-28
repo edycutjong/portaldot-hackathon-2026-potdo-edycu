@@ -1,0 +1,11 @@
+.next
+coverage
+node_modules
+Makefile
+package-lock.json
+pnpm-lock.yaml
+.vercel
+testnet
+playwright-report
+test-results
+.lighthouseci

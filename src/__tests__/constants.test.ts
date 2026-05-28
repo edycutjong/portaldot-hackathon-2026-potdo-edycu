@@ -48,7 +48,9 @@ describe("constants", () => {
     expect(Object.values(TESTNET_ADDRESS_BOOK)).toEqual(["Alice", "Bob", "Charlie", "Dave"]);
     expect(TESTNET_ADDRESS_BOOK["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]).toBe("Alice");
     expect(TESTNET_ADDRESS_BOOK["5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"]).toBe("Bob");
-    expect(TESTNET_ADDRESS_BOOK["5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"]).toBe("Charlie");
+    expect(TESTNET_ADDRESS_BOOK["5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y"]).toBe(
+      "Charlie"
+    );
     expect(TESTNET_ADDRESS_BOOK["5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew"]).toBe("Dave");
   });
 

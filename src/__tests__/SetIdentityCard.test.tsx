@@ -9,13 +9,7 @@ describe("SetIdentityCard", () => {
   };
 
   it("renders identity preview with display name", () => {
-    render(
-      <SetIdentityCard
-        intent={baseIntent}
-        isConnected={true}
-        onExecute={() => {}}
-      />
-    );
+    render(<SetIdentityCard intent={baseIntent} isConnected={true} onExecute={() => {}} />);
     expect(screen.getByText("Set Identity Preview")).toBeInTheDocument();
     expect(screen.getByText("Edy")).toBeInTheDocument();
     expect(screen.getByText("Set Display Name")).toBeInTheDocument();
@@ -23,24 +17,12 @@ describe("SetIdentityCard", () => {
   });
 
   it("shows Set Identity button when connected", () => {
-    render(
-      <SetIdentityCard
-        intent={baseIntent}
-        isConnected={true}
-        onExecute={() => {}}
-      />
-    );
+    render(<SetIdentityCard intent={baseIntent} isConnected={true} onExecute={() => {}} />);
     expect(screen.getByText("Set Identity")).toBeInTheDocument();
   });
 
   it("shows Connect Wallet when not connected", () => {
-    render(
-      <SetIdentityCard
-        intent={baseIntent}
-        isConnected={false}
-        onExecute={() => {}}
-      />
-    );
+    render(<SetIdentityCard intent={baseIntent} isConnected={false} onExecute={() => {}} />);
     expect(screen.getByText("Connect Wallet")).toBeInTheDocument();
   });
 
@@ -70,13 +52,7 @@ describe("SetIdentityCard", () => {
 
   it("calls onExecute when button is clicked", () => {
     const handleExecute = jest.fn();
-    render(
-      <SetIdentityCard
-        intent={baseIntent}
-        isConnected={true}
-        onExecute={handleExecute}
-      />
-    );
+    render(<SetIdentityCard intent={baseIntent} isConnected={true} onExecute={handleExecute} />);
     fireEvent.click(screen.getByText("Set Identity"));
     expect(handleExecute).toHaveBeenCalledTimes(1);
   });
@@ -94,13 +70,7 @@ describe("SetIdentityCard", () => {
   });
 
   it("has correct test id", () => {
-    render(
-      <SetIdentityCard
-        intent={baseIntent}
-        isConnected={true}
-        onExecute={() => {}}
-      />
-    );
+    render(<SetIdentityCard intent={baseIntent} isConnected={true} onExecute={() => {}} />);
     expect(document.getElementById("set-identity-card")).toBeInTheDocument();
     expect(document.getElementById("set-identity-execute")).toBeInTheDocument();
   });

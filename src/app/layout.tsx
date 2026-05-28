@@ -28,8 +28,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Potdo — AI Copilot for Portaldot",
-    description:
-      "AI copilot that turns plain English into secure, visual Portaldot transactions.",
+    description: "AI copilot that turns plain English into secure, visual Portaldot transactions.",
     url: "https://potdo.edycu.dev",
     siteName: "Potdo",
     images: [
@@ -46,8 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Potdo — AI Copilot for Portaldot",
-    description:
-      "AI copilot that turns plain English into secure, visual Portaldot transactions.",
+    description: "AI copilot that turns plain English into secure, visual Portaldot transactions.",
     images: ["/og-image.png"],
   },
 };
@@ -60,10 +58,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} h-full antialiased dark`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0f] text-slate-100 font-(family-name:--font-inter)">
+      <body className="flex min-h-full flex-col bg-[#0a0a0f] font-(family-name:--font-inter) text-slate-100">
         <WalletProvider>{children}</WalletProvider>
       </body>
     </html>

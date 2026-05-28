@@ -20,9 +20,7 @@ describe("BalanceWidget", () => {
   });
 
   it("renders with provided balance values", () => {
-    render(
-      <BalanceWidget free="100.0000" reserved="5.0000" frozen="2.0000" />
-    );
+    render(<BalanceWidget free="100.0000" reserved="5.0000" frozen="2.0000" />);
     expect(screen.getByText("100.0000")).toBeInTheDocument();
     expect(screen.getByText("5.0000")).toBeInTheDocument();
     expect(screen.getByText("2.0000")).toBeInTheDocument();

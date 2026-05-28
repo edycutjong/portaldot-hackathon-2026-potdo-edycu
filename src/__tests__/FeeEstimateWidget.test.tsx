@@ -13,7 +13,7 @@ describe("FeeEstimateWidget", () => {
     expect(screen.getByText("Fee Estimate")).toBeInTheDocument();
     expect(screen.getByText("0.0125 POT")).toBeInTheDocument();
     expect(screen.getByText("150,000,000")).toBeInTheDocument();
-    
+
     const classEl = screen.getByText("Normal");
     expect(classEl).toBeInTheDocument();
     expect(classEl).toHaveClass("text-green-400");

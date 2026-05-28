@@ -68,9 +68,7 @@ describe("TxConfirmation", () => {
   });
 
   it("renders without block number", () => {
-    render(
-      <TxConfirmation txResult={{ status: "finalized", txHash: "0xabc123" }} />
-    );
+    render(<TxConfirmation txResult={{ status: "finalized", txHash: "0xabc123" }} />);
     expect(screen.getByText("Transaction Confirmed!")).toBeInTheDocument();
     expect(screen.queryByText(/Block #/)).not.toBeInTheDocument();
   });

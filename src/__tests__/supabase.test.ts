@@ -79,4 +79,3 @@ describe("supabase initialization branches", () => {
     expect(await fetchHistory()).toEqual([]);
   });
 });
-

@@ -6,22 +6,22 @@
 
   <br/>
 
-  [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
-  [![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](#)
-  [![Pitch Deck](https://img.shields.io/badge/📊_Pitch-Deck-a855f7?style=for-the-badge)](docs/pitch_deck.md)
-  [![Demo Guide](https://img.shields.io/badge/📖_Demo-Guide-22c55e?style=for-the-badge)](DEMO.md)
-  [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
+[![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
+[![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](#)
+[![Pitch Deck](https://img.shields.io/badge/📊_Pitch-Deck-a855f7?style=for-the-badge)](docs/pitch_deck.md)
+[![Demo Guide](https://img.shields.io/badge/📖_Demo-Guide-22c55e?style=for-the-badge)](DEMO.md)
+[![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
 
   <br/>
 
-  ![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat&logo=next.js)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
-  ![React](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
-  ![Tailwind](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=flat&logo=tailwindcss&logoColor=white)
-  ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
-  ![ChatGPT](https://img.shields.io/badge/ChatGPT-74AA9C?style=flat&logo=openai&logoColor=white)
-  ![Portaldot](https://img.shields.io/badge/Portaldot_SDK-E6007A?style=flat)
-  [![CI](https://github.com/edycutjong/potdo/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/potdo/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React_19-61DAFB?style=flat&logo=react&logoColor=black)
+![Tailwind](https://img.shields.io/badge/Tailwind_v4-38B2AC?style=flat&logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white)
+![ChatGPT](https://img.shields.io/badge/ChatGPT-74AA9C?style=flat&logo=openai&logoColor=white)
+![Portaldot](https://img.shields.io/badge/Portaldot_SDK-E6007A?style=flat)
+[![CI](https://github.com/edycutjong/potdo/actions/workflows/ci.yml/badge.svg)](https://github.com/edycutjong/potdo/actions/workflows/ci.yml)
 
 </div>
 
@@ -34,6 +34,7 @@
 **Potdo** eliminates blind signing on Portaldot by letting users describe transactions in plain English. The AI intent parser converts natural language into structured transaction previews — interactive React cards that show sender, receiver, amount, gas, and balance diff — all before you sign.
 
 **Key Features:**
+
 - ⚡ **Natural Language Transactions** — Type "Send 10 POT to Alpha" and get an interactive transfer preview card
 - 📦 **Batch Airdrops** — "Airdrop 5 POT to Alpha, Beta, and Gamma" processes multiple recipients in one command
 - 💰 **Live Balance Checks** — "What's my balance?" renders a real-time balance widget with free/reserved/frozen breakdown
@@ -47,28 +48,31 @@
 <div align="center">
 
 ### Landing Page
+
 <img src="docs/screenshots/01-landing.png" alt="Potdo Landing Page" width="100%">
 
 ### TransferCard — Generative UI in Action
+
 <img src="docs/screenshots/02-transfer-card.png" alt="TransferCard in Chat" width="100%">
 
 ### Transaction Confirmed 🎉
+
 <img src="docs/screenshots/03-success.png" alt="Success State with Confetti" width="100%">
 
 </div>
 
 ## 🏗️ Architecture & Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Frontend** | Next.js 16 (App Router), React 19 |
-| **Backend API** | Python 3.12 (FastAPI), substrate-interface (100% coverage) |
-| **Styling** | Tailwind CSS v4 |
-| **AI Intent Parser** | Deterministic NLP (pattern matching + word-to-number) |
-| **Chain SDK** | Portaldot SDK |
-| **Database** | Supabase (PostgreSQL) — transaction logging |
-| **Animation** | Framer Motion + Canvas API (confetti) |
-| **Testing** | Jest + React Testing Library (99.8% coverage) |
+| Layer                | Technology                                                 |
+| -------------------- | ---------------------------------------------------------- |
+| **Frontend**         | Next.js 16 (App Router), React 19                          |
+| **Backend API**      | Python 3.12 (FastAPI), substrate-interface (100% coverage) |
+| **Styling**          | Tailwind CSS v4                                            |
+| **AI Intent Parser** | Deterministic NLP (pattern matching + word-to-number)      |
+| **Chain SDK**        | Portaldot SDK                                              |
+| **Database**         | Supabase (PostgreSQL) — transaction logging                |
+| **Animation**        | Framer Motion + Canvas API (confetti)                      |
+| **Testing**          | Jest + React Testing Library (99.8% coverage)              |
 
 ```
 User Input → Intent Parser → Structured Intent → Generative UI Card → Execute on Chain
@@ -86,26 +90,28 @@ User Input → Intent Parser → Structured Intent → Generative UI Card → Ex
 ## ⛓️ Portaldot Native Integration (Sponsor Criteria)
 
 ### Thesis
+
 Potdo is architecturally inseparable from Portaldot. Every component is hardwired to Portaldot's Substrate runtime, RPC layer, and native token economics. Removing Portaldot would require a complete rewrite of the entire application.
 
 ### Portaldot API Methods Used (12 total)
 
-| # | Feature | Usage |
-|---|---------|-------|
-| 1 | `api.query.system.account(address)` | Pre-flight balance simulation |
-| 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
-| 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
-| 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
-| 5 | Portaldot Wallet SDK | Wallet integration |
-| 6 | WebSocket RPC subscription | Live balance updates |
-| 7 | POT native gas token | Every tx pays gas in POT |
-| 8 | Substrate SS58 address format | AI validates against SS58 prefix |
-| 9 | `api.query.proxy.proxies(address)` | Pre-flight proxy delegation status |
-| 10 | `api.tx.proxy.addProxy(delegate, type, delay)` | Delegate restricted proxy authority |
-| 11 | `api.tx.proxy.removeProxy(delegate, type, delay)` | Revoke delegated proxy authority |
-| 12 | `api.tx.proxy.proxy(real, force_type, call)` | Wrap and execute call via proxy delegate |
+| #   | Feature                                           | Usage                                    |
+| --- | ------------------------------------------------- | ---------------------------------------- |
+| 1   | `api.query.system.account(address)`               | Pre-flight balance simulation            |
+| 2   | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution                  |
+| 3   | `api.tx.utility.batch([...calls])`                | Multi-recipient batch airdrop            |
+| 4   | `tx.signAndSend(account, { signer }, callback)`   | Transaction lifecycle streaming          |
+| 5   | Portaldot Wallet SDK                              | Wallet integration                       |
+| 6   | WebSocket RPC subscription                        | Live balance updates                     |
+| 7   | POT native gas token                              | Every tx pays gas in POT                 |
+| 8   | Substrate SS58 address format                     | AI validates against SS58 prefix         |
+| 9   | `api.query.proxy.proxies(address)`                | Pre-flight proxy delegation status       |
+| 10  | `api.tx.proxy.addProxy(delegate, type, delay)`    | Delegate restricted proxy authority      |
+| 11  | `api.tx.proxy.removeProxy(delegate, type, delay)` | Revoke delegated proxy authority         |
+| 12  | `api.tx.proxy.proxy(real, force_type, call)`      | Wrap and execute call via proxy delegate |
 
 ### Without Portaldot
+
 - **Balance simulation** → Custom API adapter per chain
 - **Token transfer** → Different ABI per chain + gas estimation
 - **Batch airdrop** → Multicall contract deployment OR sequential txs
@@ -117,6 +123,7 @@ Take Portaldot out and you'd need 3 separate systems + a bridge layer. Potdo is 
 ## 📐 Technical Architecture
 
 ### System Flow
+
 ```mermaid
 graph TB
     subgraph Client["Browser"]
@@ -143,13 +150,13 @@ graph TB
     Parser -->|"Fetch balance"| RPC
     Parser -->|"Stream UI Card"| RSC
     RSC -->|"Generative UI"| UI
-    
+
     UI -->|"1. Standard: Sign Extrinsic"| Wallet
     Wallet -->|"Broadcast"| RPC
-    
+
     UI -->|"2. Guarded Proxy: Direct Execution"| API
     API -->|"Sign with Agent Key & Wrap proxy.proxy"| RPC
-    
+
     RPC -->|"Tx hash"| Supa
     Supa -->|"Tx status"| UI
 
@@ -159,6 +166,7 @@ graph TB
 ```
 
 ### Sequence Flow
+
 ```mermaid
 sequenceDiagram
     actor User
@@ -175,7 +183,7 @@ sequenceDiagram
     RPC-->>API: { balance: 100.5 POT, proxied: true/false }
     API-->>RSC: { balance: 100.5 POT, isProxyActive: true/false }
     RSC-->>UI: Stream <TransferCard> component
-    
+
     alt Option A: Guarded Proxy Enabled
         User->>UI: Click "Execute" (popup-free)
         UI->>API: POST /transfer { proxied: true }
@@ -199,30 +207,32 @@ sequenceDiagram
 Potdo runs in three distinct environments designed for different phases of the lifecycle:
 
 1. **Demo Mode (In-Memory Simulation)**
-   * **Architecture**: **Frontend Only** (pure in-memory browser simulation).
-   * **Operation**: All actions (balances, transfers, staking, name updates) are simulated instantly inside React state and persisted to the browser's `localStorage`. No network request to the backend or external RPC is required.
-   * **Target Deployment**: Hosted on **Vercel** for instant, zero-setup public testing.
+   - **Architecture**: **Frontend Only** (pure in-memory browser simulation).
+   - **Operation**: All actions (balances, transfers, staking, name updates) are simulated instantly inside React state and persisted to the browser's `localStorage`. No network request to the backend or external RPC is required.
+   - **Target Deployment**: Hosted on **Vercel** for instant, zero-setup public testing.
 
 2. **Testnet Mode (Local Dev/Judging)**
-   * **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Local Portaldot Dev Node**.
-   * **Operation**: Frontend forwards requests to the FastAPI backend. The backend uses the Portaldot Python SDK (`substrate-interface`) to construct, sign, and submit extrinsics directly to the local dev node running at `ws://127.0.0.1:9944`.
-   * **Target Deployment**: Run locally using the preconfigured `Makefile` or Docker compose. The backend can also be hosted on **Railway** pointed to a public VPS chain node.
+   - **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Local Portaldot Dev Node**.
+   - **Operation**: Frontend forwards requests to the FastAPI backend. The backend uses the Portaldot Python SDK (`substrate-interface`) to construct, sign, and submit extrinsics directly to the local dev node running at `ws://127.0.0.1:9944`.
+   - **Target Deployment**: Run locally using the preconfigured `Makefile` or Docker compose. The backend can also be hosted on **Railway** pointed to a public VPS chain node.
 
 3. **Mainnet Mode (Production)**
-   * **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Portaldot Mainnet RPC**.
-   * **Operation**: Same as Testnet mode, but the backend connects directly to the live production mainnet nodes (e.g. `wss://mainnet.portaldot.io`).
-   * **Target Deployment**: Hosted on **Vercel** (Frontend) + **Railway** (Backend API).
+   - **Architecture**: **Frontend** + **FastAPI Backend (Python SDK)** + **Portaldot Mainnet RPC**.
+   - **Operation**: Same as Testnet mode, but the backend connects directly to the live production mainnet nodes (e.g. `wss://mainnet.portaldot.io`).
+   - **Target Deployment**: Hosted on **Vercel** (Frontend) + **Railway** (Backend API).
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js ≥ 20
 - npm
 - Docker (optional, for containerized execution)
 
 ### Installation
+
 ```bash
 git clone https://github.com/edycutjong/potdo.git
 cd potdo
@@ -234,34 +244,41 @@ make install
 To allow a thorough evaluation of all features (including local testnet execution with the Python SDK backend), you can run the entire system locally.
 
 #### Method A: Multi-Terminal Native Run (Recommended)
+
 Open three separate terminal windows/tabs:
 
 1. **Terminal 1: Start the Portaldot Dev Node**
+
    ```bash
    make testnet
    ```
-   *(Launches the local Portaldot testnet node on `ws://127.0.0.1:9944` using the `./testnet/portaldot_dev` binary).*
+
+   _(Launches the local Portaldot testnet node on `ws://127.0.0.1:9944` using the `./testnet/portaldot_dev` binary)._
 
 2. **Terminal 2: Start the FastAPI Python Backend**
+
    ```bash
    make dev-backend
    ```
-   *(Starts the FastAPI server on `http://localhost:8000`, connected directly to the local testnet node).*
+
+   _(Starts the FastAPI server on `http://localhost:8000`, connected directly to the local testnet node)._
 
 3. **Terminal 3: Start the Next.js Web App**
    ```bash
    make dev-frontend
    ```
-   *(Starts the UI dev server on `http://localhost:3000` with hot reloading).*
+   _(Starts the UI dev server on `http://localhost:3000` with hot reloading)._
 
 #### Method B: One-Command Docker Compose Run
+
 If you have Docker installed, you can spin up all three services in containerized mode with a single command:
+
 ```bash
 make docker-up
 ```
-* **Verify status**: `make docker-logs` to watch live node block production and server requests.
-* **Stop services**: `make docker-down` to clean up.
 
+- **Verify status**: `make docker-logs` to watch live node block production and server requests.
+- **Stop services**: `make docker-down` to clean up.
 
 ### Supabase Setup (Optional for Persistence)
 
@@ -295,24 +312,26 @@ erDiagram
 
 ## 📊 Demo & Seed Data
 
-For a seamless demonstration, the application is pre-configured with canonical Substrate development accounts. 
+For a seamless demonstration, the application is pre-configured with canonical Substrate development accounts.
 
 ### Named Accounts (Address Book)
-| Name | Purpose | Pre-funded POT | Address |
-|---|---|---|---|
-| **Demo Wallet** | The sender (connected via Portaldot Wallet) | 1000 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
-| **Alice** | Primary recipient for single transfers | 10 POT | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` |
-| **Bob** | Batch transfer recipient #2 | 5 POT | `5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty` |
-| **Charlie** | Batch transfer recipient #3 | 0 POT | `5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y` |
-| **Dave** | Error validation demonstration target | 0 POT | `5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew` |
+
+| Name            | Purpose                                     | Pre-funded POT | Address                                                         |
+| --------------- | ------------------------------------------- | -------------- | --------------------------------------------------------------- |
+| **Demo Wallet** | The sender (connected via Portaldot Wallet) | 1000 POT       | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY` (Alice Seed) |
+| **Alice**       | Primary recipient for single transfers      | 10 POT         | `5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY`              |
+| **Bob**         | Batch transfer recipient #2                 | 5 POT          | `5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty`              |
+| **Charlie**     | Batch transfer recipient #3                 | 0 POT          | `5FLSigC9HGRKVhB9FiEo4Y3koPsNmBmLJbpXg2mp1hXcS59Y`              |
+| **Dave**        | Error validation demonstration target       | 0 POT          | `5DAAnrj7VHTznn2AWBemMuyBwZWs6FNFjdyVXUeYUM3aUNew`              |
 
 ### Core Demo Scenarios
-1. **Single Transfer Flow**: *"Send 10 POT to Alpha"*
-   * Checks sender balance (1000 POT) -> streams `<TransferCard>` showing post-transaction balance simulation (990 POT) -> click **Execute** to sign and finalize.
-2. **Batch Airdrop Flow**: *"Airdrop 5 POT to Alpha, Beta, and Gamma"*
-   * Parses multiple recipients -> streams `<BatchCard>` showing a table of transfers -> click **Execute Batch** to sign and submit a single `utility.batch` extrinsic.
-3. **Error Protection**: *"Send 5000 POT to Delta"*
-   * Checks sender balance (1000 POT) -> streams `<TransferCard>` with a **red warning** of insufficient funds -> blocks wallet popup to prevent gas waste.
+
+1. **Single Transfer Flow**: _"Send 10 POT to Alpha"_
+   - Checks sender balance (1000 POT) -> streams `<TransferCard>` showing post-transaction balance simulation (990 POT) -> click **Execute** to sign and finalize.
+2. **Batch Airdrop Flow**: _"Airdrop 5 POT to Alpha, Beta, and Gamma"_
+   - Parses multiple recipients -> streams `<BatchCard>` showing a table of transfers -> click **Execute Batch** to sign and submit a single `utility.batch` extrinsic.
+3. **Error Protection**: _"Send 5000 POT to Delta"_
+   - Checks sender balance (1000 POT) -> streams `<TransferCard>` with a **red warning** of insufficient funds -> blocks wallet popup to prevent gas waste.
 
 ## 🧪 Testing & CI
 
@@ -332,6 +351,7 @@ npm run ci            # Full CI pipeline
 | `components/` | 99.70% | 99.42% | 100% | 100% |
 
 ## 📁 Project Structure
+
 ```
 potdo/
 ├── docs/                # README assets (hero banner)
@@ -374,16 +394,16 @@ potdo/
 
 Potdo is architecturally inseparable from Portaldot. Every component is hardwired to Portaldot's Substrate runtime, RPC layer, and native token economics.
 
-| # | Portaldot API | Usage in Potdo |
-|---|---|---|
-| 1 | `api.query.system.account(address)` | Pre-flight balance simulation |
-| 2 | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution |
-| 3 | `api.tx.utility.batch([...calls])` | Multi-recipient batch airdrop |
-| 4 | `tx.signAndSend(account, { signer }, callback)` | Transaction lifecycle streaming |
-| 5 | Portaldot Wallet SDK | Wallet integration |
-| 6 | WebSocket RPC subscription | Live balance updates |
-| 7 | POT native gas token (14 decimals) | Every tx pays gas in POT |
-| 8 | Substrate SS58 address format | AI validates against SS58 prefix |
+| #   | Portaldot API                                     | Usage in Potdo                   |
+| --- | ------------------------------------------------- | -------------------------------- |
+| 1   | `api.query.system.account(address)`               | Pre-flight balance simulation    |
+| 2   | `api.tx.balances.transferKeepAlive(dest, amount)` | Core transfer execution          |
+| 3   | `api.tx.utility.batch([...calls])`                | Multi-recipient batch airdrop    |
+| 4   | `tx.signAndSend(account, { signer }, callback)`   | Transaction lifecycle streaming  |
+| 5   | Portaldot Wallet SDK                              | Wallet integration               |
+| 6   | WebSocket RPC subscription                        | Live balance updates             |
+| 7   | POT native gas token (14 decimals)                | Every tx pays gas in POT         |
+| 8   | Substrate SS58 address format                     | AI validates against SS58 prefix |
 
 > Remove Portaldot and Potdo ceases to function. No fallback, no abstraction layer. This is a **Portaldot-native** application.
 
@@ -393,7 +413,7 @@ We believe transparency builds trust — especially in a hackathon:
 
 1. **No custom ink! contracts** — MVP uses only native pallets (`balances`, `utility`, `system`). Deliberate choice for demo reliability over complexity.
 2. **RPC endpoint dependency** — Demo depends on a working Portaldot RPC (`wss://mainnet.portaldot.io`). Fallback: demo mode with deterministic mock data.
-3. **AI is pattern matching (demo mode)** — Without an OpenAI API key, the intent parser uses deterministic word-to-number NLP rather than LLM inference. This is *honest* — the demo should work without external dependencies.
+3. **AI is pattern matching (demo mode)** — Without an OpenAI API key, the intent parser uses deterministic word-to-number NLP rather than LLM inference. This is _honest_ — the demo should work without external dependencies.
 4. **POT token acquisition unresolved** — No public faucet or exchange listing exists. On-chain transactions require organizer-provided tokens.
 
 ## 📄 License
@@ -403,4 +423,3 @@ We believe transparency builds trust — especially in a hackathon:
 ## 🙏 Acknowledgments
 
 Built for the [Portaldot Online S1 Hackathon](https://dorahacks.io/hackathon/portaldot-online-s1/detail) on DoraHacks. Thank you to the Portaldot team for the chain infrastructure and documentation.
-

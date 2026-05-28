@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo, useCallback, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useMemo,
+  useCallback,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageBubble } from "./MessageBubble";
 import { TransferCard } from "./TransferCard";
@@ -16,7 +24,17 @@ import { ChainInfoWidget } from "./ChainInfoWidget";
 import { TxConfirmation } from "./TxConfirmation";
 import { TxError } from "./TxError";
 import { SUGGESTED_COMMANDS, SLASH_COMMANDS } from "@/lib/constants";
-import type { ChatMessage, ParsedIntent, TxResult, TxStatus, TransferIntent, BatchTransferIntent, StakeIntent, UnstakeIntent, SetIdentityIntent } from "@/lib/types";
+import type {
+  ChatMessage,
+  ParsedIntent,
+  TxResult,
+  TxStatus,
+  TransferIntent,
+  BatchTransferIntent,
+  StakeIntent,
+  UnstakeIntent,
+  SetIdentityIntent,
+} from "@/lib/types";
 import { useWallet } from "@/context/WalletContext";
 import { logTransaction } from "@/lib/supabase";
 import { planckToPot, potToPlanck } from "@/lib/format";
@@ -35,11 +53,30 @@ interface ChatInterfaceProps {
   onCommandExecuted?: () => void;
 }
 
-export function ChatInterface({ externalInput, onExternalInputConsumed, onCommandExecuted }: ChatInterfaceProps) {
+export function ChatInterface({
+  externalInput,
+  onExternalInputConsumed,
+  onCommandExecuted,
+}: ChatInterfaceProps) {
   const {
-    address, balance, executeTransfer, executeBatch, executeStake, executeUnstake,
-    executeSetIdentity, queryStaking, queryIdentity, queryVesting, estimateFee,
-    queryChainInfo, connect, connected, accounts, chainName, isDemoMode, isBalanceLoading,
+    address,
+    balance,
+    executeTransfer,
+    executeBatch,
+    executeStake,
+    executeUnstake,
+    executeSetIdentity,
+    queryStaking,
+    queryIdentity,
+    queryVesting,
+    estimateFee,
+    queryChainInfo,
+    connect,
+    connected,
+    accounts,
+    chainName,
+    isDemoMode,
+    isBalanceLoading,
   } = useWallet();
   const [messages, setMessages] = useState<ChatMessage[]>(() => []);
   const [input, setInput] = useState("");
@@ -53,82 +90,97 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       : `potdo_chat_history_${networkKey}_guest`;
   }, [address, chainName]);
 
-  const getDynamicCommand = useCallback((cmd: string) => {
-    if (process.env.NODE_ENV === "test" && !safeGetItem("test_enable_dynamic_commands")) {
-      return cmd;
-    }
-    let result = cmd;
-    
-    // 1. Map to network-appropriate names if not in Demo Mode
-    if (!isDemoMode) {
-      result = result
-        .replace(/\bAlpha\b/g, "Alice")
-        .replace(/\bBeta\b/g, "Bob")
-        .replace(/\bGamma\b/g, "Charlie")
-        .replace(/\bDelta\b/g, "Dave");
-    } else {
-      result = result
-        .replace(/\bAlice\b/g, "Alpha")
-        .replace(/\bBob\b/g, "Beta")
-        .replace(/\bCharlie\b/g, "Gamma")
-        .replace(/\bDave\b/g, "Delta");
-    }
+  const getDynamicCommand = useCallback(
+    (cmd: string) => {
+      if (process.env.NODE_ENV === "test" && !safeGetItem("test_enable_dynamic_commands")) {
+        return cmd;
+      }
+      let result = cmd;
 
-    // 2. Prevent sending to oneself or referring to own name
-    const activeAccount = accounts ? accounts.find(a => a.address === address) : undefined;
-    const activeName = activeAccount && activeAccount.meta && typeof activeAccount.meta.name === "string" ? activeAccount.meta.name : "";
-    if (activeName) {
-      const activeLower = activeName.toLowerCase();
-      const pool = isDemoMode 
-        ? ["Alpha", "Beta", "Gamma", "Delta"] 
-        : ["Alice", "Bob", "Charlie", "Dave"];
-        
-      // Check if activeName is a known pool name (case-insensitive)
-      const activePoolIndex = pool.findIndex(p => p.toLowerCase() === activeLower);
-      
-      if (activePoolIndex !== -1) {
-        // Find all pool names present in the command (case-insensitive)
-        const presentNames = pool.filter(p => {
-          const regex = new RegExp(`\\b${p}\\b`, 'i');
-          return regex.test(result);
-        });
-        
-        // If the active name is in the command
-        const isActiveNamePresent = presentNames.some(pn => pn.toLowerCase() === activeLower);
-        
-        if (isActiveNamePresent) {
-          if (presentNames.length > 1) {
-            // Multi-recipient case: find a pool name not present in the command and not activeName
-            const unusedNames = pool.filter(p => 
-              !presentNames.some(pn => pn.toLowerCase() === p.toLowerCase()) && 
-              p.toLowerCase() !== activeLower
-            );
-            
-            const replacement = unusedNames.length > 0 ? unusedNames[0] : (activeLower === "alpha" || activeLower === "alice" ? pool[1] : pool[0]);
-            
-            // Replace only the active name in the command
-            const activeOriginalName = presentNames.find(pn => pn.toLowerCase() === activeLower)!;
-            const regex = new RegExp(`\\b${activeOriginalName}\\b`, 'g');
-            result = result.replace(regex, replacement);
-          } else {
-            // Single recipient/occurrence case: replace with standard fallback
-            const fallback = activeLower === "alpha" || activeLower === "alice" ? pool[1] : pool[0];
-            const activeOriginalName = presentNames[0];
-            const regex = new RegExp(`\\b${activeOriginalName}\\b`, 'g');
+      // 1. Map to network-appropriate names if not in Demo Mode
+      if (!isDemoMode) {
+        result = result
+          .replace(/\bAlpha\b/g, "Alice")
+          .replace(/\bBeta\b/g, "Bob")
+          .replace(/\bGamma\b/g, "Charlie")
+          .replace(/\bDelta\b/g, "Dave");
+      } else {
+        result = result
+          .replace(/\bAlice\b/g, "Alpha")
+          .replace(/\bBob\b/g, "Beta")
+          .replace(/\bCharlie\b/g, "Gamma")
+          .replace(/\bDave\b/g, "Delta");
+      }
+
+      // 2. Prevent sending to oneself or referring to own name
+      const activeAccount = accounts ? accounts.find((a) => a.address === address) : undefined;
+      const activeName =
+        activeAccount && activeAccount.meta && typeof activeAccount.meta.name === "string"
+          ? activeAccount.meta.name
+          : "";
+      if (activeName) {
+        const activeLower = activeName.toLowerCase();
+        const pool = isDemoMode
+          ? ["Alpha", "Beta", "Gamma", "Delta"]
+          : ["Alice", "Bob", "Charlie", "Dave"];
+
+        // Check if activeName is a known pool name (case-insensitive)
+        const activePoolIndex = pool.findIndex((p) => p.toLowerCase() === activeLower);
+
+        if (activePoolIndex !== -1) {
+          // Find all pool names present in the command (case-insensitive)
+          const presentNames = pool.filter((p) => {
+            const regex = new RegExp(`\\b${p}\\b`, "i");
+            return regex.test(result);
+          });
+
+          // If the active name is in the command
+          const isActiveNamePresent = presentNames.some((pn) => pn.toLowerCase() === activeLower);
+
+          if (isActiveNamePresent) {
+            if (presentNames.length > 1) {
+              // Multi-recipient case: find a pool name not present in the command and not activeName
+              const unusedNames = pool.filter(
+                (p) =>
+                  !presentNames.some((pn) => pn.toLowerCase() === p.toLowerCase()) &&
+                  p.toLowerCase() !== activeLower
+              );
+
+              const replacement =
+                unusedNames.length > 0
+                  ? unusedNames[0]
+                  : activeLower === "alpha" || activeLower === "alice"
+                    ? pool[1]
+                    : pool[0];
+
+              // Replace only the active name in the command
+              const activeOriginalName = presentNames.find(
+                (pn) => pn.toLowerCase() === activeLower
+              )!;
+              const regex = new RegExp(`\\b${activeOriginalName}\\b`, "g");
+              result = result.replace(regex, replacement);
+            } else {
+              // Single recipient/occurrence case: replace with standard fallback
+              const fallback =
+                activeLower === "alpha" || activeLower === "alice" ? pool[1] : pool[0];
+              const activeOriginalName = presentNames[0];
+              const regex = new RegExp(`\\b${activeOriginalName}\\b`, "g");
+              result = result.replace(regex, fallback);
+            }
+          }
+        } else {
+          // For custom names (like "Edy"), if they are mentioned in the command
+          if (result.toLowerCase().includes(activeLower)) {
+            const fallback = isDemoMode ? "Alpha" : "Alice";
+            const regex = new RegExp(`\\b${activeName}\\b`, "gi");
             result = result.replace(regex, fallback);
           }
         }
-      } else {
-        // For custom names (like "Edy"), if they are mentioned in the command
-        if (result.toLowerCase().includes(activeLower)) {
-          const fallback = isDemoMode ? "Alpha" : "Alice";
-          const regex = new RegExp(`\\b${activeName}\\b`, 'gi');
-          result = result.replace(regex, fallback);
-        }
       }
-    }
-    return result;
-  }, [address, accounts, isDemoMode]);
+      return result;
+    },
+    [address, accounts, isDemoMode]
+  );
 
   const lastLoadedKeyRef = useRef<string | null>(null);
 
@@ -216,41 +268,49 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       finalAmount = Number(planckToPot(maxSendPlanck));
     }
 
-    const commandText = userMessage ? userMessage.content : `Send ${finalAmount} POT to ${intent.to}`;
+    const commandText = userMessage
+      ? userMessage.content
+      : `Send ${finalAmount} POT to ${intent.to}`;
 
-    await executeTransfer(intent.toAddress, finalAmount, async (status, txHash, blockNumber, error) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === msg.id
-            ? {
-                ...m,
-                txResult: {
-                  status: status as TxStatus,
-                  txHash,
-                  blockNumber,
-                  error,
-                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
-                },
-              }
-            : m
-        )
-      );
+    await executeTransfer(
+      intent.toAddress,
+      finalAmount,
+      async (status, txHash, blockNumber, error) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === msg.id
+              ? {
+                  ...m,
+                  txResult: {
+                    status: status as TxStatus,
+                    txHash,
+                    blockNumber,
+                    error,
+                    explorerUrl: txHash
+                      ? `https://portaldot.subscan.io/extrinsic/${txHash}`
+                      : undefined,
+                  },
+                }
+              : m
+          )
+        );
 
-      if (status === "finalized" || status === "failed") {
-        await logTransaction({
-          sender: address,
-          command: commandText,
-          intent: { ...intent, amount: finalAmount } as unknown as Record<string, unknown>,
-          txHash,
-          blockNumber,
-          status,
-          errorMessage: error,
-          gasFee: "0.0012",
-        });
+        if (status === "finalized" || status === "failed") {
+          await logTransaction({
+            sender: address,
+            command: commandText,
+            intent: { ...intent, amount: finalAmount } as unknown as Record<string, unknown>,
+            txHash,
+            blockNumber,
+            status,
+            errorMessage: error,
+            gasFee: "0.0012",
+          });
 
-        onCommandExecuted?.();
+          onCommandExecuted?.();
+        }
       }
-    });
+    );
   };
 
   const handleExecuteBatch = async (msg: ChatMessage) => {
@@ -260,7 +320,9 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
     }
     const intent = msg.intent as BatchTransferIntent;
     const userMessage = messages.findLast((m) => m.role === "user");
-    const commandText = userMessage ? userMessage.content : `Batch Airdrop to ${intent.transfers.length} recipients`;
+    const commandText = userMessage
+      ? userMessage.content
+      : `Batch Airdrop to ${intent.transfers.length} recipients`;
 
     await executeBatch(intent.transfers, async (status, txHash, blockNumber, error) => {
       setMessages((prev) =>
@@ -273,7 +335,9 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
                   txHash,
                   blockNumber,
                   error,
-                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                  explorerUrl: txHash
+                    ? `https://portaldot.subscan.io/extrinsic/${txHash}`
+                    : undefined,
                 },
               }
             : m
@@ -298,15 +362,17 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   };
 
   const handleExecuteStake = async (msg: ChatMessage) => {
-    if (!address || !connected) { await connect(false); return; }
+    if (!address || !connected) {
+      await connect(false);
+      return;
+    }
     const intent = msg.intent!;
     const isStake = intent.action === "stake";
     const amount = isStake ? (intent as StakeIntent).amount : (intent as UnstakeIntent).amount;
     const executor = isStake
       ? (cb: (s: string, h?: string, b?: number, e?: string) => void) =>
           executeStake(amount, isStake && "validator" in intent ? intent.validator : undefined, cb)
-      : (cb: (s: string, h?: string, b?: number, e?: string) => void) =>
-          executeUnstake(amount, cb);
+      : (cb: (s: string, h?: string, b?: number, e?: string) => void) => executeUnstake(amount, cb);
 
     await executor((status, txHash, blockNumber, error) => {
       setMessages((prev) =>
@@ -315,8 +381,13 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             ? {
                 ...m,
                 txResult: {
-                  status: status as TxStatus, txHash, blockNumber, error,
-                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                  status: status as TxStatus,
+                  txHash,
+                  blockNumber,
+                  error,
+                  explorerUrl: txHash
+                    ? `https://portaldot.subscan.io/extrinsic/${txHash}`
+                    : undefined,
                 },
               }
             : m
@@ -327,7 +398,10 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   };
 
   const handleExecuteIdentity = async (msg: ChatMessage) => {
-    if (!address || !connected) { await connect(false); return; }
+    if (!address || !connected) {
+      await connect(false);
+      return;
+    }
     const intent = msg.intent as SetIdentityIntent;
 
     await executeSetIdentity(intent.displayName, (status, txHash, blockNumber, error) => {
@@ -337,8 +411,13 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             ? {
                 ...m,
                 txResult: {
-                  status: status as TxStatus, txHash, blockNumber, error,
-                  explorerUrl: txHash ? `https://portaldot.subscan.io/extrinsic/${txHash}` : undefined,
+                  status: status as TxStatus,
+                  txHash,
+                  blockNumber,
+                  error,
+                  explorerUrl: txHash
+                    ? `https://portaldot.subscan.io/extrinsic/${txHash}`
+                    : undefined,
                 },
               }
             : m
@@ -447,29 +526,35 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
 
   const showSlashMenu = input.startsWith("/") && filteredSlash.length > 0;
 
-  const selectSlashCommand = useCallback((idx: number) => {
-    const cmd = filteredSlash[idx];
-    if (cmd) {
-      setInput(getDynamicCommand(cmd.example));
-      inputRef.current?.focus();
-    }
-  }, [filteredSlash, getDynamicCommand]);
+  const selectSlashCommand = useCallback(
+    (idx: number) => {
+      const cmd = filteredSlash[idx];
+      if (cmd) {
+        setInput(getDynamicCommand(cmd.example));
+        inputRef.current?.focus();
+      }
+    },
+    [filteredSlash, getDynamicCommand]
+  );
 
-  const handleKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-    if (!showSlashMenu) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSlashIndex((i) => Math.min(i + 1, filteredSlash.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSlashIndex((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" || e.key === "Tab") {
-      e.preventDefault();
-      selectSlashCommand(slashIndex);
-    } else if (e.key === "Escape") {
-      setInput("");
-    }
-  }, [showSlashMenu, filteredSlash.length, slashIndex, selectSlashCommand]);
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (!showSlashMenu) return;
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSlashIndex((i) => Math.min(i + 1, filteredSlash.length - 1));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSlashIndex((i) => Math.max(i - 1, 0));
+      } else if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        selectSlashCommand(slashIndex);
+      } else if (e.key === "Escape") {
+        setInput("");
+      }
+    },
+    [showSlashMenu, filteredSlash.length, slashIndex, selectSlashCommand]
+  );
 
   const renderIntentCard = (msg: ChatMessage) => {
     if (!msg.intent) return null;
@@ -550,26 +635,21 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       {/* Messages area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-4 py-6 space-y-4"
-      >
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-4 py-6">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center">
+          <div className="flex h-full flex-col items-center justify-center text-center">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-2xl font-bold text-slate-300 mb-2">
-                Welcome to Potdo
-              </h2>
-              <p className="text-slate-500 mb-8 max-w-md">
-                Your AI copilot for Portaldot. Type a command in plain English
-                to create, preview, and execute transactions — or query staking,
-                identity, vesting, fees, and chain status.
+              <h2 className="mb-2 text-2xl font-bold text-slate-300">Welcome to Potdo</h2>
+              <p className="mb-8 max-w-md text-slate-500">
+                Your AI copilot for Portaldot. Type a command in plain English to create, preview,
+                and execute transactions — or query staking, identity, vesting, fees, and chain
+                status.
               </p>
             </motion.div>
           </div>
@@ -595,23 +675,23 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
 
         {isLoading && (
           <div className="flex items-center gap-1 pl-4">
-            <div className="typing-dot w-2 h-2 rounded-full bg-purple-400" />
-            <div className="typing-dot w-2 h-2 rounded-full bg-purple-400" />
-            <div className="typing-dot w-2 h-2 rounded-full bg-purple-400" />
+            <div className="typing-dot h-2 w-2 rounded-full bg-purple-400" />
+            <div className="typing-dot h-2 w-2 rounded-full bg-purple-400" />
+            <div className="typing-dot h-2 w-2 rounded-full bg-purple-400" />
           </div>
         )}
       </div>
 
       {/* Suggested commands */}
       {messages.length === 0 && (
-        <div className="px-4 pb-2 flex flex-wrap gap-2 justify-center">
+        <div className="flex flex-wrap justify-center gap-2 px-4 pb-2">
           {SUGGESTED_COMMANDS.map((cmd) => {
             const dynamicCmd = getDynamicCommand(cmd);
             return (
               <button
                 key={cmd}
                 onClick={() => handleSuggestion(dynamicCmd)}
-                className="glass-card px-3 py-1.5 text-sm text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all duration-200 cursor-pointer"
+                className="glass-card cursor-pointer px-3 py-1.5 text-sm text-slate-400 transition-all duration-200 hover:border-cyan-400/30 hover:text-cyan-400"
               >
                 {dynamicCmd}
               </button>
@@ -621,10 +701,7 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
       )}
 
       {/* Input bar */}
-      <form
-        onSubmit={handleSubmit}
-        className="p-4 border-t border-white/5"
-      >
+      <form onSubmit={handleSubmit} className="border-t border-white/5 p-4">
         <div className="relative">
           {/* Slash command dropdown */}
           <AnimatePresence>
@@ -634,10 +711,10 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.15 }}
-                className="absolute bottom-full left-0 right-0 mb-2 bg-[#111118] border border-white/10 rounded-xl overflow-hidden shadow-xl shadow-black/40 max-h-[320px] overflow-y-auto z-50"
+                className="absolute right-0 bottom-full left-0 z-50 mb-2 max-h-[320px] overflow-hidden overflow-y-auto rounded-xl border border-white/10 bg-[#111118] shadow-xl shadow-black/40"
                 id="slash-menu"
               >
-                <div className="px-3 py-2 text-[11px] text-slate-500 uppercase tracking-wider border-b border-white/5">
+                <div className="border-b border-white/5 px-3 py-2 text-[11px] tracking-wider text-slate-500 uppercase">
                   Commands
                 </div>
                 {filteredSlash.map((cmd, i) => (
@@ -645,18 +722,16 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
                     key={cmd.command}
                     type="button"
                     onClick={() => selectSlashCommand(i)}
-                    className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors duration-100 ${
+                    className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors duration-100 ${
                       i === slashIndex
                         ? "bg-cyan-500/10 text-cyan-300"
                         : "text-slate-300 hover:bg-white/5"
                     }`}
                   >
-                    <span className="font-mono text-sm font-semibold text-cyan-400 w-[80px] shrink-0">
+                    <span className="w-[80px] shrink-0 font-mono text-sm font-semibold text-cyan-400">
                       {cmd.command}
                     </span>
-                    <span className="text-sm text-slate-400 truncate">
-                      {cmd.description}
-                    </span>
+                    <span className="truncate text-sm text-slate-400">{cmd.description}</span>
                   </button>
                 ))}
               </motion.div>
@@ -673,13 +748,13 @@ export function ChatInterface({ externalInput, onExternalInputConsumed, onComman
             onKeyDown={handleKeyDown}
             placeholder={`Try: "${getDynamicCommand("Send 10 POT to Alpha")}" (or type "/" for commands)...`}
             disabled={isLoading}
-            className="w-full bg-[#111118] border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200 disabled:opacity-50"
+            className="w-full rounded-xl border border-white/10 bg-[#111118] px-4 py-3 text-sm text-slate-100 placeholder-slate-600 transition-all duration-200 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 focus:outline-none disabled:opacity-50"
             id="chat-input"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500/20 disabled:opacity-30 transition-all duration-200"
+            className="absolute top-1/2 right-2 -translate-y-1/2 rounded-lg bg-cyan-500/10 p-2 text-cyan-400 transition-all duration-200 hover:bg-cyan-500/20 disabled:opacity-30"
             id="chat-submit"
           >
             <svg

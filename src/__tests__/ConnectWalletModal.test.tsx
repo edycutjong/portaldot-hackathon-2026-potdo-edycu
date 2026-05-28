@@ -44,7 +44,9 @@ describe("ConnectWalletModal", () => {
     expect(screen.getByText("wss://mainnet.portaldot.io")).toBeInTheDocument();
     expect(screen.getByText("Mainnet")).toBeInTheDocument();
     expect(screen.getByText("Mainnet Node Configured")).toBeInTheDocument();
-    expect(screen.getByText(/This instance is connected to the live Portaldot Mainnet/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This instance is connected to the live Portaldot Mainnet/)
+    ).toBeInTheDocument();
     expect(screen.getByText("Connect Substrate Extension")).toBeInTheDocument();
     expect(screen.getByText("Enter Demo Mode (Simulation)")).toBeInTheDocument();
   });
@@ -65,7 +67,9 @@ describe("ConnectWalletModal", () => {
     expect(screen.getByText("ws://127.0.0.1:9944")).toBeInTheDocument();
     expect(screen.getByText("Testnet / Local Dev")).toBeInTheDocument();
     expect(screen.getByText("Testnet Node Configured")).toBeInTheDocument();
-    expect(screen.getByText(/This instance points to a test or dev environment/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This instance points to a test or dev environment/)
+    ).toBeInTheDocument();
   });
 
   it("handles close button click", () => {

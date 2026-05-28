@@ -85,7 +85,11 @@ describe("BatchCard", () => {
         senderAddress="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
       />
     );
-    expect(screen.getByText(/Cannot send tokens to yourself! One or more recipients match the sender address./)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Cannot send tokens to yourself! One or more recipients match the sender address./
+      )
+    ).toBeInTheDocument();
     expect(screen.getByText("Cannot Send to Yourself")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Cannot Send to Yourself" })).toBeDisabled();
   });

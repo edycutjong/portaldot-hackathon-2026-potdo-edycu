@@ -25,6 +25,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 **Input**: Type `Send 10 POT to Alpha` in the chat input
 
 **Expected**:
+
 1. ✨ AI parses the intent (purple dot + "Parsing intent...")
 2. 📋 A **TransferCard** slides into the chat showing:
    - **From**: Demo Wallet (`5Grw...utQY`)
@@ -40,6 +41,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 **Input**: Type `Airdrop 5 POT to Alpha, Beta, and Gamma`
 
 **Expected**:
+
 1. ✨ AI parses 3 recipients
 2. 📋 A **BatchCard** slides in showing a table:
    | Recipient | Amount |
@@ -56,6 +58,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 **Input**: Type `Send 5000 POT to Delta`
 
 **Expected**:
+
 1. ✨ AI parses the intent
 2. 🔴 A **TransferCard** appears with a **RED warning border**:
    - "Insufficient balance! You have 1000.0000 POT but need 5000.0000 POT"
@@ -67,6 +70,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 **Input**: Type `What's my balance?`
 
 **Expected**:
+
 1. 📋 A **BalanceWidget** card slides in showing:
    - **Free**: 1000.0000 POT
    - **Reserved**: 0 POT
@@ -76,14 +80,14 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Additional Features to Explore
 
-| Feature | How to Trigger |
-|---|---|
-| **Command History** | Look at the left sidebar — past commands are listed with status badges |
-| **Click to Replay** | Click any past command in the sidebar → it fills the chat input |
-| **Suggested Commands** | Click a suggestion chip above the input bar |
-| **Landing Page** | Visit `/` to see the animated landing page |
-| **Dashboard** | Visit `/dashboard` for the full chat interface |
-| **404 Page** | Visit `/nonexistent` for the custom cybernetic 404 page |
+| Feature                | How to Trigger                                                         |
+| ---------------------- | ---------------------------------------------------------------------- |
+| **Command History**    | Look at the left sidebar — past commands are listed with status badges |
+| **Click to Replay**    | Click any past command in the sidebar → it fills the chat input        |
+| **Suggested Commands** | Click a suggestion chip above the input bar                            |
+| **Landing Page**       | Visit `/` to see the animated landing page                             |
+| **Dashboard**          | Visit `/dashboard` for the full chat interface                         |
+| **404 Page**           | Visit `/nonexistent` for the custom cybernetic 404 page                |
 
 ---
 
@@ -109,11 +113,11 @@ cp .env.example .env.local
 # Edit .env.local with your keys
 ```
 
-| Variable | Required? | Purpose |
-|---|---|---|
-| `OPENAI_API_KEY` | Optional | Live AI intent parsing (demo mode uses deterministic parser) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Optional | Transaction history persistence |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase auth |
-| `PORTALDOT_RPC` | Optional | Custom RPC endpoint (default: `wss://mainnet.portaldot.io`) |
+| Variable                        | Required? | Purpose                                                      |
+| ------------------------------- | --------- | ------------------------------------------------------------ |
+| `OPENAI_API_KEY`                | Optional  | Live AI intent parsing (demo mode uses deterministic parser) |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Optional  | Transaction history persistence                              |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional  | Supabase auth                                                |
+| `PORTALDOT_RPC`                 | Optional  | Custom RPC endpoint (default: `wss://mainnet.portaldot.io`)  |
 
 > **Without any env vars**, the app runs in full demo mode with deterministic intent parsing and mock wallet integration.

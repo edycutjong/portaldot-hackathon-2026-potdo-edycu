@@ -86,7 +86,7 @@ export default function DashboardPage() {
   const balanceStr = connected ? (isBalanceLoading ? "..." : formatPot(balance)) : undefined;
 
   return (
-    <div className="h-screen flex flex-col grid-bg">
+    <div className="grid-bg flex h-screen flex-col">
       <Header
         connected={connected}
         address={address || undefined}
@@ -100,15 +100,26 @@ export default function DashboardPage() {
         onDisconnect={disconnect}
         onSelectAccount={selectAccount}
       />
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="relative flex flex-1 overflow-hidden">
         {/* Mobile sidebar toggle button */}
         <button
           onClick={() => setSidebarOpen(true)}
-          className="lg:hidden fixed bottom-20 left-3 z-40 p-2.5 rounded-xl bg-[#111118]/90 border border-white/10 text-slate-400 hover:text-cyan-400 hover:border-cyan-400/30 transition-all duration-200 backdrop-blur-sm shadow-lg cursor-pointer"
+          className="fixed bottom-20 left-3 z-40 cursor-pointer rounded-xl border border-white/10 bg-[#111118]/90 p-2.5 text-slate-400 shadow-lg backdrop-blur-sm transition-all duration-200 hover:border-cyan-400/30 hover:text-cyan-400 lg:hidden"
           aria-label="Open command history"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="12" cy="5" r="1" />
+            <circle cx="12" cy="19" r="1" />
           </svg>
         </button>
 
@@ -121,7 +132,7 @@ export default function DashboardPage() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="lg:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
                 onClick={() => setSidebarOpen(false)}
               />
 
@@ -131,19 +142,28 @@ export default function DashboardPage() {
                 animate={{ x: 0 }}
                 exit={{ x: "-100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 250 }}
-                className="lg:hidden fixed inset-y-0 left-0 z-50 w-[280px] bg-[#0a0a0f] border-r border-white/10 flex flex-col"
+                className="fixed inset-y-0 left-0 z-50 flex w-[280px] flex-col border-r border-white/10 bg-[#0a0a0f] lg:hidden"
               >
-                <div className="flex items-center justify-between p-4 border-b border-white/5">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="flex items-center justify-between border-b border-white/5 p-4">
+                  <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
                     History
                   </span>
                   <button
                     onClick={() => setSidebarOpen(false)}
-                    className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-all cursor-pointer"
+                    className="cursor-pointer rounded-lg p-1.5 text-slate-500 transition-all hover:bg-white/5 hover:text-slate-300"
                     aria-label="Close sidebar"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M18 6L6 18M6 6l12 12"/>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
@@ -163,7 +183,7 @@ export default function DashboardPage() {
         {/* Desktop sidebar (unchanged) */}
         <CommandHistory entries={history} onSelect={(entry) => setPendingInput(entry.command)} />
 
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex min-w-0 flex-1 flex-col">
           <ChatInterface
             externalInput={pendingInput}
             onExternalInputConsumed={() => setPendingInput("")}

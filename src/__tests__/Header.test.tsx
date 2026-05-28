@@ -32,12 +32,7 @@ describe("Header", () => {
   });
 
   it("hides Connect button when connected", () => {
-    render(
-      <Header
-        connected={true}
-        address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-      />
-    );
+    render(<Header connected={true} address="5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY" />);
     expect(screen.queryByText("Connect Wallet")).not.toBeInTheDocument();
   });
 
@@ -85,8 +80,14 @@ describe("Header", () => {
   it("renders a select dropdown and handles account selection when multiple accounts are present", () => {
     const onSelectAccount = jest.fn();
     const accounts = [
-      { address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY", meta: { name: "Alice", source: "extension" } },
-      { address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", meta: { source: "extension" } }, // missing name to test fallback
+      {
+        address: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
+        meta: { name: "Alice", source: "extension" },
+      },
+      {
+        address: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty",
+        meta: { source: "extension" },
+      }, // missing name to test fallback
     ];
     render(
       <Header
@@ -99,16 +100,20 @@ describe("Header", () => {
 
     const select = screen.getByRole("combobox");
     expect(select).toBeInTheDocument();
-    
+
     // Simulate selection change to Bob
     select.click();
     const option = screen.getByText("Account (5FHn...94ty)");
     expect(option).toBeInTheDocument();
-    
+
     // Trigger onChange manually
-    fireEvent.change(select, { target: { value: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" } });
-    
-    expect(onSelectAccount).toHaveBeenCalledWith("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty");
+    fireEvent.change(select, {
+      target: { value: "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty" },
+    });
+
+    expect(onSelectAccount).toHaveBeenCalledWith(
+      "5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty"
+    );
   });
 
   it("calls onDisconnect when disconnect is clicked", () => {
@@ -128,23 +133,22 @@ describe("Header", () => {
   it("renders API Docs link when NEXT_PUBLIC_BACKEND_URL env var is defined", () => {
     const originalEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
     process.env.NEXT_PUBLIC_BACKEND_URL = "http://mock-backend:8000";
-    
+
     render(<Header />);
     const link = screen.getByText("API Docs");
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("href", "http://mock-backend:8000/docs");
-    
+
     process.env.NEXT_PUBLIC_BACKEND_URL = originalEnv;
   });
 
   it("hides API Docs link when NEXT_PUBLIC_BACKEND_URL env var is empty", () => {
     const originalEnv = process.env.NEXT_PUBLIC_BACKEND_URL;
     delete process.env.NEXT_PUBLIC_BACKEND_URL;
-    
+
     render(<Header />);
     expect(screen.queryByText("API Docs")).not.toBeInTheDocument();
-    
+
     process.env.NEXT_PUBLIC_BACKEND_URL = originalEnv;
   });
 });
-

@@ -8,14 +8,18 @@ interface ChainInfoWidgetProps {
 
 export function ChainInfoWidget({ info }: ChainInfoWidgetProps) {
   return (
-    <div className="glass-card p-4 mt-2 max-w-md" id="chain-info-widget">
-      <div className="flex items-center gap-2 mb-3">
-        <span className="w-2 h-2 rounded-full bg-sky-400" />
-        <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">
+    <div className="glass-card mt-2 max-w-md p-4" id="chain-info-widget">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="h-2 w-2 rounded-full bg-sky-400" />
+        <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
           Network Status
         </span>
-        <span className={`ml-auto text-xs flex items-center gap-1 ${info.isSyncing ? "text-amber-400" : "text-green-400"}`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${info.isSyncing ? "bg-amber-400 animate-pulse" : "bg-green-400"}`} />
+        <span
+          className={`ml-auto flex items-center gap-1 text-xs ${info.isSyncing ? "text-amber-400" : "text-green-400"}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${info.isSyncing ? "animate-pulse bg-amber-400" : "bg-green-400"}`}
+          />
           {info.isSyncing ? "Syncing" : "Online"}
         </span>
       </div>
@@ -23,17 +27,17 @@ export function ChainInfoWidget({ info }: ChainInfoWidgetProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-slate-500">Chain</span>
-          <span className="text-sky-400 font-semibold">{info.chainName}</span>
+          <span className="font-semibold text-sky-400">{info.chainName}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Block Height</span>
-          <span className="text-slate-200 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-slate-200">
             #{info.blockNumber.toLocaleString()}
           </span>
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Runtime</span>
-          <span className="text-slate-300 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-slate-300">
             v{info.runtimeVersion}
           </span>
         </div>
@@ -43,7 +47,7 @@ export function ChainInfoWidget({ info }: ChainInfoWidgetProps) {
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500">Node Version</span>
-          <span className="text-slate-300 font-(family-name:--font-jetbrains)">
+          <span className="font-(family-name:--font-jetbrains) text-slate-300">
             {info.nodeVersion}
           </span>
         </div>

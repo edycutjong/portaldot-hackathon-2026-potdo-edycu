@@ -1,5 +1,11 @@
 // Singleton API Client for Potdo backend and chain connection
-import type { StakingInfo, OnChainIdentity, VestingSchedule, FeeEstimate, ChainInfo } from "@/lib/types";
+import type {
+  StakingInfo,
+  OnChainIdentity,
+  VestingSchedule,
+  FeeEstimate,
+  ChainInfo,
+} from "@/lib/types";
 
 export class ApiError extends Error {
   constructor(message: string) {
@@ -32,7 +38,7 @@ class PotdoApiClient {
       }
 
       if (res.ok) {
-        return await res.json() as T;
+        return (await res.json()) as T;
       } else {
         const errData = await res.json().catch(() => ({}));
         throw new ApiError(errData.detail || `Request failed with status ${res.status}`);
@@ -62,7 +68,7 @@ class PotdoApiClient {
       }
 
       if (res.ok) {
-        return await res.json() as T;
+        return (await res.json()) as T;
       } else {
         const errData = await res.json().catch(() => ({}));
         throw new ApiError(errData.detail || `Request failed with status ${res.status}`);
@@ -111,7 +117,12 @@ class PotdoApiClient {
     });
   }
 
-  async submitTx(endpoint: string, senderAddress: string, signature: string, body: Record<string, unknown>) {
+  async submitTx(
+    endpoint: string,
+    senderAddress: string,
+    signature: string,
+    body: Record<string, unknown>
+  ) {
     return this.post<{ txHash: string; blockNumber: number }>(`/${endpoint}`, {
       sender_address: senderAddress,
       signature,
@@ -119,7 +130,12 @@ class PotdoApiClient {
     });
   }
 
-  async executeTransfer(toAddress: string, amountPot: number, proxied?: boolean, realAddress?: string) {
+  async executeTransfer(
+    toAddress: string,
+    amountPot: number,
+    proxied?: boolean,
+    realAddress?: string
+  ) {
     const payload: Record<string, unknown> = {
       to_address: toAddress,
       amount_pot: amountPot,
@@ -130,9 +146,13 @@ class PotdoApiClient {
     return this.post<{ txHash: string; blockNumber: number }>(`/transfer`, payload);
   }
 
-  async executeBatch(transfers: Array<{ toAddress: string; amount: number }>, proxied?: boolean, realAddress?: string) {
+  async executeBatch(
+    transfers: Array<{ toAddress: string; amount: number }>,
+    proxied?: boolean,
+    realAddress?: string
+  ) {
     const payload: Record<string, unknown> = {
-      transfers: transfers.map(t => ({ to_address: t.toAddress, amount: t.amount })),
+      transfers: transfers.map((t) => ({ to_address: t.toAddress, amount: t.amount })),
     };
     if (proxied !== undefined) payload.proxied = proxied;
     if (realAddress !== undefined) payload.real_address = realAddress;
@@ -140,7 +160,12 @@ class PotdoApiClient {
     return this.post<{ txHash: string; blockNumber: number }>(`/batch`, payload);
   }
 
-  async executeStake(amountPot: number, validator?: string, proxied?: boolean, realAddress?: string) {
+  async executeStake(
+    amountPot: number,
+    validator?: string,
+    proxied?: boolean,
+    realAddress?: string
+  ) {
     const payload: Record<string, unknown> = {
       amount_pot: amountPot,
     };
@@ -194,7 +219,7 @@ class PotdoApiClient {
   async checkHealth() {
     try {
       const res = await fetch(`${this.backendUrl}/health`);
-      if (res.ok) return await res.json() as { rpc_endpoint?: string };
+      if (res.ok) return (await res.json()) as { rpc_endpoint?: string };
     } catch (err) {
       console.warn("API health check failed:", err);
     }

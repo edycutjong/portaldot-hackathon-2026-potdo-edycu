@@ -1474,10 +1474,12 @@ def test_load_env_with_quoted_values():
         # Clean up env vars
         os.environ.pop('POTDO_TEST_DOUBLE', None)
         os.environ.pop('POTDO_TEST_SINGLE', None)
-        # Clean up temp files
+        # Clean up temp files (safe to call even if they don't exist)
         for p in [env_path, os.path.join(project_root, '.env.local.bak_cov')]:
-            if os.path.exists(p):
+            try:
                 os.unlink(p)
+            except FileNotFoundError:
+                pass
 
 
 def test_load_env_exception_handling():
