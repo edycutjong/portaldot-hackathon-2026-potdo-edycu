@@ -7,7 +7,7 @@
   <br/>
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live-Demo-06b6d4?style=for-the-badge)](https://potdo.edycu.dev)
-[![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](#)
+[![Pitch Video](https://img.shields.io/badge/🎬_Pitch-Video-ef4444?style=for-the-badge)](https://youtu.be/UULsuxPz9XY)
 [![Pitch Deck](https://img.shields.io/badge/📊_Pitch-Deck-a855f7?style=for-the-badge)](docs/pitch_deck.md)
 [![Demo Guide](https://img.shields.io/badge/📖_Demo-Guide-22c55e?style=for-the-badge)](DEMO.md)
 [![Built for Portaldot](https://img.shields.io/badge/DoraHacks-Portaldot_Online_S1-8b5cf6?style=for-the-badge)](https://dorahacks.io/hackathon/portaldot-online-s1/detail)
