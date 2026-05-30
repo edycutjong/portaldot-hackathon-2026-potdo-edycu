@@ -47,10 +47,6 @@
 
 <div align="center">
 
-### Landing Page
-
-<img width="1152" height="720" alt="landing-1" src="https://github.com/user-attachments/assets/cfc644ba-3539-4a70-b35a-7d983f6d7111" />
-
 ### /send — Single Transfer + Execute 🎉
 
 <img width="1152" height="720" alt="send-1" src="https://github.com/user-attachments/assets/9a29f8ed-67a7-4fcd-ae68-d5dabd11f859" />
@@ -59,43 +55,35 @@
 
 <img width="1152" height="720" alt="airdrop-1" src="https://github.com/user-attachments/assets/32a0b5f7-1c67-4301-ba5b-bffc6956d6c5" />
 
-### /balance — Real-Time Balance Widget
-
-<img width="1152" height="720" alt="check-balance-1" src="https://github.com/user-attachments/assets/e6b982f4-39f3-41cc-ba1c-c7c94de1a869" />
-
-### /stake — Staking Operation
-
-<img width="1152" height="720" alt="stake-1" src="https://github.com/user-attachments/assets/65c83cbc-8436-438c-8e0b-2aabe462e02a" />
-
-### /unstake — Unstaking Operation
-
-<img width="1152" height="720" alt="unstake-1" src="https://github.com/user-attachments/assets/1bc6641a-971c-45b2-b19f-52b67da60d46" />
-
-### /staking — View Staking Info
-
-<img width="1152" height="720" alt="show-stacking-1" src="https://github.com/user-attachments/assets/22448476-296c-45dc-9dab-041a38f5a996" />
-
-### /identity — Set Display Name
-
-<img width="1152" height="720" alt="set-identity-1" src="https://github.com/user-attachments/assets/f7758618-3f6a-4a91-befc-6c552ed40e83" />
-
-### /vesting — View Vesting Schedule
-
-<img width="1152" height="720" alt="show-vesting-1" src="https://github.com/user-attachments/assets/f090a505-5bc3-40a3-ad10-8baff2f0983b" />
-
-### /fee — Estimate Gas Fee
-
-<img width="1152" height="720" alt="estimate-gas-1" src="https://github.com/user-attachments/assets/2177585a-ff02-415e-97a4-f6a57503f049" />
-
-### /chain — Chain Info
-
-<img width="1152" height="720" alt="chain-info-1" src="https://github.com/user-attachments/assets/b5b86fec-3c24-45c2-a707-647989f14275" />
-
-### Error Prevention — Insufficient Balance Protection
-
-<img width="1152" height="720" alt="send-insufficent-1" src="https://github.com/user-attachments/assets/10598523-8617-40cc-bc00-ac25eef5fb14" />
-
 </div>
+
+<details>
+<summary><strong>📸 All Feature Demos (10 more)</strong></summary>
+
+<table>
+<tr>
+<td align="center"><strong>Landing Page</strong><br><img width="576" height="360" alt="landing-1" src="https://github.com/user-attachments/assets/cfc644ba-3539-4a70-b35a-7d983f6d7111" /></td>
+<td align="center"><strong>/balance — Balance Widget</strong><br><img width="576" height="360" alt="check-balance-1" src="https://github.com/user-attachments/assets/e6b982f4-39f3-41cc-ba1c-c7c94de1a869" /></td>
+</tr>
+<tr>
+<td align="center"><strong>/stake — Staking</strong><br><img width="576" height="360" alt="stake-1" src="https://github.com/user-attachments/assets/65c83cbc-8436-438c-8e0b-2aabe462e02a" /></td>
+<td align="center"><strong>/unstake — Unstaking</strong><br><img width="576" height="360" alt="unstake-1" src="https://github.com/user-attachments/assets/1bc6641a-971c-45b2-b19f-52b67da60d46" /></td>
+</tr>
+<tr>
+<td align="center"><strong>/staking — Staking Info</strong><br><img width="576" height="360" alt="show-stacking-1" src="https://github.com/user-attachments/assets/22448476-296c-45dc-9dab-041a38f5a996" /></td>
+<td align="center"><strong>/identity — Set Display Name</strong><br><img width="576" height="360" alt="set-identity-1" src="https://github.com/user-attachments/assets/f7758618-3f6a-4a91-befc-6c552ed40e83" /></td>
+</tr>
+<tr>
+<td align="center"><strong>/vesting — Vesting Schedule</strong><br><img width="576" height="360" alt="show-vesting-1" src="https://github.com/user-attachments/assets/f090a505-5bc3-40a3-ad10-8baff2f0983b" /></td>
+<td align="center"><strong>/fee — Gas Fee Estimate</strong><br><img width="576" height="360" alt="estimate-gas-1" src="https://github.com/user-attachments/assets/2177585a-ff02-415e-97a4-f6a57503f049" /></td>
+</tr>
+<tr>
+<td align="center"><strong>/chain — Chain Info</strong><br><img width="576" height="360" alt="chain-info-1" src="https://github.com/user-attachments/assets/b5b86fec-3c24-45c2-a707-647989f14275" /></td>
+<td align="center"><strong>Error — Insufficient Balance</strong><br><img width="576" height="360" alt="send-insufficent-1" src="https://github.com/user-attachments/assets/10598523-8617-40cc-bc00-ac25eef5fb14" /></td>
+</tr>
+</table>
+
+</details>
 
 ## 🏗️ Architecture & Tech Stack
 
