@@ -25,24 +25,23 @@ for (const viewport of VIEWPORTS) {
 
     test("should render without horizontal overflow", async ({ page }) => {
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
       expect(bodyWidth).toBeLessThanOrEqual(viewport.width + 1); // +1 for rounding
     });
 
     test("should display chat input at accessible size", async ({ page }) => {
-      await page.goto("/");
+      await page.goto("/dashboard?demo=true");
 
       const chatInput = page.getByPlaceholder(/type|send|message|command/i);
-      if (await chatInput.isVisible()) {
-        const box = await chatInput.boundingBox();
-        expect(box).not.toBeNull();
+      await expect(chatInput).toBeVisible();
+      const box = await chatInput.boundingBox();
+      expect(box).not.toBeNull();
 
-        // Minimum touch target: 44px height (WCAG 2.1)
-        if (box) {
-          expect(box.height).toBeGreaterThanOrEqual(36);
-        }
+      // Minimum touch target: 44px height (WCAG 2.1)
+      if (box) {
+        expect(box.height).toBeGreaterThanOrEqual(36);
       }
     });
 
@@ -61,7 +60,7 @@ for (const viewport of VIEWPORTS) {
 
     test("should not have overlapping elements", async ({ page }) => {
       await page.goto("/");
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Check that main content doesn't overflow past the viewport
       const overflowX = await page.evaluate(() => {

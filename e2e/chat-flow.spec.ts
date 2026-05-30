@@ -14,7 +14,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Chat Flow", () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/dashboard?demo=true");
   });
 
   test("should render the chat interface on load", async ({ page }) => {
@@ -37,7 +37,7 @@ test.describe("Chat Flow", () => {
     await chatInput.press("Enter");
 
     // The user message should appear in the chat
-    const userMessage = page.getByText("Send 10 POT to Alice");
+    const userMessage = page.getByText("Send 10 POT to Alice", { exact: true });
     await expect(userMessage).toBeVisible({ timeout: 5000 });
   });
 

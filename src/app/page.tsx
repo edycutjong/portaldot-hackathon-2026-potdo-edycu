@@ -578,327 +578,332 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ══════════════════════════════════════════════════════════
-         ELEMENT 3 & 4: Hero — Title, Subtitle, Primary CTA
-         ELEMENT 6: Media — Terminal Demo (right column)
-         ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 pt-16 pb-24" id="hero">
-        <div className="mx-auto max-w-6xl">
-          {/* Two-column hero: text left, terminal right */}
-          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
-            {/* Left column — Text */}
-            <div>
-              {/* Hackathon badge */}
-              <div className="animate-fade-in-up stagger-1">
-                <div className="inline-flex items-center gap-2.5 rounded-full border border-cyan-500/25 bg-cyan-500/5 px-4 py-2 font-(family-name:--font-jetbrains) text-sm text-cyan-400">
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
-                  DoraHacks × Portaldot Online S1 2026
+      <main>
+        {/* ══════════════════════════════════════════════════════════
+           ELEMENT 3 & 4: Hero — Title, Subtitle, Primary CTA
+           ELEMENT 6: Media — Terminal Demo (right column)
+           ══════════════════════════════════════════════════════════ */}
+        <section className="relative z-10 px-6 pt-16 pb-24" id="hero">
+          <div className="mx-auto max-w-6xl">
+            {/* Two-column hero: text left, terminal right */}
+            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
+              {/* Left column — Text */}
+              <div>
+                {/* Hackathon badge */}
+                <div className="animate-fade-in-up stagger-1">
+                  <div className="inline-flex items-center gap-2.5 rounded-full border border-cyan-500/25 bg-cyan-500/5 px-4 py-2 font-(family-name:--font-jetbrains) text-sm text-cyan-400">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-cyan-400" />
+                    DoraHacks × Portaldot Online S1 2026
+                  </div>
                 </div>
-              </div>
 
-              {/* Title */}
-              <h1 className="animate-fade-in-up stagger-2 mt-6 font-(family-name:--font-display) text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
-                <span className="bg-linear-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  Talk to your
-                </span>
-                <br />
-                <span className="text-white">blockchain.</span>
-              </h1>
+                {/* Title */}
+                <h1 className="animate-fade-in-up stagger-2 mt-6 font-(family-name:--font-display) text-4xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl xl:text-7xl">
+                  <span className="bg-linear-to-r from-cyan-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    Talk to your
+                  </span>
+                  <br />
+                  <span className="text-white">blockchain.</span>
+                </h1>
 
-              {/* Subtitle */}
-              <p className="animate-fade-in-up stagger-3 mt-5 max-w-lg text-base leading-relaxed text-slate-400 sm:text-lg">
-                AI copilot that turns{" "}
-                <span className="font-medium text-cyan-400">plain English</span> into{" "}
-                <span className="font-medium text-purple-400">secure</span>,{" "}
-                <span className="font-medium text-green-400">visual</span> Portaldot transactions —
-                see the state change before you sign.
-              </p>
-            </div>
-
-            {/* Right column — Terminal Demo */}
-            <div className="animate-fade-in-up stagger-3 relative">
-              {/* Ambient glow behind terminal */}
-              <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-cyan-500/6 blur-2xl" />
-              <TerminalDemo />
-              <p className="mt-4 text-center font-(family-name:--font-jetbrains) text-xs text-slate-500">
-                Live demo — watch the AI parse commands
-              </p>
-            </div>
-          </div>
-
-          {/* CTA Buttons — centered below hero */}
-          <div className="animate-fade-in-up stagger-4 mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/dashboard"
-              id="hero-launch-cta"
-              className="animate-button-breathe relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-cyan-500 px-8 py-4 text-lg font-bold text-slate-950 transition-all duration-200 hover:scale-105 hover:bg-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/30"
-            >
-              <IconTerminal className="h-5 w-5 shrink-0" />
-              Launch App
-              <IconArrowRight className="h-4 w-4 shrink-0" />
-              {/* Shimmer */}
-              <span
-                className="pointer-events-none absolute inset-0 rounded-xl"
-                style={{
-                  background:
-                    "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer 3s linear infinite",
-                }}
-              />
-            </Link>
-            <Link
-              href="/dashboard?demo=true"
-              id="hero-demo-cta"
-              className="inline-flex items-center gap-2.5 rounded-xl border border-amber-500/30 px-8 py-4 text-amber-400 transition-all duration-200 hover:scale-105 hover:border-amber-500/60 hover:bg-amber-500/5 hover:text-amber-300"
-            >
-              <IconBolt className="h-5.5 w-5.5 shrink-0" />
-              Launch Demo Mode
-            </Link>
-            <a
-              href="https://github.com/edycutjong/potdo"
-              target="_blank"
-              rel="noopener noreferrer"
-              id="hero-source-cta"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 px-8 py-4 text-slate-300 transition-all duration-200 hover:scale-105 hover:border-cyan-500/40 hover:bg-white/2 hover:text-white"
-            >
-              <IconGitHub className="h-5 w-5 shrink-0" />
-              View Source
-            </a>
-          </div>
-
-          {/* Stats row — full width below */}
-          <div className="animate-fade-in-up stagger-5 mx-auto mt-12 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
-            {STATS.map((stat, i) => (
-              <div key={stat.label} className="glass-card px-4 py-3 text-center">
-                <p
-                  className={`font-(family-name:--font-jetbrains) text-2xl font-bold sm:text-3xl ${stat.color} animate-count-pop stagger-${i + 5}`}
-                >
-                  {stat.value}
+                {/* Subtitle */}
+                <p className="animate-fade-in-up stagger-3 mt-5 max-w-lg text-base leading-relaxed text-slate-400 sm:text-lg">
+                  AI copilot that turns{" "}
+                  <span className="font-medium text-cyan-400">plain English</span> into{" "}
+                  <span className="font-medium text-purple-400">secure</span>,{" "}
+                  <span className="font-medium text-green-400">visual</span> Portaldot transactions
+                  — see the state change before you sign.
                 </p>
-                <p className="mt-1 text-xs text-slate-500">{stat.label}</p>
               </div>
-            ))}
+
+              {/* Right column — Terminal Demo */}
+              <div className="animate-fade-in-up stagger-3 relative">
+                {/* Ambient glow behind terminal */}
+                <div className="pointer-events-none absolute -inset-8 rounded-3xl bg-cyan-500/6 blur-2xl" />
+                <TerminalDemo />
+                <p className="mt-4 text-center font-(family-name:--font-jetbrains) text-xs text-slate-500">
+                  Live demo — watch the AI parse commands
+                </p>
+              </div>
+            </div>
+
+            {/* CTA Buttons — centered below hero */}
+            <div className="animate-fade-in-up stagger-4 mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                href="/dashboard"
+                id="hero-launch-cta"
+                className="animate-button-breathe relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-cyan-500 px-8 py-4 text-lg font-bold text-slate-950 transition-all duration-200 hover:scale-105 hover:bg-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/30"
+              >
+                <IconTerminal className="h-5 w-5 shrink-0" />
+                Launch App
+                <IconArrowRight className="h-4 w-4 shrink-0" />
+                {/* Shimmer */}
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-xl"
+                  style={{
+                    background:
+                      "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 3s linear infinite",
+                  }}
+                />
+              </Link>
+              <Link
+                href="/dashboard?demo=true"
+                id="hero-demo-cta"
+                className="inline-flex items-center gap-2.5 rounded-xl border border-amber-500/30 px-8 py-4 text-amber-400 transition-all duration-200 hover:scale-105 hover:border-amber-500/60 hover:bg-amber-500/5 hover:text-amber-300"
+              >
+                <IconBolt className="h-5.5 w-5.5 shrink-0" />
+                Launch Demo Mode
+              </Link>
+              <a
+                href="https://github.com/edycutjong/potdo"
+                target="_blank"
+                rel="noopener noreferrer"
+                id="hero-source-cta"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 px-8 py-4 text-slate-300 transition-all duration-200 hover:scale-105 hover:border-cyan-500/40 hover:bg-white/2 hover:text-white"
+              >
+                <IconGitHub className="h-5 w-5 shrink-0" />
+                View Source
+              </a>
+            </div>
+
+            {/* Stats row — full width below */}
+            <div className="animate-fade-in-up stagger-5 mx-auto mt-12 grid max-w-xl grid-cols-2 gap-3 sm:grid-cols-4">
+              {STATS.map((stat, i) => (
+                <div key={stat.label} className="glass-card px-4 py-3 text-center">
+                  <p
+                    className={`font-(family-name:--font-jetbrains) text-2xl font-bold sm:text-3xl ${stat.color} animate-count-pop stagger-${i + 5}`}
+                  >
+                    {stat.value}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="section-divider mx-auto max-w-5xl" />
+        <div className="section-divider mx-auto max-w-5xl" />
 
-      {/* ══════════════════════════════════════════════════════════
+        {/* ══════════════════════════════════════════════════════════
          ELEMENT 7: Core Benefits / Features
          ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 py-24" id="features">
-        <div className="mx-auto max-w-5xl">
-          {/* Section header */}
-          <div className="mb-16 text-center">
-            <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-cyan-400 uppercase">
-              Core Features
-            </p>
-            <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Everything you need to{" "}
-              <span className="bg-linear-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
-                transact safely
-              </span>
-            </h2>
-          </div>
+        <section className="relative z-10 px-6 py-24" id="features">
+          <div className="mx-auto max-w-5xl">
+            {/* Section header */}
+            <div className="mb-16 text-center">
+              <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-cyan-400 uppercase">
+                Core Features
+              </p>
+              <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Everything you need to{" "}
+                <span className="bg-linear-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                  transact safely
+                </span>
+              </h2>
+            </div>
 
-          {/* Feature grid — asymmetric 2-col + 3-col */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {FEATURES.map((feature, i) => (
-              <div
-                key={feature.title}
-                className={`gradient-border-card p-6 ${feature.borderHover} transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 ${i < 2 ? "lg:col-span-1" : ""}`}
-              >
+            {/* Feature grid — asymmetric 2-col + 3-col */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {FEATURES.map((feature, i) => (
                 <div
-                  className={`h-11 w-11 rounded-xl ${feature.iconBg} mb-4 flex items-center justify-center`}
+                  key={feature.title}
+                  className={`gradient-border-card p-6 ${feature.borderHover} transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 ${i < 2 ? "lg:col-span-1" : ""}`}
                 >
-                  <feature.icon className={`h-5.5 w-5.5 ${feature.color}`} />
+                  <div
+                    className={`h-11 w-11 rounded-xl ${feature.iconBg} mb-4 flex items-center justify-center`}
+                  >
+                    <feature.icon className={`h-5.5 w-5.5 ${feature.color}`} />
+                  </div>
+                  <h3
+                    className={`font-(family-name:--font-display) text-lg font-semibold ${feature.color} mb-2`}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-slate-400">{feature.description}</p>
                 </div>
-                <h3
-                  className={`font-(family-name:--font-display) text-lg font-semibold ${feature.color} mb-2`}
-                >
-                  {feature.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-slate-400">{feature.description}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="section-divider mx-auto max-w-5xl" />
+        <div className="section-divider mx-auto max-w-5xl" />
 
-      {/* ══════════════════════════════════════════════════════════
+        {/* ══════════════════════════════════════════════════════════
          HOW IT WORKS (Conversion Path Visualization)
          ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 py-24" id="how-it-works">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-16 text-center">
-            <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-purple-400 uppercase">
-              How It Works
-            </p>
-            <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Three steps to{" "}
-              <span className="bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                safe transactions
-              </span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className={`glass-card relative border p-6 ${item.borderColor}`}>
-                {/* Step number */}
-                <span
-                  className={`font-(family-name:--font-display) text-5xl font-bold ${item.color} absolute top-4 right-5 opacity-20`}
-                >
-                  {item.step}
+        <section className="relative z-10 px-6 py-24" id="how-it-works">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-16 text-center">
+              <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-purple-400 uppercase">
+                How It Works
+              </p>
+              <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Three steps to{" "}
+                <span className="bg-linear-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  safe transactions
                 </span>
-                <h3
-                  className={`font-(family-name:--font-display) text-lg font-semibold ${item.color} relative mb-3`}
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {HOW_IT_WORKS.map((item) => (
+                <div
+                  key={item.step}
+                  className={`glass-card relative border p-6 ${item.borderColor}`}
                 >
-                  {item.title}
-                </h3>
-                <p className="relative text-sm leading-relaxed text-slate-400">
-                  {item.description}
-                </p>
-              </div>
-            ))}
+                  {/* Step number */}
+                  <span
+                    className={`font-(family-name:--font-display) text-5xl font-bold ${item.color} absolute top-4 right-5 opacity-20`}
+                  >
+                    {item.step}
+                  </span>
+                  <h3
+                    className={`font-(family-name:--font-display) text-lg font-semibold ${item.color} relative mb-3`}
+                  >
+                    {item.title}
+                  </h3>
+                  <p className="relative text-sm leading-relaxed text-slate-400">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="section-divider mx-auto max-w-5xl" />
+        <div className="section-divider mx-auto max-w-5xl" />
 
-      {/* ══════════════════════════════════════════════════════════
+        {/* ══════════════════════════════════════════════════════════
          ELEMENT 8: Customer Testimonials
          ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 py-24" id="testimonials">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-16 text-center">
-            <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-green-400 uppercase">
-              Testimonials
-            </p>
-            <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Trusted by{" "}
-              <span className="bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
-                builders
-              </span>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {TESTIMONIALS.map((t) => (
-              <div
-                key={t.name}
-                className="glass-card p-6 transition-all duration-300 hover:scale-[1.01] hover:border-white/10"
-              >
-                {/* Quote mark */}
-                <span className="font-serif text-4xl leading-none text-slate-700 select-none">
-                  &ldquo;
+        <section className="relative z-10 px-6 py-24" id="testimonials">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-16 text-center">
+              <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-green-400 uppercase">
+                Testimonials
+              </p>
+              <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Trusted by{" "}
+                <span className="bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  builders
                 </span>
-                <p className="mt-1 mb-5 text-sm leading-relaxed text-slate-300">{t.quote}</p>
-                <div className="flex items-center gap-3">
-                  {/* Avatar circle */}
-                  <div
-                    className={`h-10 w-10 rounded-full bg-linear-to-br ${t.color} flex items-center justify-center text-xs font-bold text-white`}
-                  >
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-200">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.role}</p>
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {TESTIMONIALS.map((t) => (
+                <div
+                  key={t.name}
+                  className="glass-card p-6 transition-all duration-300 hover:scale-[1.01] hover:border-white/10"
+                >
+                  {/* Quote mark */}
+                  <span className="font-serif text-4xl leading-none text-slate-700 select-none">
+                    &ldquo;
+                  </span>
+                  <p className="mt-1 mb-5 text-sm leading-relaxed text-slate-300">{t.quote}</p>
+                  <div className="flex items-center gap-3">
+                    {/* Avatar circle */}
+                    <div
+                      className={`h-10 w-10 rounded-full bg-linear-to-br ${t.color} flex items-center justify-center text-xs font-bold text-white`}
+                    >
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-200">{t.name}</p>
+                      <p className="text-xs text-slate-500">{t.role}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <div className="section-divider mx-auto max-w-5xl" />
+        <div className="section-divider mx-auto max-w-5xl" />
 
-      {/* ══════════════════════════════════════════════════════════
+        {/* ══════════════════════════════════════════════════════════
          ELEMENT 9: FAQ Section
          ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 py-24" id="faq">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-16 text-center">
-            <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-amber-400 uppercase">
-              FAQ
-            </p>
-            <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-              Common{" "}
-              <span className="bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
-                questions
-              </span>
-            </h2>
+        <section className="relative z-10 px-6 py-24" id="faq">
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-16 text-center">
+              <p className="mb-3 font-(family-name:--font-jetbrains) text-sm tracking-[0.2em] text-amber-400 uppercase">
+                FAQ
+              </p>
+              <h2 className="font-(family-name:--font-display) text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+                Common{" "}
+                <span className="bg-linear-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
+                  questions
+                </span>
+              </h2>
+            </div>
+
+            <FAQSection />
           </div>
+        </section>
 
-          <FAQSection />
-        </div>
-      </section>
+        <div className="section-divider mx-auto max-w-5xl" />
 
-      <div className="section-divider mx-auto max-w-5xl" />
-
-      {/* ══════════════════════════════════════════════════════════
+        {/* ══════════════════════════════════════════════════════════
          ELEMENT 10: Final CTA
          ══════════════════════════════════════════════════════════ */}
-      <section className="relative z-10 px-6 py-28">
-        <div className="noise-bg relative mx-auto max-w-3xl text-center">
-          {/* Ambient glow */}
-          <div className="pointer-events-none absolute -inset-16 rounded-[40px] bg-cyan-500/4 blur-3xl" />
+        <section className="relative z-10 px-6 py-28">
+          <div className="noise-bg relative mx-auto max-w-3xl text-center">
+            {/* Ambient glow */}
+            <div className="pointer-events-none absolute -inset-16 rounded-[40px] bg-cyan-500/4 blur-3xl" />
 
-          <h2 className="relative font-(family-name:--font-display) text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Ready to stop{" "}
-            <span className="bg-linear-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
-              signing blind?
-            </span>
-          </h2>
-          <p className="relative mx-auto mt-5 max-w-xl text-lg text-slate-400">
-            Launch Potdo, connect your Portaldot wallet, and experience transactions the way they
-            should be — visible, verifiable, and human.
-          </p>
-          <div className="relative mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/dashboard"
-              id="final-launch-cta"
-              className="animate-button-breathe relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-cyan-500 px-10 py-4.5 text-lg font-bold text-slate-950 transition-all duration-200 hover:scale-105 hover:bg-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/30"
-            >
-              <IconTerminal className="h-5 w-5 shrink-0" />
-              Launch App Now
-              <IconArrowRight className="h-4 w-4 shrink-0" />
-              <span
-                className="pointer-events-none absolute inset-0 rounded-xl"
-                style={{
-                  background:
-                    "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
-                  backgroundSize: "200% 100%",
-                  animation: "shimmer 3s linear infinite",
-                }}
-              />
-            </Link>
-            <Link
-              href="/dashboard?demo=true"
-              id="final-demo-cta"
-              className="inline-flex items-center gap-2.5 rounded-xl border border-amber-500/30 px-8 py-4.5 font-bold text-amber-400 transition-all duration-200 hover:scale-105 hover:border-amber-500/60 hover:bg-amber-500/5 hover:text-amber-300"
-            >
-              <IconBolt className="h-5.5 w-5.5 shrink-0" />
-              Launch Demo Mode
-            </Link>
-            <a
-              href="https://github.com/edycutjong/potdo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 px-8 py-4.5 text-slate-300 transition-all duration-200 hover:scale-105 hover:border-cyan-500/40 hover:text-white"
-            >
-              <IconGitHub className="h-5 w-5 shrink-0" />
-              Star on GitHub
-            </a>
+            <h2 className="relative font-(family-name:--font-display) text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl">
+              Ready to stop{" "}
+              <span className="bg-linear-to-r from-red-400 to-amber-400 bg-clip-text text-transparent">
+                signing blind?
+              </span>
+            </h2>
+            <p className="relative mx-auto mt-5 max-w-xl text-lg text-slate-400">
+              Launch Potdo, connect your Portaldot wallet, and experience transactions the way they
+              should be — visible, verifiable, and human.
+            </p>
+            <div className="relative mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                href="/dashboard"
+                id="final-launch-cta"
+                className="animate-button-breathe relative inline-flex items-center gap-2.5 overflow-hidden rounded-xl bg-cyan-500 px-10 py-4.5 text-lg font-bold text-slate-950 transition-all duration-200 hover:scale-105 hover:bg-cyan-400 hover:shadow-2xl hover:shadow-cyan-500/30"
+              >
+                <IconTerminal className="h-5 w-5 shrink-0" />
+                Launch App Now
+                <IconArrowRight className="h-4 w-4 shrink-0" />
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-xl"
+                  style={{
+                    background:
+                      "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 50%, transparent 60%)",
+                    backgroundSize: "200% 100%",
+                    animation: "shimmer 3s linear infinite",
+                  }}
+                />
+              </Link>
+              <Link
+                href="/dashboard?demo=true"
+                id="final-demo-cta"
+                className="inline-flex items-center gap-2.5 rounded-xl border border-amber-500/30 px-8 py-4.5 font-bold text-amber-400 transition-all duration-200 hover:scale-105 hover:border-amber-500/60 hover:bg-amber-500/5 hover:text-amber-300"
+              >
+                <IconBolt className="h-5.5 w-5.5 shrink-0" />
+                Launch Demo Mode
+              </Link>
+              <a
+                href="https://github.com/edycutjong/potdo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-700/80 px-8 py-4.5 text-slate-300 transition-all duration-200 hover:scale-105 hover:border-cyan-500/40 hover:text-white"
+              >
+                <IconGitHub className="h-5 w-5 shrink-0" />
+                Star on GitHub
+              </a>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* ══════════════════════════════════════════════════════════
          ELEMENT 11: Footer

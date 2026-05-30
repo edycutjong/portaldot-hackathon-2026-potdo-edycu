@@ -25,7 +25,7 @@ test.describe("Demo Mode", () => {
     await page.goto("/");
 
     // Wait for hydration
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // No Next.js error overlay should be visible
     const errorOverlay = page.locator("#__next-build-error");
@@ -38,7 +38,7 @@ test.describe("Demo Mode", () => {
 
   test("should render all critical UI sections", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Header should exist
     const header = page.locator("header");
@@ -79,7 +79,7 @@ test.describe("Demo Mode", () => {
     });
 
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Filter out known non-critical errors (e.g., favicon 404)
     const criticalErrors = consoleErrors.filter(
