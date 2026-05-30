@@ -61,8 +61,17 @@ def test_balance_failure(mock_substrate):
     mock_instance.query.side_effect = Exception("System error")
     mock_substrate.return_value = mock_instance
 
-    response = client.get("/balance/invalid_address")
-    assert response.status_code == 500
+    # When MNEMONIC is empty (demo/CI mode), balance errors fall back to mock data
+    with patch('main.MNEMONIC', ''):
+        response = client.get("/balance/invalid_address")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["address"] == "invalid_address"
+
+    # When MNEMONIC is set (production mode), balance errors raise 500
+    with patch('main.MNEMONIC', 'real_mnemonic'):
+        response = client.get("/balance/invalid_address")
+        assert response.status_code == 500
 
 @patch('main.SubstrateInterface')
 def test_staking_info_success(mock_substrate):
@@ -98,13 +107,15 @@ def test_staking_info_success(mock_substrate):
     mock_instance.query.side_effect = side_effect
     mock_substrate.return_value = mock_instance
 
-    response = client.get("/staking/5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
-    assert response.status_code == 200
-    data = response.json()
-    assert data["bonded"] == "500.0"
-    assert data["active"] == "450.0"
-    assert data["unlocking"] == "50.0"
-    assert data["nominations"] == ["validator1"]
+    # With MNEMONIC set, the real query path executes
+    with patch('main.MNEMONIC', 'real_mnemonic'):
+        response = client.get("/staking/5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["bonded"] == "500.0"
+        assert data["active"] == "450.0"
+        assert data["unlocking"] == "50.0"
+        assert data["nominations"] == ["validator1"]
 
 @patch('main.SubstrateInterface')
 def test_staking_info_fallback(mock_substrate):

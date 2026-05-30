@@ -9,3 +9,7 @@ testnet
 playwright-report
 test-results
 .lighthouseci
+docs/potdo_pitch_deck.html
+public/pitch/index.html
+backend
+.mypy_cache
