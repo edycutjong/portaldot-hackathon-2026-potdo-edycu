@@ -8,7 +8,7 @@
 ## Quick Start
 
 ```bash
-git clone https://github.com/edycutjong/portaldot-hackathon-2026-potdo-edycu.git
+git clone https://github.com/edycutjong/portaldot-hackathon-2026-potdo-edycu.git potdo
 cd potdo
 npm install
 npm run dev
